@@ -1,0 +1,8 @@
+// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+import { ok } from "@/backend/lib/api-response";
+import { withErrors } from "@/backend/lib/errors";
+import type { OkResult } from "@/shared/types";
+
+export const DELETE = withErrors(async () => {
+  return ok<OkResult>({ ok: true });
+});
