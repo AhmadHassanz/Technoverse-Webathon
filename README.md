@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ExamCore — Secure Examination Management System
 
-## Getting Started
+Technoverse 5.0 Web-e-Thon (COMSATS Lahore, 27–28 Nov 2026). A full-stack web app where institutions **create, conduct, monitor and evaluate** online exams, with three roles: **admin**, **examiner** and **candidate**.
 
-First, run the development server:
+**Live URL:** _not deployed yet_
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+- **Exams:** draft → published → ongoing → completed lifecycle, schedule window, duration, total/pass marks, shuffle settings.
+- **Question bank:** topics, difficulty levels, single-answer MCQ, multi-select (all-or-nothing or partial marking), written answers, negative marking.
+- **Exam workspace:** server-controlled timer, autosave, resume after refresh, answered / unanswered / flagged navigator, auto-submit at time-up.
+- **Monitoring:** live attempts, connection status, incident indicators (never treated as proof), announcements.
+- **Grading & results:** auto-grading of objective questions, manual grading of written answers, controlled result publishing, analytics.
+- **Secondary features:** network-aware UI, PDF reports, examiner sandbox preview, CSV import, question analytics, verifiable reports (QR + code), customizable workspace, digital scratchpad.
+
+## Innovation challenges
+- **5.3 Failure-resilient exams:** answers are kept in an offline outbox on the device and synced on reconnect; the server detects outages from missed heartbeats and creates a compensation request that the examiner approves or rejects (capped at 10 minutes), so nobody gets free extra time.
+- **5.2 Fairness of randomized exams:** a difficulty blueprint (e.g. 4 easy / 4 medium / 2 hard, equal marks per difficulty) gives every candidate a different but equally weighted paper; analytics compute each paper's observed difficulty and its deviation from the average.
+
+Details and trade-offs: [`docs/DESIGN.md`](docs/DESIGN.md).
+
+## Test credentials
+_All passwords: `Demo@1234` (created by `npm run seed`)._
+
+| Role | Email |
+|---|---|
+| Admin | admin@demo.com |
+| Examiner | examiner@demo.com |
+| Candidate | ali@demo.com · sara@demo.com · hamza@demo.com |
+
+## Tech stack
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Supabase (Postgres + Auth) · zod · pdf-lib · qrcode · papaparse · lucide-react · Vercel.
+
+## Setup
+Requirements: Node.js 24, a free Supabase project.
+
+1. `npm install`
+2. In Supabase: Auth → Providers → Email → turn off "Confirm email". SQL Editor → run `backend/db/schema.sql`.
+3. Create `.env.local`:
+   ```
+   SUPABASE_URL=https://xxxx.supabase.co
+   SUPABASE_PUBLISHABLE_KEY=...
+   SUPABASE_SECRET_KEY=...
+   ```
+4. `npm run seed` (demo accounts and data)
+5. `npm run dev` → http://localhost:3000
+
+## Project structure
+```
+app/        1-line connector files (Next.js routes) → frontend/ pages and backend/ handlers
+frontend/   pages, layouts, components, client helpers
+backend/    handlers → services → data (Supabase), lib/, db/schema.sql, scripts/seed.ts
+shared/     types.ts + validation.ts used by both sides
+docs/       problem statement, contract, plans, design
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Documentation
+- [`docs/PROBLEM_STATEMENT.md`](docs/PROBLEM_STATEMENT.md) — the official brief
+- [`docs/CONTRACT.md`](docs/CONTRACT.md) — every API endpoint, error code and validation rule
+- [`docs/DESIGN.md`](docs/DESIGN.md) — requirements analysis, ambiguities, DB design, architecture, tech choices
+- [`docs/BACKEND_PLAN.md`](docs/BACKEND_PLAN.md) / [`docs/FRONTEND_PLAN.md`](docs/FRONTEND_PLAN.md) — build plans

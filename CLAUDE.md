@@ -37,13 +37,15 @@
   - `backend/` = user only (`handlers/` → `services/` → `data/`, plus `lib/`, `db/`, `scripts/`). Also `package.json`, `.env.local`, Vercel deploys.
   - `shared/types.ts`, `shared/validation.ts`, `docs/CONTRACT.md` = owned by the user, read-only for the friend; change together and tell the teammate.
   - `app/` holds only 1-line **connector** files (Next.js needs URLs there): `app/x/page.tsx` → `export { default } from "@/frontend/pages/XPage"`; `app/api/x/route.ts` → `export { GET } from "@/backend/handlers/x"`. No logic in `app/`.
-- Role guides: `docs/BACKEND_PLAN.md` (user) and `docs/FRONTEND_PLAN.md` (friend) are the full plans; `docs/BACKEND.md` / `docs/FRONTEND.md` are short quick-reference cards. Read the matching plan before working on that side.
+- Role guides: `docs/BACKEND_PLAN.md` (user) and `docs/FRONTEND_PLAN.md` (friend). Read the matching plan before working on that side.
 - Next.js 16 has breaking changes: follow AGENTS.md and check `node_modules/next/dist/docs/` before writing Next-specific code.
 
 @AGENTS.md
 
 ## Git workflow
-- Repo starts on 27 Nov after 10:00 AM (`git init -b main`). Never commit before that. Everyone works on `main`. Before starting work: `git pull`. Before pushing: `git pull` (merge, NOT rebase), then `git push`.
+- **Branches:** the user works on `backend`, the friend works on `frontend`. Each person merges their branch into `main` (plain merge, no rebase, no squash that rewrites history). Never commit directly on the other person's branch.
+- Before starting work: `git pull`. Before pushing: `git pull` (merge, NOT rebase), then `git push`. To get the other side's work: `git merge main` into your branch.
+- Deploy from `main` after merging, so the live site always has both sides.
 - Commit small and often, so merges stay easy. If a merge conflict happens, stop and explain it simply before fixing.
 - Agree on the API shape early and write it in `docs/CONTRACT.md`, so frontend can use fake data until backend is ready.
 
