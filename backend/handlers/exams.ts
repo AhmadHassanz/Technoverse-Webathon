@@ -1,15 +1,20 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET, POST /api/exams: see docs/CONTRACT.md
 import { connection } from "next/server";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockExam } from "@/backend/lib/mock";
-import type { Exam } from "@/shared/types";
+import { parseBody } from "@/backend/lib/http";
+import { createExam, getExams } from "@/backend/services/exams.service";
+import { examSchema } from "@/shared/validation";
 
 export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<Exam[]>([mockExam]);
+  await connection();
+  const user = await requireRole("examiner", "admin");
+  return ok(await getExams(user));
 });
 
-export const POST = withErrors(async () => {
-  return ok<Exam>(mockExam, 201);
+export const POST = withErrors(async (req: Request) => {
+  const user = await requireRole("examiner", "admin");
+  const input = await parseBody(req, examSchema);
+  return ok(await createExam(user, input), 201);
 });

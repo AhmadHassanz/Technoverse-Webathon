@@ -16,3 +16,14 @@ export function effectiveEnd(attempt: Pick<AttemptTiming, "endsAt" | "compensati
 export function isExpired(attempt: AttemptTiming, now: Date = new Date()): boolean {
   return attempt.status === "in_progress" && now.getTime() > effectiveEnd(attempt).getTime() + GRACE_MS;
 }
+
+/** Exam state is DERIVED from status + clock, never stored (so it can never be out of sync). */
+export function examState(
+  exam: { status: "draft" | "published"; startAt: string; endAt: string },
+  now: Date = new Date(),
+): "draft" | "published" | "ongoing" | "completed" {
+  if (exam.status === "draft") return "draft";
+  if (now < new Date(exam.startAt)) return "published";
+  if (now < new Date(exam.endAt)) return "ongoing";
+  return "completed";
+}

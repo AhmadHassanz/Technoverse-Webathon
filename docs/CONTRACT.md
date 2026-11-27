@@ -60,11 +60,11 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/exams` | examiner | – → `Exam[]` (own, newest first) | – | ⏳ |
-| POST | `/api/exams` | examiner | `ExamInput` → `Exam` (201, state draft) | 400 | ⏳ |
-| GET | `/api/exams/[id]` | owner | – → `ExamDetail` | 403, 404 | ⏳ |
-| PATCH | `/api/exams/[id]` | owner | `Partial<ExamInput>` → `Exam` | 400, 409 not draft | ⏳ |
-| DELETE | `/api/exams/[id]` | owner | – → `OkResult` | 409 not draft | ⏳ |
+| GET | `/api/exams` | examiner | – → `Exam[]` (own, newest first) | – | ✅ |
+| POST | `/api/exams` | examiner | `ExamInput` → `Exam` (201, state draft) | 400 | ✅ |
+| GET | `/api/exams/[id]` | owner | – → `ExamDetail` | 403, 404 | ✅ |
+| PATCH | `/api/exams/[id]` | owner | `Partial<ExamInput>` → `Exam` | 400, 409 not draft | ✅ |
+| DELETE | `/api/exams/[id]` | owner | – → `OkResult` | 409 not draft | ✅ |
 | PUT | `/api/exams/[id]/questions` | owner | `ExamQuestionsInput` → `ExamDetail` (replaces pool, order = array order) | 400, 409 not draft | ⏳ |
 | GET | `/api/exams/[id]/publish-check` | owner | – → `PublishCheck` | 403, 404 | ⏳ |
 | POST | `/api/exams/[id]/publish` | owner | – → `Exam` | 409 + error = first problem (call publish-check first) | ⏳ |

@@ -87,4 +87,11 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Server-side timing (data integrity) | `backend/lib/time.ts` (`effectiveEnd`, `isExpired`, 5 s grace) |
 | Fair randomization (3.3, 5.2) | `backend/lib/shuffle.ts` (`crypto.randomInt`) |
 | Thin URL connectors | `app/api/**/route.ts` -> `backend/handlers/**` (stubs for now, see `backend/lib/mock.ts`) |
+| Validation, same rules both sides (brief 06) | `shared/validation.ts` (zod), used by handlers via `backend/lib/http.ts` `parseBody` |
+| Signup / login / logout / me (3.1) | `handlers/auth/*` -> `services/auth.service.ts` -> `data/users.ts` |
+| Admin manages users and roles (3.1); no self-demotion | `handlers/admin/users*` -> `services/users.service.ts` -> `data/users.ts` |
+| Reusable question bank, topics, 3 question types (3.3) | `handlers/topics.ts`, `handlers/questions*` -> `services/questions.service.ts` -> `data/topics.ts`, `data/questions.ts` |
+| Ownership: examiner sees only own, admin all | `assertOwner` in `lib/auth.ts`, used by every service |
+| Exam CRUD, derived state, draft-only edit (3.2) | `handlers/exams*` -> `services/exams.service.ts` -> `data/exams.ts`; `examState` in `lib/time.ts` |
+| Demo accounts | `backend/scripts/seed.ts` (`npm run seed`) |
 | _remaining rows: fill in as features land_ | |
