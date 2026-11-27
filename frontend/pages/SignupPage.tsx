@@ -46,7 +46,6 @@ export default function SignupPage() {
 
   return (
     <AuthSplit headline={"A better way\nto measure\nwhat matters."}>
-      <p className="eyebrow">Create your account</p>
       <h1 className="display display-lg mt-4">Start with confidence.</h1>
       <p className="mt-4 text-[0.9375rem] text-mute">
         Use your institutional email to join ExamCore.
@@ -107,7 +106,7 @@ export default function SignupPage() {
 
       <p className="mt-7 text-[0.875rem] text-mute">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-cobalt hover:underline">
+        <Link href="/login" className="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-current">
           Log in
         </Link>
       </p>

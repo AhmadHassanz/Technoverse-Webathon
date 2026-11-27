@@ -6,7 +6,6 @@ import { useState } from "react";
 import {
   BookOpenCheck,
   ClipboardList,
-  GraduationCap,
   LayoutGrid,
   Library,
   LogOut,
@@ -106,16 +105,25 @@ function initials(name?: string) {
 export function Logo({ className, tone = "light" }: { className?: string; tone?: "light" | "dark" }) {
   return (
     <Link href="/" className={cn("group inline-flex items-center gap-2.5", className)} aria-label="ExamCore home">
-      <span className="relative flex size-8 items-center justify-center rounded-[10px] bg-lime text-on-lime shadow-[0_6px_18px_-6px_rgb(198_243_107/0.7)] transition-transform group-hover:-rotate-6">
-        <GraduationCap className="size-[18px]" strokeWidth={2.2} />
+      <span
+        aria-hidden
+        className={cn(
+          "grid size-[18px] grid-cols-2 gap-[3px] transition-transform duration-300 ease-out group-hover:rotate-90",
+          tone === "light" ? "text-lime" : "text-ink",
+        )}
+      >
+        <span className="rounded-[2px] bg-current" />
+        <span className="rounded-[2px] bg-current" />
+        <span className="rounded-[2px] bg-current" />
+        <span className="rounded-[2px] bg-current opacity-35" />
       </span>
       <span
         className={cn(
-          "display text-[1.3rem] leading-none tracking-[-0.04em]",
-          tone === "light" ? "text-white" : "text-ink",
+          "text-[1.2rem] font-semibold leading-none tracking-[-0.03em]",
+          tone === "light" ? "text-lime" : "text-ink",
         )}
       >
-        ExamCore
+        examcore
       </span>
     </Link>
   );
@@ -134,15 +142,12 @@ function SidebarContent({
   const { logout, me } = useAuth();
 
   return (
-    <div className="glow-iris relative flex h-full flex-col overflow-hidden bg-night text-white">
-      <div className="bg-dots-night pointer-events-none absolute inset-0 opacity-60" aria-hidden />
-      <div className="relative px-5 pb-8 pt-6">
-        <Logo />
+    <div className="relative flex h-full flex-col overflow-hidden border-r border-line bg-paper text-ink">
+      <div className="relative px-6 pb-9 pt-6">
+        <Logo tone="dark" />
       </div>
 
-      <p className="relative px-6 pb-2 text-[0.625rem] font-semibold uppercase tracking-[0.16em] text-night-mute">
-        {roleLabel[role]} workspace
-      </p>
+      <p className="relative px-6 pb-2 text-[0.8125rem] text-mute">{roleLabel[role]} workspace</p>
       <nav className="relative flex flex-col gap-1 px-3" aria-label="Primary">
         {navFor[role].map((item) => {
           const active = item.match(pathname);
@@ -153,45 +158,37 @@ function SidebarContent({
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "group relative flex h-11 items-center gap-3 rounded-[12px] px-3 text-[0.875rem] font-medium transition-colors",
-                active ? "bg-white/[0.09] text-white" : "text-night-mute hover:bg-white/[0.05] hover:text-white",
+                "group relative flex h-11 items-center gap-3 rounded-full border px-4 text-[0.9375rem] transition-colors duration-200",
+                active
+                  ? "border-line bg-surface font-medium text-ink shadow-card"
+                  : "border-transparent text-mute hover:bg-sand hover:text-ink",
               )}
               aria-current={active ? "page" : undefined}
             >
-              {active && (
-                <span aria-hidden className="absolute -left-3 top-2.5 h-6 w-1 rounded-r-full bg-lime" />
-              )}
-              <span
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-[8px] transition-colors",
-                  active ? "bg-lime text-on-lime" : "bg-white/[0.06] text-night-mute group-hover:text-white",
-                )}
-              >
-                <Icon className="size-[15px]" strokeWidth={2} />
-              </span>
+              <Icon className={cn("size-[17px]", active ? "text-ink" : "text-mute group-hover:text-ink")} strokeWidth={1.7} />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="relative mx-3 mt-6 rounded-[14px] border border-night-line bg-white/[0.03] p-4">
-        <p className="flex items-center gap-2 text-[0.75rem] font-semibold text-white">
-          <ShieldCheck className="size-4 text-lime" /> Secure by design
+      <div className="relative mx-4 mt-8 rounded-[16px] border border-line bg-surface p-4">
+        <p className="flex items-center gap-2 text-[0.8125rem] font-medium text-ink">
+          <ShieldCheck className="size-4 text-accent-ink" strokeWidth={1.8} /> Secure by design
         </p>
-        <p className="mt-1.5 text-[0.75rem] leading-relaxed text-night-mute">
+        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-mute">
           Autosave, offline recovery and verified reports on every exam.
         </p>
       </div>
 
-      <div className="relative mt-auto border-t border-night-line p-3">
+      <div className="relative mt-auto border-t border-line p-3">
         <div className="flex items-center gap-3 rounded-[12px] p-2">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cobalt to-[#b06bff] text-[0.75rem] font-semibold text-white">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-night text-[0.75rem] font-medium text-lime">
             {initials(me?.fullName)}
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[0.8125rem] font-medium text-white">{me?.fullName}</p>
-            <p className="truncate text-[0.6875rem] text-night-mute">{me?.email}</p>
+            <p className="truncate text-[0.875rem] font-medium text-ink">{me?.fullName}</p>
+            <p className="truncate text-[0.75rem] text-mute">{me?.email}</p>
           </div>
           <button
             type="button"
@@ -201,7 +198,7 @@ function SidebarContent({
               await logout();
               router.replace("/login");
             }}
-            className="flex size-8 items-center justify-center rounded-[8px] text-night-mute transition-colors hover:bg-white/10 hover:text-white"
+            className="flex size-8 items-center justify-center rounded-full text-mute transition-colors hover:bg-sand hover:text-ink"
           >
             <LogOut className="size-4" />
           </button>
@@ -251,7 +248,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             <button
               type="button"
               aria-label="Close navigation"
-              className="absolute right-3 top-5 z-10 rounded-[8px] p-2 text-night-mute hover:bg-white/10 hover:text-white"
+              className="absolute right-3 top-5 z-10 rounded-full p-2 text-mute transition-colors hover:bg-sand hover:text-ink"
               onClick={() => setMobileOpen(false)}
             >
               <X className="size-4" />
@@ -267,7 +264,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             <button
               type="button"
               aria-label="Open navigation"
-              className="-ml-1 flex size-9 items-center justify-center rounded-[10px] border border-line bg-surface text-ink md:hidden"
+              className="-ml-1 flex size-9 items-center justify-center rounded-full border border-line bg-surface text-ink md:hidden"
               onClick={() => setMobileOpen(true)}
             >
               <Menu className="size-[18px]" strokeWidth={1.8} />
@@ -282,16 +279,9 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <span className="hidden items-center gap-1.5 rounded-full border border-success/20 bg-success-soft px-2.5 py-1 text-[0.6875rem] font-semibold text-success sm:inline-flex">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-60" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-success" />
-              </span>
-              Systems normal
-            </span>
             <ThemeToggle />
             <span
-              className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-cobalt to-[#b06bff] text-[0.6875rem] font-semibold text-white md:hidden"
+              className="flex size-9 items-center justify-center rounded-full bg-night text-[0.6875rem] font-medium text-lime md:hidden"
               aria-hidden
             >
               {initials(me?.fullName)}
@@ -307,7 +297,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
       {/* Phone bottom tab bar */}
       <nav
         aria-label="Primary (mobile)"
-        className="pad-safe-bottom fixed inset-x-3 bottom-3 z-50 flex items-center justify-around gap-1 rounded-[20px] border border-night-line bg-night/95 px-2 pt-2 shadow-pop backdrop-blur-xl md:hidden"
+        className="pad-safe-bottom fixed inset-x-3 bottom-3 z-50 flex items-center justify-around gap-1 rounded-[24px] border border-line bg-surface/95 px-2 pt-2 shadow-pop backdrop-blur-xl md:hidden"
       >
         {items.map((item) => {
           const active = item.match(pathname);
@@ -318,14 +308,14 @@ export function AppShell({ role, children }: { role: Role; children: React.React
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-[14px] px-2 py-1.5 text-[0.625rem] font-semibold transition-colors",
-                active ? "text-white" : "text-night-mute",
+                "flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-[14px] px-2 py-1.5 text-[0.6875rem] font-medium transition-colors",
+                active ? "text-ink" : "text-mute",
               )}
             >
               <span
                 className={cn(
                   "flex h-7 w-11 items-center justify-center rounded-full transition-colors",
-                  active ? "bg-lime text-on-lime" : "",
+                  active ? "bg-cobalt text-on-cobalt" : "",
                 )}
               >
                 <Icon className="size-[17px]" strokeWidth={2} />

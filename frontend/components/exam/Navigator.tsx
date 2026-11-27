@@ -29,7 +29,7 @@ export function QuestionSquare({
       aria-label={label}
       aria-current={current ? "step" : undefined}
       className={cn(
-        "num inline-flex items-center justify-center gap-1 rounded-[10px] border text-[0.8125rem] font-medium transition-all hover:-translate-y-px",
+        "num inline-flex items-center justify-center gap-1 rounded-[10px] border text-[0.8125rem] font-medium transition-[color,background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-px",
         size === "md" ? "h-11 w-full" : "h-10 w-12",
         state.flagged
           ? "border-warning/40 bg-warning-soft text-warning"
@@ -65,7 +65,7 @@ export function Navigator({
       <p className="eyebrow">Your progress</p>
       <p className="display mt-2 text-[1.3rem] leading-tight tracking-[-0.025em]">{questions.length} questions. Your pace.</p>
       <p className="mt-2 text-[0.8125rem] text-mute" aria-live="polite">
-        {answered} answered · {flagged} flagged · {left} left
+        {answered} answered, {flagged} flagged, {left} left
       </p>
       <div className="mt-5 grid grid-cols-5 gap-2">
         {questions.map((q, i) => (

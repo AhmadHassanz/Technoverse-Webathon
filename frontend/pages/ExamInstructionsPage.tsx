@@ -69,7 +69,7 @@ function InstructionsInner() {
   return (
     <>
       <BackLink href="/candidate">My examinations</BackLink>
-      <p className="eyebrow mt-5">My examinations / instructions</p>
+      <p className="sr-only">My examinations / instructions</p>
       <h1 className="display display-lg mt-3">Before you begin</h1>
       <p className="mt-3 text-[0.9375rem] text-mute">{exam.title}</p>
 

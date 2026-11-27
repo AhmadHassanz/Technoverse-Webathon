@@ -57,8 +57,7 @@ export default function LoginPage() {
     <AuthSplit
       headline={"A clear mind.\nA fair exam."}
     >
-      <p className="eyebrow">Welcome back</p>
-      <h1 className="display mt-3 text-[2.25rem] leading-[1.05] text-balance">Log in to ExamCore</h1>
+      <h1 className="display text-[2.5rem] leading-[1.05] text-balance">Log in to ExamCore</h1>
       <p className="mt-2.5 text-[0.9375rem] text-mute">
         Pick up right where you left off.
       </p>
@@ -102,7 +101,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setShow((v) => !v)}
-            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-[8px] text-mute hover:bg-sand hover:text-ink"
+            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-mute hover:bg-sand hover:text-ink"
             aria-label={show ? "Hide password" : "Show password"}
           >
             {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -119,7 +118,7 @@ export default function LoginPage() {
 
       <p className="mt-7 text-[0.875rem] text-mute">
         New to ExamCore?{" "}
-        <Link href="/signup" className="font-medium text-cobalt hover:underline">
+        <Link href="/signup" className="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-current">
           Create an account
         </Link>
       </p>
@@ -137,9 +136,9 @@ export default function LoginPage() {
               type="button"
               disabled={busy}
               onClick={() => void submit(email, "Demo@1234")}
-              className="group flex flex-col items-center gap-2 rounded-[14px] border border-line bg-surface px-2 py-3.5 text-[0.8125rem] font-medium text-ink shadow-[0_1px_2px_rgb(13_19_36/0.04)] transition-all hover:-translate-y-0.5 hover:border-cobalt/40 hover:shadow-card disabled:opacity-50"
+              className="group flex flex-col items-center gap-2 rounded-[16px] border border-line bg-surface px-2 py-4 text-[0.875rem] font-medium text-ink transition-[color,background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card disabled:opacity-50"
             >
-              <span className="flex size-9 items-center justify-center rounded-[10px] bg-tint text-cobalt transition-colors group-hover:bg-cobalt group-hover:text-on-cobalt">
+              <span className="flex size-9 items-center justify-center rounded-full bg-paper text-ink transition-colors duration-200 group-hover:bg-cobalt group-hover:text-on-cobalt">
                 <Icon className="size-[18px]" />
               </span>
               {label}

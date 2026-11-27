@@ -22,7 +22,7 @@ export function AnnouncementBanner({
         <div key={a.id} className="flex items-start gap-3 py-1 text-[0.875rem] text-cobalt">
           <Megaphone className="mt-0.5 size-4 shrink-0" aria-hidden />
           <p className="flex-1">
-            <span className="font-medium">Announcement from your examiner · {fmtTime(a.createdAt)}: </span>
+            <span className="font-medium">Announcement from your examiner at {fmtTime(a.createdAt)}: </span>
             {a.message}
           </p>
           <button type="button" aria-label="Dismiss announcement" onClick={() => onDismiss(a.id)} className="rounded p-0.5 hover:bg-tint-strong">

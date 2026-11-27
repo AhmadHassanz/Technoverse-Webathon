@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Check, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Check, TriangleAlert } from "lucide-react";
 import { Logo } from "@/frontend/components/shell/AppShell";
 import { fmtDate } from "@/frontend/lib/format";
 import { apiGet } from "@/frontend/lib/api-client";
@@ -34,22 +34,19 @@ function VerifyInner() {
 
   return (
     <div className="min-h-screen bg-parchment">
-      <section className="glow-iris relative overflow-hidden bg-night pb-28 text-white">
+      <section className="glow-iris relative overflow-hidden bg-night pb-28 text-lime">
         <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
         <header className="relative mx-auto flex w-full max-w-[1180px] items-center justify-between gap-6 px-5 py-5 sm:px-8">
           <Logo />
           <Link
             href="/login"
-            className="inline-flex h-9 items-center rounded-full bg-white px-4 text-[0.8125rem] font-semibold text-[#0b0f1e] transition-transform hover:-translate-y-0.5"
+            className="inline-flex h-9 items-center rounded-full bg-lime px-4 text-[0.8125rem] font-semibold text-on-lime transition-transform hover:-translate-y-0.5"
           >
             Log in
           </Link>
         </header>
         <div className="relative mx-auto w-full max-w-[780px] px-5 pt-10 text-center sm:px-8">
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-lime">
-            <ShieldCheck className="size-3.5" /> Public report verification
-          </p>
-          <h1 className="display mt-5 text-[clamp(2.2rem,5vw,3.4rem)] leading-[1.02] text-white">Trust, without oversharing.</h1>
+                    <h1 className="display text-[clamp(2.6rem,5.5vw,4rem)] leading-[1.02] text-lime">Trust, without oversharing.</h1>
           <p className="mx-auto mt-4 max-w-[460px] text-[0.9375rem] text-night-mute">
             Verify an issued report. No account or personal information required.
           </p>
@@ -85,11 +82,11 @@ function VerifyInner() {
           ) : result.valid ? (
             <>
               <div className="flex items-center gap-4 rounded-[16px] bg-success-soft px-5 py-4 text-success">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-white shadow-[0_8px_20px_-8px_var(--success)]">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-surface">
                   <Check className="size-6" strokeWidth={3} />
                 </span>
                 <div>
-                  <p className="display text-[1.5rem] leading-none tracking-[-0.03em]">Valid report</p>
+                  <p className="display text-[1.6rem] leading-none">Valid report</p>
                   <p className="mt-1 text-[0.8125rem] opacity-80">Issued by ExamCore and unchanged since.</p>
                 </div>
               </div>
@@ -109,7 +106,7 @@ function VerifyInner() {
                     <span className="num">
                       {result.score} / {result.totalMarks}
                     </span>
-                    <span className="text-mute"> · </span>
+                    <span className="text-mute">, </span>
                     <span className="num">{Math.round(result.percentage)}%</span>
                   </dd>
                 </div>
@@ -134,7 +131,7 @@ function VerifyInner() {
             <>
               <div className="flex items-center gap-3 rounded-md bg-danger-soft px-5 py-4 text-danger">
                 <TriangleAlert className="size-6 shrink-0" strokeWidth={1.8} />
-                <p className="display text-[1.6rem] uppercase tracking-[0.02em]">
+                <p className="display text-[1.6rem]">
                   Report not found
                 </p>
               </div>

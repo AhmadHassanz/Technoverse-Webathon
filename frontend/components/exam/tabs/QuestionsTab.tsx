@@ -178,7 +178,7 @@ export function QuestionsTab({ exam, onChanged }: { exam: ExamDetail; onChanged:
                       <div className="min-w-0 flex-1">
                         <p className="line-clamp-2 text-[0.9rem] text-ink">{item.stem}</p>
                         <p className="mt-1.5 text-xs text-mute">
-                          {cap(item.difficulty)} · {TYPE_LABEL[item.type]} · {item.marks} marks · {item.topicName}
+                          {cap(item.difficulty)}, {TYPE_LABEL[item.type]}, {item.marks} marks, {item.topicName}
                         </p>
                       </div>
                       <Button
@@ -209,7 +209,7 @@ export function QuestionsTab({ exam, onChanged }: { exam: ExamDetail; onChanged:
         <Card className="p-5 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="display display-sm">Selected pool · {pool.length} questions</h2>
+              <h2 className="display display-sm">Selected pool: {pool.length} questions</h2>
               <p className="mt-1 text-xs text-mute">
                 {editable ? "Use the arrows to reorder. Remove only affects this exam." : "The pool is locked because the exam is not a draft."}
               </p>
@@ -317,7 +317,7 @@ export function QuestionsTab({ exam, onChanged }: { exam: ExamDetail; onChanged:
                       {ok ? <Check className="mt-px size-3.5 shrink-0" /> : <CircleAlert className="mt-px size-3.5 shrink-0" />}
                       <span>
                         {m.needed} needed / {m.have} in pool
-                        {!m.sameMarks && ` · marks differ (${m.marks.join(", ")})`}
+                        {!m.sameMarks && `, marks differ (${m.marks.join(", ")})`}
                       </span>
                     </p>
                     <ProgressBar
@@ -338,7 +338,7 @@ export function QuestionsTab({ exam, onChanged }: { exam: ExamDetail; onChanged:
 
           <p className={cn("mt-6 flex items-center gap-2 text-[0.9375rem]", marksOk ? "text-success" : "text-danger")}>
             {marksOk ? <Check className="size-4" /> : <CircleAlert className="size-4" />}
-            Paper: {paperCount} questions · <span className="num">{paperMarks} / {exam.totalMarks}</span> total marks
+            Paper: {paperCount} questions, <span className="num">{paperMarks} / {exam.totalMarks}</span> total marks
           </p>
           {!marksOk && (
             <p className="mt-1 text-xs text-mute">

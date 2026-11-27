@@ -96,7 +96,7 @@ export function GradingTab({ exam }: { exam: ExamDetail }) {
                     <li key={x.aqId}>
                       <button type="button" className="text-left text-[0.8125rem] text-ink hover:text-cobalt" onClick={() => setIndex(items.indexOf(x))}>
                         {x.candidateName}
-                        <span className="block text-xs text-mute">Question {x.position}{x.marksAwarded !== null ? ` · ${x.marksAwarded}/${x.marks}` : ""}</span>
+                        <span className="block text-xs text-mute">Question {x.position}{x.marksAwarded !== null ? `, ${x.marksAwarded}/${x.marks}` : ""}</span>
                       </button>
                     </li>
                   ))}
@@ -120,7 +120,7 @@ export function GradingTab({ exam }: { exam: ExamDetail }) {
       ) : (
         <Card className="p-5 sm:p-7">
           <p className="eyebrow">
-            Question {item.position} / written response · {i + 1} of {items.length}
+            Question {item.position} / written response, {i + 1} of {items.length}
           </p>
           <h3 className="display mt-4 whitespace-pre-line text-[1.55rem] leading-snug">{item.stem}</h3>
           <p className="mt-3 text-xs text-mute">Maximum: {item.marks} marks</p>

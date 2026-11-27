@@ -34,26 +34,22 @@ function LiveCard({ exam, now }: { exam: CandidateExam; now: number }) {
   const left = Date.parse(exam.endAt) - now;
   const sameDay = new Date(exam.endAt).toDateString() === new Date(now).toDateString();
   return (
-    <article className="glow-iris relative overflow-hidden rounded-[22px] bg-night p-6 text-white shadow-pop sm:p-8">
+    <article className="glow-iris relative overflow-hidden rounded-[22px] bg-night p-6 text-lime shadow-pop sm:p-8">
       <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
       <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="min-w-0">
-          <p className="inline-flex items-center gap-2 rounded-full bg-lime px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.12em] text-on-lime">
-            <span className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-on-lime opacity-50" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-on-lime" />
-            </span>
+          <p className="inline-flex items-center gap-2 rounded-full bg-lime px-2.5 py-1 text-[0.8125rem] font-medium text-on-lime">
             {inProgress ? "In progress" : "Open now"}
           </p>
-          <h3 className="display mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)] leading-[1.05] text-white">{exam.title}</h3>
+          <h3 className="display mt-4 text-[clamp(1.8rem,3.4vw,2.6rem)] leading-[1.05] text-lime">{exam.title}</h3>
           <div className="mt-5 flex flex-wrap gap-2 text-[0.8125rem]">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-lime/15 bg-lime/5 px-3 py-1.5">
               <Clock3 className="size-3.5 text-lime" /> {exam.durationMin} minutes
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-lime/15 bg-lime/5 px-3 py-1.5">
               <FileCheck2 className="size-3.5 text-lime" /> {exam.totalMarks} marks
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-lime/15 bg-lime/5 px-3 py-1.5">
               <Hourglass className="size-3.5 text-lime" /> Closes {fmtTime(exam.endAt)}
               {sameDay ? " today" : `, ${fmtDate(exam.endAt)}`}
             </span>
@@ -61,19 +57,19 @@ function LiveCard({ exam, now }: { exam: CandidateExam; now: number }) {
         </div>
         <div className="flex flex-col gap-3 lg:items-end">
           <p className="text-[0.75rem] text-night-mute">
-            Window closes in <span className="num text-[0.875rem] text-white">{countdownLabel(left)}</span>
+            Window closes in <span className="num text-[0.875rem] text-lime">{countdownLabel(left)}</span>
           </p>
           {inProgress ? (
             <Link
               href={`/attempt/${exam.attempt!.id}`}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-lime px-6 text-[0.9375rem] font-semibold text-on-lime shadow-[0_10px_30px_-10px_rgb(198_243_107/0.7)] transition-transform hover:-translate-y-0.5"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-lime px-7 text-[0.9375rem] font-semibold text-on-lime  transition-transform hover:-translate-y-0.5"
             >
               Continue exam <ArrowRight className="size-4" />
             </Link>
           ) : exam.canStart ? (
             <Link
               href={`/candidate/exams/${exam.examId}`}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-lime px-6 text-[0.9375rem] font-semibold text-on-lime shadow-[0_10px_30px_-10px_rgb(198_243_107/0.7)] transition-transform hover:-translate-y-0.5"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-lime px-7 text-[0.9375rem] font-semibold text-on-lime  transition-transform hover:-translate-y-0.5"
             >
               Read instructions & start <ArrowRight className="size-4" />
             </Link>
@@ -99,7 +95,7 @@ function UpcomingCard({ exam, now }: { exam: CandidateExam; now: number }) {
       </div>
       <h3 className="display mt-4 text-[1.2rem] leading-snug tracking-[-0.025em]">{exam.title}</h3>
       <p className="mt-1.5 text-[0.8125rem] text-mute">
-        {fmtDate(exam.startAt)} · {fmtTimeRange(exam.startAt, exam.endAt)}
+        {fmtDate(exam.startAt)}, {fmtTimeRange(exam.startAt, exam.endAt)}
       </p>
       <div className="mt-auto flex items-center gap-3 border-t border-line-soft pt-4 text-[0.75rem] text-mute">
         <span>{exam.durationMin} min</span>
@@ -128,7 +124,7 @@ function CompletedRow({ exam }: { exam: CandidateExam }) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-[0.9375rem] font-medium text-ink">{exam.title}</p>
         <p className="mt-0.5 truncate text-[0.75rem] text-mute">
-          {meta} · {exam.totalMarks} marks
+          {meta}, {exam.totalMarks} marks
         </p>
       </div>
       <div className="hidden sm:block">
@@ -181,9 +177,9 @@ export default function CandidateDashboardPage() {
               { label: "Upcoming", value: data.upcoming.length },
               { label: "Results ready", value: published },
             ].map((s) => (
-              <div key={s.label} className="rounded-[16px] border border-line bg-surface px-4 py-3.5 shadow-[0_1px_2px_rgb(13_19_36/0.04)] sm:px-5">
+              <div key={s.label} className="rounded-[16px] border border-line bg-surface px-4 py-3.5 sm:px-5">
                 <p className="display text-[1.75rem] leading-none tracking-[-0.04em]">{String(s.value).padStart(2, "0")}</p>
-                <p className="mt-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-mute">{s.label}</p>
+                <p className="mt-1.5 text-[0.8125rem] text-mute">{s.label}</p>
               </div>
             ))}
           </div>

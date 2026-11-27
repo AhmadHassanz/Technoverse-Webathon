@@ -10,7 +10,7 @@ export function SaveStatusPill({ state, pending, className, compact }: { state: 
   const map = {
     saved: { Icon: Check, text: compact ? "Saved" : "All answers saved", cls: "bg-success-soft text-success" },
     saving: { Icon: Loader2, text: "Saving…", cls: "bg-sand text-mute" },
-    offline: { Icon: CloudOff, text: compact ? `Offline · ${pending}` : `Offline · ${pending} on device`, cls: "bg-danger-soft text-danger" },
+    offline: { Icon: CloudOff, text: compact ? `Offline, ${pending}` : `Offline, ${pending} on device`, cls: "bg-danger-soft text-danger" },
     reconnecting: { Icon: RefreshCw, text: compact ? `Syncing ${pending}` : `Syncing ${pending} answer${pending === 1 ? "" : "s"}…`, cls: "bg-tint text-cobalt" },
   }[state];
   const { Icon } = map;

@@ -15,16 +15,16 @@ export function TimerPill({ remainingMs, compact }: { remainingMs: number; compa
       className={cn(
         "rounded-[12px] border transition-colors",
         compact ? "flex items-center gap-2 px-3 py-1.5" : "px-4 py-2",
-        state === "normal" && "border-white/10 bg-white/[0.06] text-white",
-        state === "low" && "border-[#f6c25c]/50 bg-[#f6c25c]/15 text-[#f6c25c]",
-        state === "critical" && "animate-pulse border-[#ff8593] bg-[#ff8593] text-[#2a0a10]",
+        state === "normal" && "border-lime/10 bg-lime/[0.06] text-lime",
+        state === "low" && "border-warning-soft/50 bg-warning-soft/15 text-warning-soft",
+        state === "critical" && "animate-pulse border-danger-soft bg-danger-soft text-danger motion-reduce:animate-none",
       )}
       role="timer"
       aria-label={`Time remaining ${mmss(s)}`}
     >
       {compact && <Icon className={cn("size-4", state === "normal" && "text-lime")} aria-hidden />}
       {!compact && (
-        <p className="flex items-center gap-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.1em] opacity-80">
+        <p className="flex items-center gap-1.5 text-[0.75rem] font-medium opacity-80">
           <Icon className={cn("size-3", state === "normal" && "text-lime")} aria-hidden />
           {state === "normal" ? "Time remaining" : state === "low" ? "Under 5 minutes" : "Under 1 minute"}
         </p>

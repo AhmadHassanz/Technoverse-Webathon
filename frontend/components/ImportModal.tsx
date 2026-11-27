@@ -165,7 +165,7 @@ export function ImportModal({
         step === 1
           ? "Upload, validate, then confirm. Nothing is saved until you approve the dry run."
           : step === 2
-            ? `${fileName} · ${dry?.totalRows ?? 0} rows inspected · no changes saved`
+            ? `${fileName}, ${dry?.totalRows ?? 0} rows inspected, no changes saved`
             : `Your ${kind === "questions" ? "question bank" : "candidate list"} is up to date.${
                 errorRows.length ? ` The ${errorRows.length} rows with errors were not imported.` : ""
               }`
@@ -248,7 +248,7 @@ export function ImportModal({
             <span className="mt-4 text-[1.0625rem] text-cobalt">
               {busy ? "Running dry run…" : "Drag a CSV here or choose a file"}
             </span>
-            <span className="mt-3 text-xs text-mute">UTF-8 · CSV only · up to 1 MB · max 500 rows</span>
+            <span className="mt-3 text-xs text-mute">UTF-8, CSV only, up to 1 MB, max 500 rows</span>
           </button>
           <p className="mt-4 text-xs text-mute">{sample.required}</p>
         </>
@@ -316,7 +316,7 @@ export function ImportModal({
         <>
           <p className="flex items-center gap-3 text-[1rem] text-success">
             <CircleCheck className="size-7" strokeWidth={1.5} />
-            {done.result.created} added · {done.result.skipped} already existed · {done.result.errors.length} skipped
+            {done.result.created} added, {done.result.skipped} already existed, {done.result.errors.length} skipped
           </p>
           <div className="mt-6 rounded-md border border-cobalt/30 bg-tint px-4 py-3.5">
             <p className="num text-sm text-cobalt">{fileName}</p>

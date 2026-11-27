@@ -36,18 +36,18 @@ function ResultInner() {
     <>
       <BackLink href="/candidate#results">My examinations</BackLink>
 
-      <section className="glow-iris animate-rise relative mt-5 overflow-hidden rounded-[24px] bg-night p-6 text-white shadow-pop sm:p-8">
+      <section className="glow-iris animate-rise relative mt-5 overflow-hidden rounded-[24px] bg-night p-6 text-lime shadow-pop sm:p-8">
         <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative grid gap-8 lg:grid-cols-[auto_1fr_auto] lg:items-center">
           <div className="relative mx-auto size-[148px] lg:mx-0">
             <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
-              <circle cx="60" cy="60" r="52" fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth="10" />
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--night-line)" strokeWidth="10" />
               <circle
                 cx="60"
                 cy="60"
                 r="52"
                 fill="none"
-                stroke={r.passed ? "var(--lime)" : "#ff8593"}
+                stroke={r.passed ? "var(--lime)" : "var(--danger-soft)"}
                 strokeWidth="10"
                 strokeLinecap="round"
                 strokeDasharray={C}
@@ -55,31 +55,31 @@ function ResultInner() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="display text-[2.4rem] leading-none tracking-[-0.05em] text-white">{r.score}</span>
+              <span className="display text-[2.6rem] leading-none text-lime">{r.score}</span>
               <span className="num mt-1 text-[0.75rem] text-night-mute">of {r.totalMarks} marks</span>
             </div>
           </div>
           <div className="min-w-0 text-center lg:text-left">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.75rem] font-bold uppercase tracking-[0.1em]",
-                r.passed ? "bg-lime text-on-lime" : "bg-[#ff8593] text-[#2a0a10]",
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.8125rem] font-medium",
+                r.passed ? "bg-lime text-on-lime" : "bg-danger-soft text-danger",
               )}
             >
               {r.passed ? <Check className="size-3.5" /> : <X className="size-3.5" />}
               {r.passed ? "Passed" : "Not passed"}
             </span>
-            <h1 className="display mt-4 text-[clamp(1.8rem,3.2vw,2.6rem)] leading-[1.05] text-white">{r.examTitle}</h1>
+            <h1 className="display mt-4 text-[clamp(1.8rem,3.2vw,2.6rem)] leading-[1.05] text-lime">{r.examTitle}</h1>
             <p className="mt-2 text-[0.875rem] text-night-mute">
-              {pct(r.percentage, 1)} overall · Submitted {fmtDateTime(r.submittedAt)} · Published {fmtDate(r.publishedAt)}
+              {pct(r.percentage, 1)} overall, Submitted {fmtDateTime(r.submittedAt)}, Published {fmtDate(r.publishedAt)}
             </p>
             <div className="mt-5 flex flex-wrap justify-center gap-2 lg:justify-start">
               {[
                 { n: full, label: "full marks", cls: "text-lime" },
-                { n: other, label: "partly / not correct", cls: "text-[#ffc27a]" },
+                { n: other, label: "partly / not correct", cls: "text-warning-soft" },
                 { n: skipped, label: "skipped", cls: "text-night-mute" },
               ].map((s) => (
-                <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.8125rem]">
+                <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-lime/10 bg-lime/5 px-3 py-1.5 text-[0.8125rem]">
                   <span className={cn("num font-semibold", s.cls)}>{s.n}</span> {s.label}
                 </span>
               ))}
@@ -89,7 +89,7 @@ function ResultInner() {
             href={`/api/reports/attempts/${r.attemptId}`}
             target="_blank"
             rel="noopener"
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-white px-5 text-[0.875rem] font-semibold text-[#0b0f1e] transition-transform hover:-translate-y-0.5"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-lime px-6 text-[0.875rem] font-semibold text-on-lime transition-transform hover:-translate-y-0.5"
           >
             <FileDown className="size-4" /> Verified report (PDF)
           </a>

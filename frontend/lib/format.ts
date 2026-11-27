@@ -35,14 +35,14 @@ export function fmtTimeRange(start: string, end: string): string {
   return `${fmtTime(start)}–${fmtTime(end)}`;
 }
 
-/** 28 Nov 2026 · 09:00–10:00 PKT · 60 minutes · 40 marks */
+/** 28 Nov 2026, 09:00–10:00 PKT, 60 minutes, 40 marks */
 export function fmtExamLine(
   start: string,
   end: string,
   durationMin: number,
   totalMarks: number,
 ): string {
-  return `${fmtDate(start)} · ${fmtTimeRange(start, end)} PKT · ${durationMin} minutes · ${totalMarks} marks`;
+  return `${fmtDate(start)}, ${fmtTimeRange(start, end)} PKT, ${durationMin} minutes, ${totalMarks} marks`;
 }
 
 /** ISO → value for <input type="datetime-local"> in local time. */

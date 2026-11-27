@@ -94,13 +94,13 @@ function ExamPageInner() {
       <BackLink href="/examiner">All examinations</BackLink>
       <div className="mt-5 flex flex-wrap items-start justify-between gap-5">
         <div className="min-w-0">
-          <p className="eyebrow">Examinations / {exam.state}</p>
+          <p className="sr-only">Examinations / {exam.state}</p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <h1 className="display display-lg text-balance">{exam.title}</h1>
             <StatusBadge status={exam.state} />
           </div>
           <p className="num mt-3 text-[0.875rem] text-mute">
-            {fmtExamLine(exam.startAt, exam.endAt, exam.durationMin, exam.totalMarks)} · pass {exam.passMarks}
+            {fmtExamLine(exam.startAt, exam.endAt, exam.durationMin, exam.totalMarks)}, pass {exam.passMarks}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">

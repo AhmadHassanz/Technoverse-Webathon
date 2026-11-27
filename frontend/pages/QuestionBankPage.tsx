@@ -176,7 +176,7 @@ export default function QuestionBankPage() {
           <>
             <p className="mb-3 text-[0.8125rem] text-mute" aria-live="polite">
               {questions.length} question{questions.length === 1 ? "" : "s"}
-              {questionsApi.loading ? " · updating…" : ""}
+              {questionsApi.loading ? ", updating…" : ""}
             </p>
             <Table>
               <THead>
@@ -196,8 +196,8 @@ export default function QuestionBankPage() {
                       <p className="line-clamp-2 max-w-[30rem] break-words text-ink">{question.stem}</p>
                       {question.type !== "written" && (
                         <p className="mt-1 text-xs text-mute">
-                          {question.options.length} options · {question.options.filter((o) => o.isCorrect).length} correct
-                          {question.negativeMarks > 0 ? ` · −${question.negativeMarks} if wrong` : ""}
+                          {question.options.length} options, {question.options.filter((o) => o.isCorrect).length} correct
+                          {question.negativeMarks > 0 ? `, −${question.negativeMarks} if wrong` : ""}
                         </p>
                       )}
                     </Td>

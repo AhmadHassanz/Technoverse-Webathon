@@ -275,7 +275,7 @@ export function QuestionEditor({
         {type !== "written" ? (
           <fieldset>
             <legend className="text-[0.8125rem] font-medium text-ink">
-              Options <span className="font-normal text-mute">· {type === "mcq_single" ? "mark the one correct answer" : "mark every correct answer"}</span>
+              Options <span className="font-normal text-mute">({type === "mcq_single" ? "mark the one correct answer" : "mark every correct answer"})</span>
             </legend>
             <ul className="mt-3 space-y-2.5">
               {options.map((o, i) => {

@@ -29,11 +29,11 @@ function cardAction(exam: Exam): { label: string; tab: string } {
 }
 
 function cardLine(exam: Exam): string {
-  if (exam.state === "draft") return `${plural(exam.enrolledCount, "candidate")} enrolled · ${plural(exam.questionCount, "question")}`;
+  if (exam.state === "draft") return `${plural(exam.enrolledCount, "candidate")} enrolled, ${plural(exam.questionCount, "question")}`;
   if (exam.state === "completed")
-    return `${plural(exam.attemptCount, "submission")} · ${exam.resultsPublishedAt ? "results published" : "results not published"}`;
-  if (exam.state === "ongoing") return `${exam.enrolledCount} enrolled · ${exam.attemptCount} started`;
-  return `${exam.enrolledCount} enrolled · ${plural(exam.questionCount, "question")}`;
+    return `${plural(exam.attemptCount, "submission")}, ${exam.resultsPublishedAt ? "results published" : "results not published"}`;
+  if (exam.state === "ongoing") return `${exam.enrolledCount} enrolled, ${exam.attemptCount} started`;
+  return `${exam.enrolledCount} enrolled, ${plural(exam.questionCount, "question")}`;
 }
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -72,7 +72,7 @@ export default function ExaminerDashboardPage() {
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-3 sm:gap-5">
-            <StatTile label="Total examinations" value={pad2(exams.length)} note={`${drafts} drafts · ${published} published`} />
+            <StatTile label="Total examinations" value={pad2(exams.length)} note={`${drafts} drafts, ${published} published`} />
             <StatTile
               label="Ongoing now"
               value={pad2(ongoing.length)}
@@ -122,7 +122,7 @@ export default function ExaminerDashboardPage() {
                   <Link
                     key={exam.id}
                     href={`/examiner/exams/${exam.id}?tab=${action.tab}`}
-                    className="group relative flex flex-col overflow-hidden rounded-[18px] border border-line bg-surface p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop"
+                    className="group relative flex flex-col overflow-hidden rounded-[18px] border border-line bg-surface p-5 shadow-card transition-[color,background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-pop"
                   >
                     <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1", STATE_STYLE[exam.state].bar)} />
                     <div className="flex items-start justify-between gap-3">
@@ -137,7 +137,7 @@ export default function ExaminerDashboardPage() {
                     <h3 className="display mt-4 text-[1.15rem] leading-snug tracking-[-0.025em] text-ink">{exam.title}</h3>
                     <p className="mt-1.5 flex items-center gap-1.5 text-[0.8125rem] text-mute">
                       <CalendarDays className="size-3.5" />
-                      {fmtDate(exam.startAt)} · {fmtTimeRange(exam.startAt, exam.endAt)} · {exam.durationMin} min
+                      {fmtDate(exam.startAt)}, {fmtTimeRange(exam.startAt, exam.endAt)}, {exam.durationMin} min
                     </p>
                     <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-4">
                       <p className="text-[0.75rem] text-mute">{cardLine(exam)}</p>

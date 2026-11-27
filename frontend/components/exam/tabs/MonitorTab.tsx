@@ -157,11 +157,11 @@ export function MonitorTab({ exam }: { exam: ExamDetail }) {
   return (
     <div className="space-y-6">
       <p className="flex items-center gap-2 text-xs text-mute" aria-live="polite">
-        <Radio className="size-3.5 text-success" aria-hidden /> Live · refreshes every 5 seconds{updatedAt ? ` · updated ${fmtTime(updatedAt)}` : ""}
-        {error && <span className="text-danger"> · connection problem, retrying</span>}
+        <Radio className="size-3.5 text-success" aria-hidden /> Live, refreshes every 5 seconds{updatedAt ? `, updated ${fmtTime(updatedAt)}` : ""}
+        {error && <span className="text-danger">, connection problem, retrying</span>}
       </p>
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile label="Active attempts" value={pad2(data.summary.inProgress)} note={`of ${data.summary.enrolled} enrolled · ${data.summary.notStarted} not started`} />
+        <StatTile label="Active attempts" value={pad2(data.summary.inProgress)} note={`of ${data.summary.enrolled} enrolled, ${data.summary.notStarted} not started`} />
         <StatTile label="Submitted" value={pad2(data.summary.submitted)} note="Finished attempts" />
         <StatTile label="Offline" value={pad2(offlineCount)} note="In progress, no heartbeat for 45 s" />
         <StatTile label="Unreviewed indicators" value={pad2(unreviewed)} note="Review context before acting" />
@@ -229,7 +229,7 @@ export function MonitorTab({ exam }: { exam: ExamDetail }) {
               {data.incidents.map((inc) => (
                 <li key={inc.id} className="rounded-md border border-line-soft px-3.5 py-3">
                   <p className="text-[0.8125rem] text-ink">
-                    <span className="font-medium">{inc.candidateName}</span> · {INCIDENT_LABEL[inc.type]} · <span className="num">{fmtTime(inc.createdAt)}</span>
+                    <span className="font-medium">{inc.candidateName}</span>, {INCIDENT_LABEL[inc.type]}, <span className="num">{fmtTime(inc.createdAt)}</span>
                   </p>
                   {inc.detail && <p className="mt-0.5 text-xs text-mute">{inc.detail}</p>}
                   {inc.reviewerNote && <p className="mt-1 text-xs text-ink">Note: {inc.reviewerNote}</p>}
@@ -284,9 +284,9 @@ export function MonitorTab({ exam }: { exam: ExamDetail }) {
               {pending.map((c) => (
                 <li key={c.id} className="rounded-md border border-line-soft px-3.5 py-3">
                   <p className="text-[0.8125rem] text-ink">
-                    {c.candidateName} · {gapLabel(c.gapSec)} gap
+                    {c.candidateName}, {gapLabel(c.gapSec)} gap
                   </p>
-                  <p className="text-xs text-mute">Requested: +{gapLabel(c.gapSec)} · {fmtTime(c.createdAt)}</p>
+                  <p className="text-xs text-mute">Requested: +{gapLabel(c.gapSec)}, {fmtTime(c.createdAt)}</p>
                   <div className="mt-3 flex gap-2">
                     <Button size="sm" disabled={busyId === c.id} onClick={() => void decide(c, "approved")}>
                       {busyId === c.id && <Loader2 className="size-3.5 animate-spin" />}
@@ -301,7 +301,7 @@ export function MonitorTab({ exam }: { exam: ExamDetail }) {
               {decided.map((c) => (
                 <li key={c.id} className="flex items-center justify-between gap-2 text-[0.8125rem]">
                   <span>
-                    {c.candidateName} · {gapLabel(c.gapSec)}
+                    {c.candidateName}, {gapLabel(c.gapSec)}
                   </span>
                   <StatusBadge status={c.status} />
                 </li>
@@ -339,7 +339,7 @@ export function MonitorTab({ exam }: { exam: ExamDetail }) {
             <ul className="mt-4 space-y-2 border-t border-line pt-3">
               {[...announcements].reverse().slice(0, 5).map((a) => (
                 <li key={a.id} className="text-xs text-ink">
-                  <span className="num text-mute">{fmtTime(a.createdAt)}</span> · {a.message}
+                  <span className="num text-mute">{fmtTime(a.createdAt)}</span>, {a.message}
                 </li>
               ))}
             </ul>

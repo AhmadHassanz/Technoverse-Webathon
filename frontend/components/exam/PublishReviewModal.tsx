@@ -62,7 +62,7 @@ export function PublishReviewModal({
   if (check) {
     passed.push("Required details and schedule are complete");
     if (!problems.some((p) => /question|pool|blueprint|marks/i.test(p)))
-      passed.push(`Paper: ${check.summary.paperQuestionCount} questions · ${check.summary.paperMarks} marks`);
+      passed.push(`Paper: ${check.summary.paperQuestionCount} questions, ${check.summary.paperMarks} marks`);
     if (!problems.some((p) => /candidate|enrol/i.test(p))) passed.push(`${check.summary.enrolledCount} candidates enrolled`);
     if (!problems.some((p) => /option|correct|answer key/i.test(p))) passed.push("All answer keys and marking schemes are valid");
   }
@@ -111,10 +111,10 @@ export function PublishReviewModal({
         <>
           <div className="rounded-[10px] border border-cobalt/30 bg-tint px-5 py-4">
             <p className="text-[1rem] text-cobalt">
-              {check.summary.poolSize} questions in pool · {check.summary.paperQuestionCount} per paper · {check.summary.paperMarks} marks
+              {check.summary.poolSize} questions in pool, {check.summary.paperQuestionCount} per paper, {check.summary.paperMarks} marks
             </p>
             <p className="mt-2 text-xs text-mute">
-              {fmtExamLine(exam.startAt, exam.endAt, exam.durationMin, exam.totalMarks)} · {check.summary.enrolledCount} enrolled
+              {fmtExamLine(exam.startAt, exam.endAt, exam.durationMin, exam.totalMarks)}, {check.summary.enrolledCount} enrolled
             </p>
           </div>
           <p className="meta-label mt-6">Publish checklist</p>

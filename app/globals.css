@@ -1,14 +1,17 @@
+/* Hallmark · redesign: full (app scope + landing) · theme: custom, after hume.ai by request · genre: editorial · signature: the real exam workspace, shown on the landing in a charcoal stage */
+/* critique: calm warm paper, one charcoal stage per page, a light serif voice and pill controls; colour is reserved for state (peach, sky, lavender, sage). */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 /* ============================================================
-   ExamCore — Design System 02 "Midnight Iris"
-   Cool paper background, deep midnight chrome, electric iris
-   brand colour and a lime signal accent.
-   Token NAMES are kept from System 01 (cobalt = brand,
-   parchment = page background) so every screen re-themes from
-   this one file. Never invent a colour inside a component.
+   ExamCore — Design System 03 "Quiet Signal"
+   Warm off-white paper, charcoal stages, a light serif display
+   (Newsreader) over Inter, pill buttons in ink or white, and
+   soft pastel state colours. Token NAMES are kept from the
+   earlier systems (cobalt = primary action, parchment = page
+   background, night = charcoal stage, lime = action on a stage)
+   so every screen re-themes from this one file.
    ============================================================ */
 
 @theme inline {
@@ -39,16 +42,17 @@
   --color-sky: var(--sky);
   --color-sky-ink: var(--sky-ink);
   --color-overlay: var(--overlay);
-  /* new in System 02 */
   --color-night: var(--night);
   --color-night-2: var(--night-2);
   --color-night-line: var(--night-line);
   --color-night-mute: var(--night-mute);
   --color-lime: var(--lime);
   --color-on-lime: var(--on-lime);
+  --color-accent-ink: var(--accent-ink);
+  --color-pixel: var(--pixel);
 
-  --font-sans: var(--font-geist);
-  --font-display: var(--font-bricolage);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-newsreader);
   --font-mono: var(--font-geist-mono);
 
   /* shadcn compatibility tokens */
@@ -61,11 +65,11 @@
   --color-primary: var(--cobalt);
   --color-primary-foreground: var(--on-cobalt);
   --color-secondary: var(--surface);
-  --color-secondary-foreground: var(--cobalt);
+  --color-secondary-foreground: var(--ink);
   --color-muted: var(--sand);
   --color-muted-foreground: var(--mute);
   --color-accent: var(--tint);
-  --color-accent-foreground: var(--cobalt);
+  --color-accent-foreground: var(--ink);
   --color-destructive: var(--danger);
   --color-border: var(--line);
   --color-input: var(--line);
@@ -73,88 +77,98 @@
 
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
-  --shadow-card: 0 1px 2px rgb(13 19 36 / 0.04), 0 12px 32px -18px rgb(13 19 36 / 0.16);
-  --shadow-pop: 0 2px 6px rgb(13 19 36 / 0.06), 0 30px 70px -28px rgb(13 19 36 / 0.35);
-  --shadow-glow: 0 10px 30px -10px rgb(80 70 230 / 0.55);
+  --shadow-card: var(--shadow-card-v);
+  --shadow-pop: var(--shadow-pop-v);
+  --shadow-glow: var(--shadow-glow-v);
 }
 
 :root,
 [data-theme="light"] {
-  --parchment: #f3f4f8;
-  --surface: #ffffff;
-  --paper: #f8f9fc;
-  --ink: #0d1324;
-  --mute: #5b6479;
-  --cobalt: #5046e6;
-  --cobalt-deep: #3e34c8;
-  --on-cobalt: #ffffff;
-  --line: #e1e4ec;
-  --line-soft: #eceef4;
-  --line-strong: #c9cedb;
-  --tint: #efeeff;
-  --tint-strong: #e1dfff;
-  --sand: #eef0f5;
-  --danger: #c3283a;
-  --danger-deep: #a11f2f;
-  --on-danger: #ffffff;
-  --danger-soft: #fde6e8;
-  --warning: #9a5700;
-  --warning-soft: #fff0d4;
-  --success: #0b7a4b;
-  --success-soft: #dcf5e8;
-  --lavender: #f1ecff;
-  --lavender-ink: #5a3db6;
-  --sky: #e2f3fb;
-  --sky-ink: #0b6283;
-  --overlay: rgba(9, 12, 24, 0.5);
-  --night: #0b0f1e;
-  --night-2: #151a2e;
-  --night-line: #232a42;
-  --night-mute: #8f97ad;
-  --lime: #c6f36b;
-  --on-lime: #10170a;
+  --parchment: #f8f7f4;
+  --surface: #fffffe;
+  --paper: #f3f1ec;
+  --ink: #1b1918;
+  --mute: #6b6560;
+  --cobalt: #1b1918;
+  --cobalt-deep: #000000;
+  --on-cobalt: #fdfdfc;
+  --accent-ink: #6a58c9;
+  --line: #e7e3dc;
+  --line-soft: #efece6;
+  --line-strong: #d2ccc2;
+  --tint: #efebfa;
+  --tint-strong: #e2dbf7;
+  --sand: #f1eee8;
+  --danger: #b3403a;
+  --danger-deep: #8f2f2a;
+  --on-danger: #fffefc;
+  --danger-soft: #fbe3de;
+  --warning: #96560f;
+  --warning-soft: #fde4cb;
+  --success: #2e6b4b;
+  --success-soft: #dfeee3;
+  --lavender: #ebe6fb;
+  --lavender-ink: #5a47b6;
+  --sky: #d9ecf8;
+  --sky-ink: #1d5d86;
+  --overlay: rgba(27, 25, 24, 0.45);
+  --night: #1f1e1c;
+  --night-2: #2a2826;
+  --night-line: #3a3835;
+  --night-mute: #a7a19a;
+  --lime: #fdfdfc;
+  --on-lime: #1b1918;
+  --pixel: #8a847c;
+  --shadow-card-v: 0 1px 2px rgb(27 25 24 / 0.04), 0 8px 24px -16px rgb(27 25 24 / 0.12);
+  --shadow-pop-v: 0 2px 6px rgb(27 25 24 / 0.06), 0 28px 64px -28px rgb(27 25 24 / 0.32);
+  --shadow-glow-v: 0 10px 30px -12px rgb(27 25 24 / 0.35);
   --border-w: 1px;
   color-scheme: light;
 }
 
-/* Dark: midnight surfaces, iris lifted for contrast. */
+/* Dark: the charcoal stage becomes the whole room. */
 [data-theme="dark"] {
-  --parchment: #080b15;
-  --surface: #111627;
-  --paper: #151b2f;
-  --ink: #e8ebf4;
-  --mute: #98a0b6;
-  --cobalt: #8c84ff;
-  --cobalt-deep: #a9a3ff;
-  --on-cobalt: #0b0e1c;
-  --line: #232a40;
-  --line-soft: #1a2034;
-  --line-strong: #343d5a;
-  --tint: #1d1f45;
-  --tint-strong: #272a5c;
-  --sand: #171d31;
-  --danger: #ff8593;
-  --danger-deep: #ffa6b0;
-  --on-danger: #2a0a10;
-  --danger-soft: #3a1620;
-  --warning: #f6c25c;
-  --warning-soft: #392a10;
-  --success: #6be3a6;
-  --success-soft: #11321f;
-  --lavender: #261f47;
-  --lavender-ink: #cdbfff;
-  --sky: #10303d;
-  --sky-ink: #93daf0;
-  --overlay: rgba(0, 0, 0, 0.65);
-  --night: #05070f;
-  --night-2: #0f1322;
-  --night-line: #1c2236;
-  --night-mute: #8790a8;
-  --lime: #c6f36b;
-  --on-lime: #10170a;
+  --parchment: #171615;
+  --surface: #1f1e1c;
+  --paper: #252321;
+  --ink: #f1eee9;
+  --mute: #a7a19a;
+  --cobalt: #f1eee9;
+  --cobalt-deep: #ffffff;
+  --on-cobalt: #1b1918;
+  --accent-ink: #b9acf5;
+  --line: #34322f;
+  --line-soft: #2a2826;
+  --line-strong: #4a4743;
+  --tint: #2b2740;
+  --tint-strong: #373152;
+  --sand: #262422;
+  --danger: #f09a90;
+  --danger-deep: #f6b6ae;
+  --on-danger: #2a0f0c;
+  --danger-soft: #3b201c;
+  --warning: #f2c08a;
+  --warning-soft: #3a2a17;
+  --success: #94d3ae;
+  --success-soft: #1d3326;
+  --lavender: #2b2740;
+  --lavender-ink: #cdc2ff;
+  --sky: #18303f;
+  --sky-ink: #a5d6f2;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --night: #121110;
+  --night-2: #1d1c1a;
+  --night-line: #33312e;
+  --night-mute: #a29c95;
+  --lime: #f1eee9;
+  --on-lime: #1b1918;
+  --pixel: #8a847c;
+  --shadow-card-v: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-pop-v: 0 24px 60px -24px rgb(0 0 0 / 0.7);
+  --shadow-glow-v: 0 10px 30px -12px rgb(0 0 0 / 0.6);
   color-scheme: dark;
 }
 
@@ -168,6 +182,7 @@
   --cobalt: #ffd400;
   --cobalt-deep: #ffe45c;
   --on-cobalt: #000000;
+  --accent-ink: #ffd400;
   --line: #ffffff;
   --line-soft: #9a9a9a;
   --line-strong: #ffffff;
@@ -193,6 +208,10 @@
   --night-mute: #e6e6e6;
   --lime: #ffd400;
   --on-lime: #000000;
+  --pixel: #ffffff;
+  --shadow-card-v: none;
+  --shadow-pop-v: none;
+  --shadow-glow-v: none;
   --border-w: 2px;
   color-scheme: dark;
 }
@@ -220,8 +239,12 @@
   * {
     border-color: var(--line);
   }
+  html,
+  body {
+    overflow-x: clip;
+  }
   html {
-    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     -webkit-tap-highlight-color: transparent;
@@ -231,15 +254,16 @@
     color: var(--ink);
     font-size: 1rem;
     line-height: 1.55;
-    font-feature-settings: "ss01", "cv11";
+    font-feature-settings: "cv11";
   }
   ::selection {
-    background: var(--cobalt);
-    color: var(--on-cobalt);
+    background: var(--tint-strong);
+    color: var(--ink);
   }
   :focus-visible {
-    outline: 2px solid var(--cobalt);
+    outline: 2px solid var(--accent-ink);
     outline-offset: 2px;
+    transition: none;
   }
   input,
   textarea,
@@ -254,49 +278,49 @@
 }
 
 @layer components {
+  /* Light serif voice for every heading. One weight, one colour. */
   .display {
-    font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 600;
-    font-variation-settings: "opsz" 40, "wdth" 96;
-    letter-spacing: -0.028em;
-    line-height: 1.04;
+    font-family: var(--font-newsreader), ui-serif, Georgia, serif;
+    font-weight: 380;
+    font-optical-sizing: auto;
+    letter-spacing: -0.022em;
+    line-height: 1.08;
     color: var(--ink);
+    overflow-wrap: break-word;
+    min-width: 0;
   }
   .display-xl {
-    font-size: clamp(2.4rem, 5vw, 4.25rem);
+    font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+    line-height: 1.04;
   }
   .display-lg {
-    font-size: clamp(1.85rem, 3vw, 2.6rem);
+    font-size: clamp(2rem, 3.4vw, 2.85rem);
   }
   .display-md {
-    font-size: clamp(1.5rem, 2.2vw, 1.95rem);
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
   }
   .display-sm {
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     line-height: 1.2;
-    letter-spacing: -0.025em;
   }
+  /* Quiet sentence-case label: no tracked capitals. */
   .eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--cobalt);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mute);
   }
   .meta-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--mute);
   }
   .num {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
   .surface-card {
     background: var(--surface);
@@ -308,11 +332,14 @@
     border-top: 1px solid var(--line);
   }
   .link-underline {
-    color: var(--cobalt);
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
     text-underline-offset: 3px;
+    transition: text-decoration-color 0.2s ease;
   }
   .link-underline:hover {
-    text-decoration: underline;
+    text-decoration-color: currentColor;
   }
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -324,26 +351,33 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-  /* Soft dotted grid used behind hero areas and empty states. */
+  /* Fine dotted paper, behind empty states. */
   .bg-dots {
-    background-image: radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1px);
-    background-size: 22px 22px;
+    background-image: radial-gradient(color-mix(in srgb, var(--ink) 12%, transparent) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
+  /* Pixel field for charcoal stages: square pixels that fade in from the sides.
+     Use it on an empty, aria-hidden layer (it is a mask, so it hides the layer's own content). */
   .bg-dots-night {
-    background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
-    background-size: 22px 22px;
+    background-color: color-mix(in srgb, var(--pixel) 40%, transparent);
+    -webkit-mask-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Crect width='9' height='9' fill='black'/%3E%3C/svg%3E"),
+      radial-gradient(42% 75% at 0% 60%, black, transparent 72%);
+    mask-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Crect width='9' height='9' fill='black'/%3E%3C/svg%3E"),
+      radial-gradient(42% 75% at 0% 60%, black, transparent 72%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    opacity: 0.35;
   }
-  /* Iris glow blob for dark panels. */
+  /* Charcoal stage: a faint warm light from the top, nothing more. */
   .glow-iris {
-    background:
-      radial-gradient(60% 60% at 80% 0%, rgb(80 70 230 / 0.55), transparent 70%),
-      radial-gradient(50% 50% at 0% 100%, rgb(198 243 107 / 0.16), transparent 70%);
+    background-color: var(--night);
+    background-image: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--night-mute) 14%, transparent), transparent 70%);
   }
+  /* Two-tone headline: the quieter words sit back in grey. */
   .text-gradient {
-    background: linear-gradient(100deg, var(--cobalt) 0%, #a35cff 55%, #ff6fa8 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--night-mute);
   }
   .pad-safe-bottom {
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
@@ -362,7 +396,7 @@
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -370,7 +404,7 @@
   }
 }
 .animate-rise {
-  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-rise {

@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Newsreader } from "next/font/google";
 import { Providers } from "@/frontend/components/providers";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const newsreader = Newsreader({
+  variable: "--font-newsreader",
   subsets: ["latin"],
-  axes: ["opsz", "wdth"],
+  axes: ["opsz"],
   display: "swap",
 });
 
@@ -25,7 +25,7 @@ const geistMono = Geist_Mono({
 const THEME_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("examcore:prefs")||"null");if(p){var d=document.documentElement;if(p.theme)d.dataset.theme=p.theme;if(p.fontScale)d.dataset.font=p.fontScale;}}catch(e){}`;
 
 export const viewport: Viewport = {
-  themeColor: "#0b0f1e",
+  themeColor: "#1f1e1c",
   width: "device-width",
   initialScale: 1,
 };
@@ -46,7 +46,7 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       data-font="md"
-      className={`${geist.variable} ${bricolage.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${newsreader.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

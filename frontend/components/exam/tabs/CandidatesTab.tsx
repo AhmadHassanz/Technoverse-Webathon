@@ -192,7 +192,7 @@ export function CandidatesTab({ exam, onCountChanged }: { exam: ExamDetail; onCo
 
       <div>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="display display-sm">Enrolled · {rows.length}</h2>
+          <h2 className="display display-sm">Enrolled ({rows.length})</h2>
         </div>
         {enrollments.loading && !enrollments.data ? (
           <div className="space-y-2">

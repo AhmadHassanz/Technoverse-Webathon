@@ -61,7 +61,7 @@ export function Field({
 }
 
 const fieldBase =
-  "w-full rounded-[10px] border border-line bg-surface px-3.5 text-[0.9375rem] text-ink shadow-[0_1px_2px_rgb(13_19_36/0.04)] transition-[border-color,box-shadow] placeholder:text-mute/70 hover:border-line-strong focus:border-cobalt focus:shadow-[0_0_0_4px_var(--tint)] focus:outline-none disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
+  "w-full rounded-[10px] border border-line bg-surface px-3.5 text-[0.9375rem] text-ink transition-[border-color,box-shadow] placeholder:text-mute/70 hover:border-line-strong focus:border-ink/50 focus:shadow-[0_0_0_4px_var(--tint)] focus:outline-none disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
 
 export function Input({
   className,
@@ -196,7 +196,6 @@ export function CardHeader({
 export function Badge({
   children,
   tone = "neutral",
-  dot,
   className,
 }: {
   children: ReactNode;
@@ -206,8 +205,8 @@ export function Badge({
 }) {
   const tones: Record<string, string> = {
     neutral: "bg-sand text-mute ring-1 ring-inset ring-line",
-    blue: "bg-tint text-cobalt border-transparent",
-    tint: "bg-tint text-cobalt border-transparent",
+    blue: "bg-lavender text-lavender-ink border-transparent",
+    tint: "bg-lavender text-lavender-ink border-transparent",
     success: "bg-success-soft text-success border-transparent",
     warning: "bg-warning-soft text-warning border-transparent",
     danger: "bg-danger-soft text-danger border-transparent",
@@ -218,12 +217,11 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold capitalize leading-none",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.75rem] font-medium leading-none ring-1 ring-inset ring-current/15 first-letter:uppercase",
         tones[tone],
         className,
       )}
     >
-      {dot && <span className="size-1.5 rounded-full bg-current" />}
       {children}
     </span>
   );
@@ -268,11 +266,10 @@ export function StatTile({
 }) {
   return (
     <Card className={cn("relative overflow-hidden px-5 py-5 sm:px-6", className)}>
-      <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-cobalt via-cobalt/50 to-transparent" />
       <p className="meta-label">{label}</p>
       <p
         className={cn(
-          "display mt-3 leading-none tracking-[-0.04em] text-ink",
+          "display mt-3 leading-none text-ink",
           size === "lg" ? "text-[2.75rem]" : "text-[2.25rem]",
         )}
       >
@@ -298,7 +295,7 @@ export function ProgressBar({
 }) {
   const pct = total <= 0 ? 0 : Math.min(100, Math.max(0, (value / total) * 100));
   const tones = {
-    cobalt: "bg-gradient-to-r from-cobalt to-[#9b6bff]",
+    cobalt: "bg-accent-ink",
     warning: "bg-warning",
     success: "bg-success",
     danger: "bg-danger",
@@ -312,7 +309,7 @@ export function ProgressBar({
       aria-valuemax={total}
       aria-label={label}
     >
-      <div className={cn("h-full rounded-full transition-all", tones[tone])} style={{ width: `${pct}%` }} />
+      <div className={cn("h-full w-full origin-left rounded-full transition-transform duration-500 ease-out", tones[tone])} style={{ transform: `scaleX(${pct / 100})` }} />
     </div>
   );
 }
@@ -339,7 +336,7 @@ export function Th({ children, className }: { children?: ReactNode; className?: 
   return (
     <th
       className={cn(
-        "whitespace-nowrap px-5 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-mute",
+        "whitespace-nowrap px-5 py-3 text-[0.8125rem] font-medium text-mute",
         className,
       )}
       scope="col"
@@ -393,7 +390,7 @@ export function Tabs<T extends string>({
   return (
     <div
       className={cn(
-        "scrollbar-none flex items-center gap-1 overflow-x-auto rounded-[12px] border border-line bg-surface p-1 shadow-[0_1px_2px_rgb(13_19_36/0.04)]",
+        "scrollbar-none flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-surface p-1",
         className,
       )}
       role="tablist"
@@ -409,9 +406,9 @@ export function Tabs<T extends string>({
             ref={active ? revealTab : undefined}
             onClick={() => onChange(item.value)}
             className={cn(
-              "relative inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-[9px] px-3.5 text-[0.8125rem] font-medium transition-colors",
+              "relative inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-4 text-[0.875rem] font-medium transition-colors duration-200",
               active
-                ? "bg-night text-white shadow-[0_4px_12px_-6px_rgb(11_15_30/0.6)]"
+                ? "bg-cobalt text-on-cobalt"
                 : "text-mute hover:bg-sand hover:text-ink",
             )}
           >
@@ -420,7 +417,7 @@ export function Tabs<T extends string>({
               <span
                 className={cn(
                   "num rounded-full px-1.5 py-0.5 text-[0.625rem] leading-none",
-                  active ? "bg-white/15 text-white" : "bg-sand text-mute",
+                  active ? "bg-on-cobalt/15 text-on-cobalt" : "bg-sand text-mute",
                 )}
               >
                 {item.count}
@@ -441,7 +438,7 @@ export function LinkTabs({
   active: string;
 }) {
   return (
-    <div className="scrollbar-none flex items-center gap-1 overflow-x-auto rounded-[12px] border border-line bg-surface p-1">
+    <div className="scrollbar-none flex items-center gap-1 overflow-x-auto rounded-full border border-line bg-surface p-1">
       {items.map((item) => {
         const isActive = item.href === active;
         return (
@@ -449,8 +446,8 @@ export function LinkTabs({
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-[9px] px-3.5 text-[0.8125rem] font-medium transition-colors",
-              isActive ? "bg-night text-white" : "text-mute hover:bg-sand hover:text-ink",
+              "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-4 text-[0.875rem] font-medium transition-colors duration-200",
+              isActive ? "bg-cobalt text-on-cobalt" : "text-mute hover:bg-sand hover:text-ink",
             )}
           >
             {item.label}
@@ -603,7 +600,7 @@ export function Drawer({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="rounded-md p-1.5 text-mute transition hover:bg-sand hover:text-ink"
+            className="rounded-full p-1.5 text-mute transition-colors hover:bg-sand hover:text-ink"
           >
             <X className="size-4" />
           </button>
@@ -707,7 +704,7 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="mb-4 flex size-12 items-center justify-center rounded-[14px] bg-night text-lime shadow-[0_10px_24px_-12px_rgb(11_15_30/0.8)]">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-line bg-surface text-ink">
         {icon ?? <FileText className="size-5" strokeWidth={1.6} />}
       </div>
       <h3 className="display text-[1.2rem] tracking-[-0.025em]">{title}</h3>

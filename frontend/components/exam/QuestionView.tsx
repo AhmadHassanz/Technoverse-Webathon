@@ -46,7 +46,7 @@ export function QuestionView({
           <span className="text-[0.8125rem] font-medium text-mute">of {total}</span>
         </p>
         <span className="rounded-full bg-tint px-3 py-1 text-[0.6875rem] font-semibold text-cobalt">
-          {question.marks} mark{question.marks === 1 ? "" : "s"} · {TYPE_TEXT[question.type]}
+          {question.marks} mark{question.marks === 1 ? "" : "s"}, {TYPE_TEXT[question.type]}
         </span>
       </div>
       <h2 id={headingId} className="mt-5 whitespace-pre-line text-[1.2rem] font-medium leading-[1.55] tracking-[-0.01em] text-ink sm:text-[1.35rem]">
@@ -81,7 +81,7 @@ export function QuestionView({
                   key={o.id}
                   htmlFor={inputId}
                   className={cn(
-                    "group flex cursor-pointer items-center gap-4 rounded-[14px] border px-3.5 py-3.5 transition-all has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-tint sm:px-4",
+                    "group flex cursor-pointer items-center gap-4 rounded-[14px] border px-3.5 py-3.5 transition-[color,background-color,border-color,box-shadow,transform] duration-200 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-tint sm:px-4",
                     checked
                       ? "border-cobalt bg-tint shadow-[0_8px_20px_-14px_var(--cobalt)]"
                       : "border-line bg-surface hover:-translate-y-px hover:border-cobalt/50 hover:shadow-card",

@@ -174,7 +174,7 @@ export default function AdminUsersPage() {
           <span className="num">{inactive}</span> inactive
         </p>
         <p className="text-[0.8125rem] text-mute sm:ml-auto">
-          {counts.admin} administrators · {counts.examiner} examiners · {counts.candidate} candidates
+          {counts.admin} administrators, {counts.examiner} examiners, {counts.candidate} candidates
         </p>
       </Card>
 

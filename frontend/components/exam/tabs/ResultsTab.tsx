@@ -46,7 +46,7 @@ export function ResultsTab({ exam, onPublished }: { exam: ExamDetail; onPublishe
     <div className="space-y-6">
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile label="Submissions" value={rows.length} note={`${exam.enrolledCount} enrolled`} />
-        <StatTile label="Average score" value={stats.attempts ? round(stats.average) : "—"} note={`of ${exam.totalMarks} marks · ${pct(stats.averagePercentage)}`} />
+        <StatTile label="Average score" value={stats.attempts ? round(stats.average) : "—"} note={`of ${exam.totalMarks} marks, ${pct(stats.averagePercentage)}`} />
         <StatTile label="Pass rate" value={stats.attempts ? pct(stats.passRate, 1) : "—"} note={`${passed} of ${graded} graded candidates passed`} />
         <StatTile label="Grading complete" value={`${graded}/${rows.length}`} note={graded === rows.length ? "Ready for review and publication" : "Finish grading in the Grading tab"} />
       </div>
@@ -124,7 +124,7 @@ export function ResultsTab({ exam, onPublished }: { exam: ExamDetail; onPublishe
         >
           <FileDown className="size-4" /> Download exam report
         </a>
-        <p className="text-xs text-mute">{rows.length} results · candidates who never started are listed in the Candidates tab</p>
+        <p className="text-xs text-mute">{rows.length} results, candidates who never started are listed in the Candidates tab</p>
       </div>
 
       <ConfirmModal

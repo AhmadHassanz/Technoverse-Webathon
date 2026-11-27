@@ -7,7 +7,7 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Flag, GraduationCap, LayoutGrid, NotebookPen, RefreshCw, Send, Settings2, WifiOff } from "lucide-react";
+import { ArrowLeft, ArrowRight, Flag, LayoutGrid, NotebookPen, RefreshCw, Send, Settings2, WifiOff } from "lucide-react";
 import { Button, Drawer, EmptyState, ErrorState, Skeleton } from "@/frontend/components/ui";
 import { TimerPill } from "@/frontend/components/exam/TimerPill";
 import { SaveStatusPill, type SaveState } from "@/frontend/components/exam/SaveStatusPill";
@@ -323,7 +323,7 @@ function Workspace({ attemptId }: { attemptId: string }) {
   const navRight = prefs.navigatorSide === "right";
   const phase = remaining < 60000 ? "1 minute left" : remaining < 300000 ? "5 minutes left" : "";
 
-  const toolButton = "inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-white/10 bg-white/[0.06] px-3 text-[0.8125rem] font-medium text-white transition-colors hover:bg-white/[0.12]";
+  const toolButton = "inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-lime/10 bg-lime/[0.06] px-3 text-[0.8125rem] font-medium text-lime transition-colors hover:bg-lime/[0.12]";
   const progressPct = questions.length ? Math.round((answeredCount / questions.length) * 100) : 0;
 
   return (
@@ -339,19 +339,22 @@ function Workspace({ attemptId }: { attemptId: string }) {
         />
       )}
 
-      <header className="sticky top-0 z-40 border-b border-night-line bg-night text-white shadow-[0_10px_30px_-20px_rgb(0_0_0/0.6)]">
+      <header className="sticky top-0 z-40 border-b border-night-line bg-night text-lime ">
         {/* desktop */}
         <div className="mx-auto hidden max-w-[1440px] items-center gap-5 px-8 py-3 lg:flex">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-lime text-on-lime">
-            <GraduationCap className="size-5" strokeWidth={2.2} />
+          <span aria-hidden className="grid size-[18px] shrink-0 grid-cols-2 gap-[3px] text-lime">
+            <span className="rounded-[2px] bg-current" />
+            <span className="rounded-[2px] bg-current" />
+            <span className="rounded-[2px] bg-current" />
+            <span className="rounded-[2px] bg-current opacity-35" />
           </span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-[1.0625rem] font-semibold tracking-[-0.01em]" title={view.examTitle}>
               {view.examTitle}
             </p>
             <div className="mt-1.5 flex items-center gap-3">
-              <div className="h-1.5 w-40 overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${progressPct}%` }} />
+              <div className="h-1.5 w-40 overflow-hidden rounded-full bg-lime/10">
+                <div className="h-full w-full origin-left rounded-full bg-lime transition-transform duration-500 ease-out" style={{ transform: `scaleX(${progressPct / 100})` }} />
               </div>
               <span className="num text-[0.75rem] text-night-mute">
                 {answeredCount}/{questions.length} answered
@@ -393,8 +396,8 @@ function Workspace({ attemptId }: { attemptId: string }) {
             </button>
           </div>
           <p className="mt-2.5 truncate text-[0.9375rem] font-semibold">{view.examTitle}</p>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${progressPct}%` }} />
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-lime/10">
+            <div className="h-full w-full origin-left rounded-full bg-lime transition-transform duration-500 ease-out" style={{ transform: `scaleX(${progressPct / 100})` }} />
           </div>
         </div>
       </header>
@@ -468,13 +471,13 @@ function Workspace({ attemptId }: { attemptId: string }) {
             )
           )}
           <p className="mt-6 hidden text-[0.6875rem] text-mute lg:block">
-            Exam session {attemptId.slice(0, 8).toUpperCase()} · Answers are private and securely stored
+            Exam session {attemptId.slice(0, 8).toUpperCase()}, Answers are private and securely stored
           </p>
         </main>
       </div>
 
       {/* mobile bottom bar */}
-      <div className="pad-safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-3 pt-2.5 shadow-[0_-12px_30px_-20px_rgb(13_19_36/0.35)] backdrop-blur-xl lg:hidden">
+      <div className="pad-safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-3 pt-2.5 shadow-pop backdrop-blur-xl lg:hidden">
         <div className="grid grid-cols-3 gap-2">
           {q && (
             <button
@@ -512,7 +515,7 @@ function Workspace({ attemptId }: { attemptId: string }) {
           onClick={() => setNavOpen(true)}
           className="mt-2 flex h-9 w-full items-center justify-center gap-2 rounded-[10px] text-[0.8125rem] font-medium text-cobalt"
         >
-          <LayoutGrid className="size-4" /> All questions · {answeredCount}/{questions.length} answered
+          <LayoutGrid className="size-4" /> All questions, {answeredCount}/{questions.length} answered
         </button>
       </div>
 

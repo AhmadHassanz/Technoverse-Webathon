@@ -96,7 +96,7 @@ export function AnalyticsTab({ exam }: { exam: ExamDetail }) {
       <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
         <Card className="p-5 sm:p-6">
           <h3 className="display display-sm">Score distribution</h3>
-          <p className="mt-1 text-xs text-mute">{stats.attempts} scored attempts · 10 equal score bands (% of paper marks)</p>
+          <p className="mt-1 text-xs text-mute">{stats.attempts} scored attempts, 10 equal score bands (% of paper marks)</p>
           <div className="mt-6">
             <Histogram data={data.distribution} />
           </div>
@@ -129,7 +129,7 @@ export function AnalyticsTab({ exam }: { exam: ExamDetail }) {
             <Tr key={q.questionId}>
               <Td>
                 <p className="line-clamp-2 text-ink">
-                  <span className="num text-mute">Q{String(i + 1).padStart(2, "0")} · </span>
+                  <span className="num text-mute">Q{String(i + 1).padStart(2, "0")} </span>
                   {q.stem}
                 </p>
                 <p className="text-xs text-mute">{TYPE_LABEL[q.type]}</p>
@@ -137,7 +137,7 @@ export function AnalyticsTab({ exam }: { exam: ExamDetail }) {
               <Td className="num">{q.timesShown}</Td>
               <Td className="num">{pct(q.correctPct)}</Td>
               <Td className="num">{pct(q.skippedPct)}</Td>
-              <Td className="text-[0.8125rem]">{q.mostChosenWrong ? `${q.mostChosenWrong.label} · ${pct(q.mostChosenWrong.pct)}` : "—"}</Td>
+              <Td className="text-[0.8125rem]">{q.mostChosenWrong ? `${q.mostChosenWrong.label}, ${pct(q.mostChosenWrong.pct)}` : "—"}</Td>
               <Td className="whitespace-nowrap">
                 {cap(q.labelledDifficulty)} → {q.observedDifficulty ? cap(q.observedDifficulty) : <span className="text-mute">not enough data</span>}
               </Td>

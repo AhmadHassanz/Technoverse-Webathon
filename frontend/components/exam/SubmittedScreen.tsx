@@ -56,7 +56,7 @@ export function SubmittedScreen({
         <div className="mt-10 rounded-[10px] bg-parchment px-6 py-5">
           <p className="display text-[1.5rem]">{title}</p>
           <p className="num mt-2 text-[0.8125rem] text-mute">
-            Attempt {attemptId.slice(0, 8).toUpperCase()} · {questionCount} questions{status ? ` · ${status.replace(/_/g, " ")}` : ""}
+            Attempt {attemptId.slice(0, 8).toUpperCase()}, {questionCount} questions{status ? `, ${status.replace(/_/g, " ")}` : ""}
           </p>
           <p className="mt-2 text-[0.8125rem] text-mute">
             {sandboxExamId ? "This was a preview; it is not counted anywhere." : "Your result will appear once your examiner publishes it."}
