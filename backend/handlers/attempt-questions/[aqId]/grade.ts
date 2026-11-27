@@ -1,9 +1,15 @@
-// STUB (mock data). Real version arrives in Stage 4; see docs/CONTRACT.md.
+// PATCH /api/attempt-questions/[aqId]/grade: grade one written answer. See docs/CONTRACT.md section 9.
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockGradingItems } from "@/backend/lib/mock";
-import type { GradingItem } from "@/shared/types";
+import { parseBody, parseId } from "@/backend/lib/http";
+import { gradeAnswer } from "@/backend/services/results.service";
+import { gradeSchema } from "@/shared/validation";
 
-export const PATCH = withErrors(async () => {
-  return ok<GradingItem>({ ...mockGradingItems[0], marksAwarded: 8, feedback: "Good answer" });
+type Ctx = { params: Promise<{ aqId: string }> };
+
+export const PATCH = withErrors(async (req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  const aqId = parseId((await params).aqId, "Answer");
+  return ok(await gradeAnswer(user, aqId, await parseBody(req, gradeSchema)));
 });

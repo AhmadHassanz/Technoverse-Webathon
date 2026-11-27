@@ -1,9 +1,13 @@
-// STUB (mock data). Real version arrives in Stage 4; see docs/CONTRACT.md.
+// POST /api/exams/[id]/results/publish: see docs/CONTRACT.md section 9.
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockExam } from "@/backend/lib/mock";
-import type { Exam } from "@/shared/types";
+import { parseId } from "@/backend/lib/http";
+import { publishResults } from "@/backend/services/results.service";
 
-export const POST = withErrors(async () => {
-  return ok<Exam>({ ...mockExam, resultsPublishedAt: new Date().toISOString() });
+type Ctx = { params: Promise<{ id: string }> };
+
+export const POST = withErrors(async (_req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  return ok(await publishResults(user, parseId((await params).id, "Exam")));
 });

@@ -1,11 +1,15 @@
-// STUB (mock data). Real version arrives in Stage 4; see docs/CONTRACT.md.
+// GET /api/exams/[id]/analytics: see docs/CONTRACT.md section 9.
 import { connection } from "next/server";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockAnalytics } from "@/backend/lib/mock";
-import type { ExamAnalytics } from "@/shared/types";
+import { parseId } from "@/backend/lib/http";
+import { getAnalytics } from "@/backend/services/results.service";
 
-export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<ExamAnalytics>(mockAnalytics);
+type Ctx = { params: Promise<{ id: string }> };
+
+export const GET = withErrors(async (_req: Request, { params }: Ctx) => {
+  await connection();
+  const user = await requireRole("examiner", "admin");
+  return ok(await getAnalytics(user, parseId((await params).id, "Exam")));
 });
