@@ -34,7 +34,7 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 | POST | `/api/auth/login` | public | `LoginInput` → `Me` | 400, 401 wrong email/password, 403 account deactivated | ✅ |
 | POST | `/api/auth/logout` | any | – → `OkResult` | – | ✅ |
 | GET | `/api/auth/me` | any logged in | – → `Me` | 401 | ✅ |
-| PATCH | `/api/me/preferences` | any logged in | `PreferencesInput` → `Preferences` | 400 | ⏳ |
+| PATCH | `/api/me/preferences` | any logged in | `PreferencesInput` → `Preferences` | 400 | ✅ |
 
 ## 2. Admin
 

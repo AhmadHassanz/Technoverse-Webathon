@@ -60,6 +60,12 @@ export async function updateProfile(id: string, changes: { role?: Role; isActive
   return data ? toUser(data) : null;
 }
 
+/** Replace the stored preferences (the service merges the old and new values first). */
+export async function savePreferences(id: string, preferences: Preferences): Promise<void> {
+  const { error } = await adminClient().from("profiles").update({ preferences }).eq("id", id);
+  if (error) throw error;
+}
+
 /** Create the Supabase login (email already confirmed). A DB trigger creates the profile row. */
 export async function createAuthUser(input: { email: string; password: string; fullName: string }) {
   const { data, error } = await adminClient().auth.admin.createUser({

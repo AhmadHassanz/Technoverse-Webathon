@@ -1,7 +1,7 @@
-// SERVICE layer for admin user management. Admin-only; every function receives the caller.
-import { createAuthUser, findProfile, listProfiles, toUser, updateProfile } from "@/backend/data/users";
+// SERVICE layer for users: admin user management (admin-only) + each user's own workspace preferences.
+import { createAuthUser, findProfile, listProfiles, savePreferences, toUser, updateProfile } from "@/backend/data/users";
 import { HttpError } from "@/backend/lib/errors";
-import type { CreateUserInput, Me, Role, UpdateUserInput, User } from "@/shared/types";
+import type { CreateUserInput, Me, Preferences, PreferencesInput, Role, UpdateUserInput, User } from "@/shared/types";
 
 export function listUsers(_admin: Me, filter: { role?: Role; q?: string }): Promise<User[]> {
   return listProfiles(filter);
@@ -35,4 +35,16 @@ export async function updateUser(admin: Me, id: string, input: UpdateUserInput):
   const updated = await updateProfile(id, input);
   if (!updated) throw new HttpError(404, "User not found");
   return updated;
+}
+
+const DEFAULT_PREFERENCES: Preferences = { theme: "light", fontScale: "md", navigatorSide: "left", layout: "single" };
+
+/** PATCH /api/me/preferences (any logged-in user): merge the sent keys into the saved ones, return the full set. */
+export async function updateMyPreferences(user: Me, input: PreferencesInput): Promise<Preferences> {
+  const merged: Preferences = { ...DEFAULT_PREFERENCES, ...user.preferences };
+  for (const [key, value] of Object.entries(input) as [keyof Preferences, string | undefined][]) {
+    if (value !== undefined) (merged as Record<keyof Preferences, string>)[key] = value;
+  }
+  await savePreferences(user.id, merged);
+  return merged;
 }
