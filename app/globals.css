@@ -384,6 +384,16 @@
   border-width: 2px;
 }
 
+/* The thick contrast border must not touch the text or the arrow inside dropdowns. */
+[data-theme="contrast"] select {
+  padding-left: 0.6rem;
+  padding-right: 1.9rem;
+  border-radius: 8px;
+}
+[data-theme="contrast"] select + svg {
+  right: 0.6rem;
+}
+
 [data-font="sm"] {
   font-size: 14px;
 }
