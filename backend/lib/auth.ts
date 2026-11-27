@@ -10,9 +10,12 @@ import type { Me, Role } from "@/shared/types";
 /** The logged-in user from the session cookie, or null (no session / unknown / deactivated). */
 export async function getCurrentUser(): Promise<Me | null> {
   const supabase = await authClient();
-  const { data } = await supabase.auth.getUser(); // verifies the token with Supabase
-  if (!data.user) return null;
-  const row = await findProfile(data.user.id);
+  // Checks the token's signature on OUR server (no network call to Supabase Auth), so it is fast.
+  // The profile lookup below still re-checks that the account exists and is active on every request.
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) return null;
+  const row = await findProfile(userId);
   if (!row || !row.is_active) return null;
   return toMe(row);
 }
