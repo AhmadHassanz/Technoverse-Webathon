@@ -1,6 +1,6 @@
 # Frontend Quick Reference (owner: friend)
 
-**Full plan: `docs/FRONTEND_PLAN.md`** (routes, design tokens, workspace spec, stages, prompts). Contract: `docs/CONTRACT.md` + `shared/types.ts` (read-only for you — ask the backend owner for changes).
+**Full plan: `docs/FRONTEND_PLAN.md`** (routes, design tokens, workspace spec, stages, prompts). **Figma screens: `docs/FIGMA_PLAN.md`** (design order, frame list, handoff checklist). Contract: `docs/CONTRACT.md` + `shared/types.ts` (read-only for you — ask the backend owner for changes).
 
 ## Your files
 - `frontend/pages/<Name>Page.tsx` — one component per screen.

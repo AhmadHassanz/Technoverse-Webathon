@@ -347,8 +347,16 @@ export function Tr({ children, className }: { children: ReactNode; className?: s
   );
 }
 
-export function Td({ children, className }: { children?: ReactNode; className?: string }) {
-  return <td className={cn("px-5 py-3.5 align-middle text-[0.875rem]", className)}>{children}</td>;
+export function Td({
+  children,
+  className,
+  ...props
+}: React.TdHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <td className={cn("px-5 py-3.5 align-middle text-[0.875rem]", className)} {...props}>
+      {children}
+    </td>
+  );
 }
 
 /* ------------------------------------------------------------------ */

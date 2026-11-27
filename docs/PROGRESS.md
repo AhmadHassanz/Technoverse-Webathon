@@ -10,6 +10,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - shadcn is installed (Nova + Base UI). Button lives in `frontend/components/ui/`. `npx shadcn@latest add <name>` adds more there.
 
 ## Done
+- 2026-11-27: Added `docs/FIGMA_PLAN.md` — Figma screen plan (15 Tier 1 frames, Tier 2/3, cross-cutting states, frame→route map, time budget, handoff checklist). **Visual direction is inspiration-led, not the FRONTEND_PLAN token set** — see its section 11 divergence note before coding. Linked from `docs/FRONTEND.md`.
 - 2026-11-27: Installed shadcn (`npx shadcn@latest init --defaults`). Packages: `@base-ui/react`, `class-variance-authority`, `cn`, `lucide-react`, `shadcn`, `tw-animate-css`. Components go in `frontend/components/ui/`. Geist is wired to `--font-sans`.
 - 2026-11-27: Added docs/PROBLEM_STATEMENT.md, BACKEND_PLAN.md, FRONTEND_PLAN.md, new CONTRACT.md, shared/types.ts, backend/db/schema.sql; updated CLAUDE.md + quick-reference guides.
 - 2026-11-26: Set up CLAUDE.md + PROGRESS.md for memory between sessions.
