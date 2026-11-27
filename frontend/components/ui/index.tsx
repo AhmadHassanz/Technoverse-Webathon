@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { Button, type ButtonProps } from "./button";
 
+// Re-exported so pages can import every UI piece from "@/frontend/components/ui".
+export { Button };
+
 /* ------------------------------------------------------------------ */
 /* Form primitives                                                     */
 /* ------------------------------------------------------------------ */
