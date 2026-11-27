@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Eye, EyeOff, Loader2, ShieldUser, UserCog } from "lucide-react";
 import { Button } from "@/frontend/components/ui/button";
 import { Field, Input } from "@/frontend/components/ui";
 import { AuthSplit } from "@/frontend/components/shell/AuthSplit";
@@ -14,9 +14,9 @@ import { loginSchema } from "@/shared/validation";
 
 // Real seeded demo accounts (password Demo@1234), so judges can try each role.
 const DEMO_ACCOUNTS = [
-  { role: "admin", label: "Administrator", email: "admin@demo.com" },
-  { role: "examiner", label: "Examiner", email: "examiner@demo.com" },
-  { role: "candidate", label: "Candidate", email: "ali@demo.com" },
+  { role: "admin", label: "Admin", email: "admin@demo.com", icon: ShieldUser },
+  { role: "examiner", label: "Examiner", email: "examiner@demo.com", icon: UserCog },
+  { role: "candidate", label: "Candidate", email: "ali@demo.com", icon: BookOpenCheck },
 ];
 
 export default function LoginPage() {
@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [fields, setFields] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
     if (!loading && me) router.replace(roleHome(me.role));
@@ -54,20 +55,16 @@ export default function LoginPage() {
 
   return (
     <AuthSplit
-      headline={"A clear mind.\n\nA fair exam."}
+      headline={"A clear mind.\nA fair exam."}
     >
       <p className="eyebrow">Welcome back</p>
-      <h1 className="display display-lg mt-4 text-balance">
-        Your next chapter
-        <br />
-        starts here.
-      </h1>
-      <p className="mt-4 text-[0.9375rem] text-mute">
-        Log in to your secure examination workspace.
+      <h1 className="display mt-3 text-[2.25rem] leading-[1.05] text-balance">Log in to ExamCore</h1>
+      <p className="mt-2.5 text-[0.9375rem] text-mute">
+        Pick up right where you left off.
       </p>
 
       <form
-        className="mt-9 space-y-5"
+        className="mt-8 space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
           void submit();
@@ -89,10 +86,12 @@ export default function LoginPage() {
         </Field>
 
         <Field label="Password" htmlFor="password" error={fields.password ?? error}>
+          <div className="relative">
           <Input
             id="password"
             name="password"
-            type="password"
+            type={show ? "text" : "password"}
+            className="pr-11"
             autoComplete="current-password"
             placeholder="••••••••••••"
             value={password}
@@ -100,11 +99,21 @@ export default function LoginPage() {
             invalid={Boolean(error || fields.password)}
             required
           />
+          <button
+            type="button"
+            onClick={() => setShow((v) => !v)}
+            className="absolute right-1.5 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-[8px] text-mute hover:bg-sand hover:text-ink"
+            aria-label={show ? "Hide password" : "Show password"}
+          >
+            {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+          </div>
         </Field>
 
-        <Button type="submit" className="w-full" disabled={busy}>
+        <Button type="submit" size="lg" className="w-full" disabled={busy}>
           {busy && <Loader2 className="size-4 animate-spin" />}
           {busy ? "Signing in…" : "Log in"}
+          {!busy && <ArrowRight className="size-4" />}
         </Button>
       </form>
 
@@ -115,21 +124,25 @@ export default function LoginPage() {
         </Link>
       </p>
 
-      <div className="mt-10 rounded-md border border-line bg-surface/70 px-4 py-3.5">
-        <p className="text-[0.625rem] uppercase tracking-[0.1em] text-mute">
-          Demo access · choose a role
-        </p>
-        <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-2">
-          {DEMO_ACCOUNTS.map((account) => (
+      <div className="mt-8">
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-line" />
+          <p className="meta-label">One-tap demo access</p>
+          <span className="h-px flex-1 bg-line" />
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2.5">
+          {DEMO_ACCOUNTS.map(({ role, label, email, icon: Icon }) => (
             <button
-              key={account.role}
+              key={role}
               type="button"
               disabled={busy}
-              onClick={() => void submit(account.email, "Demo@1234")}
-              className="inline-flex items-center gap-1 text-[0.8125rem] font-medium text-cobalt hover:underline disabled:opacity-50"
+              onClick={() => void submit(email, "Demo@1234")}
+              className="group flex flex-col items-center gap-2 rounded-[14px] border border-line bg-surface px-2 py-3.5 text-[0.8125rem] font-medium text-ink shadow-[0_1px_2px_rgb(13_19_36/0.04)] transition-all hover:-translate-y-0.5 hover:border-cobalt/40 hover:shadow-card disabled:opacity-50"
             >
-              {account.label}
-              <ArrowRight className="size-3" />
+              <span className="flex size-9 items-center justify-center rounded-[10px] bg-tint text-cobalt transition-colors group-hover:bg-cobalt group-hover:text-on-cobalt">
+                <Icon className="size-[18px]" />
+              </span>
+              {label}
             </button>
           ))}
         </div>

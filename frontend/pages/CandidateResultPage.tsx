@@ -3,8 +3,7 @@
 import { Suspense } from "react";
 import { useParams } from "next/navigation";
 import { Check, FileDown, X } from "lucide-react";
-import { BackLink, Card, EmptyState, ErrorState, PageSkeleton, Table, Td, Th, THead, Tr } from "@/frontend/components/ui";
-import { buttonStyles } from "@/frontend/components/ui/button";
+import { BackLink, EmptyState, ErrorState, PageSkeleton } from "@/frontend/components/ui";
 import { errorMessage } from "@/frontend/lib/api-client";
 import { fmtDate, fmtDateTime, pct } from "@/frontend/lib/format";
 import { useApi } from "@/frontend/lib/useApi";
@@ -30,114 +29,130 @@ function ResultInner() {
   const skipped = r.questions.filter((q) => !q.yourAnswer.trim()).length;
   const other = r.questions.length - full - skipped;
 
+  const ring = Math.max(0, Math.min(100, r.percentage));
+  const C = 2 * Math.PI * 52;
+
   return (
     <>
       <BackLink href="/candidate#results">My examinations</BackLink>
-      <div className="mt-5 flex flex-wrap items-start justify-between gap-5">
-        <div>
-          <p className="eyebrow">My results</p>
-          <h1 className="display display-lg mt-3 text-balance">Your hard work, in perspective.</h1>
-          <p className="mt-3 text-[0.9375rem] text-mute">
-            {r.examTitle} · Submitted {fmtDateTime(r.submittedAt)}
-          </p>
-        </div>
-        <a href={`/api/reports/attempts/${r.attemptId}`} target="_blank" rel="noopener" className={cn(buttonStyles(), "w-full sm:w-auto")}>
-          <FileDown className="size-4" /> Download verified report
-        </a>
-      </div>
 
-      <Card className="mt-8 grid gap-6 px-5 py-6 sm:px-8 md:grid-cols-[auto_1fr_1fr] md:items-center md:gap-10">
-        <p className="leading-none">
-          <span className="num text-[4.5rem] text-cobalt">{r.score}</span>
-          <span className="num ml-3 text-[1.4rem] text-mute">/ {r.totalMarks} marks</span>
-        </p>
-        <div>
-          <span className={cn("inline-flex items-center gap-1.5 rounded-[4px] px-2.5 py-1 text-[0.8125rem]", r.passed ? "bg-success-soft text-success" : "bg-danger-soft text-danger")}>
-            {r.passed ? <Check className="size-3.5" /> : <X className="size-3.5" />}
-            {r.passed ? "Passed" : "Not passed"}
-          </span>
-          <p className="display mt-3 text-[1.6rem]">{pct(r.percentage, 1)} overall score</p>
+      <section className="glow-iris animate-rise relative mt-5 overflow-hidden rounded-[24px] bg-night p-6 text-white shadow-pop sm:p-8">
+        <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
+        <div className="relative grid gap-8 lg:grid-cols-[auto_1fr_auto] lg:items-center">
+          <div className="relative mx-auto size-[148px] lg:mx-0">
+            <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgb(255 255 255 / 0.1)" strokeWidth="10" />
+              <circle
+                cx="60"
+                cy="60"
+                r="52"
+                fill="none"
+                stroke={r.passed ? "var(--lime)" : "#ff8593"}
+                strokeWidth="10"
+                strokeLinecap="round"
+                strokeDasharray={C}
+                strokeDashoffset={C - (C * ring) / 100}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="display text-[2.4rem] leading-none tracking-[-0.05em] text-white">{r.score}</span>
+              <span className="num mt-1 text-[0.75rem] text-night-mute">of {r.totalMarks} marks</span>
+            </div>
+          </div>
+          <div className="min-w-0 text-center lg:text-left">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[0.75rem] font-bold uppercase tracking-[0.1em]",
+                r.passed ? "bg-lime text-on-lime" : "bg-[#ff8593] text-[#2a0a10]",
+              )}
+            >
+              {r.passed ? <Check className="size-3.5" /> : <X className="size-3.5" />}
+              {r.passed ? "Passed" : "Not passed"}
+            </span>
+            <h1 className="display mt-4 text-[clamp(1.8rem,3.2vw,2.6rem)] leading-[1.05] text-white">{r.examTitle}</h1>
+            <p className="mt-2 text-[0.875rem] text-night-mute">
+              {pct(r.percentage, 1)} overall · Submitted {fmtDateTime(r.submittedAt)} · Published {fmtDate(r.publishedAt)}
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2 lg:justify-start">
+              {[
+                { n: full, label: "full marks", cls: "text-lime" },
+                { n: other, label: "partly / not correct", cls: "text-[#ffc27a]" },
+                { n: skipped, label: "skipped", cls: "text-night-mute" },
+              ].map((s) => (
+                <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[0.8125rem]">
+                  <span className={cn("num font-semibold", s.cls)}>{s.n}</span> {s.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <a
+            href={`/api/reports/attempts/${r.attemptId}`}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-[12px] bg-white px-5 text-[0.875rem] font-semibold text-[#0b0f1e] transition-transform hover:-translate-y-0.5"
+          >
+            <FileDown className="size-4" /> Verified report (PDF)
+          </a>
         </div>
-        <div>
-          <p className="num text-[1.6rem] text-cobalt">{full} full marks</p>
-          <p className="mt-1 text-[0.875rem] text-mute">
-            {other} partly or not correct · {skipped} skipped
-          </p>
-          <p className="mt-3 text-xs text-mute">Published {fmtDate(r.publishedAt)}</p>
-        </div>
-      </Card>
+      </section>
 
-      <h2 className="display display-sm mt-10">Question-by-question</h2>
+      <h2 className="display mt-10 text-[1.35rem] tracking-[-0.025em]">Question by question</h2>
       <p className="mt-1 text-[0.875rem] text-mute">Your response and the marking decision for every question.</p>
 
-      {/* desktop table */}
-      <div className="mt-5 hidden md:block">
-        <Table>
-          <THead>
-            <tr>
-              <Th>Q</Th>
-              <Th className="w-[30%]">Question</Th>
-              <Th>Your answer</Th>
-              <Th>Correct answer</Th>
-              <Th>Marks</Th>
-              <Th>Feedback</Th>
-            </tr>
-          </THead>
-          <tbody>
-            {r.questions.map((q) => (
-              <Tr key={q.position}>
-                <Td className="num align-top">{pad2(q.position)}</Td>
-                <Td className="align-top">
-                  <p className="line-clamp-3 whitespace-pre-line text-ink">{q.stem}</p>
-                </Td>
-                <Td className="align-top">
-                  <p className="whitespace-pre-line">{q.yourAnswer || <span className="italic text-mute">No answer</span>}</p>
-                </Td>
-                <Td className="align-top">{q.correctAnswer ?? <span className="text-mute">Graded by examiner</span>}</Td>
-                <Td className={cn("num align-top", q.marksAwarded >= q.marks ? "text-cobalt" : q.marksAwarded > 0 ? "text-warning" : "text-danger")}>
-                  {q.marksAwarded} / {q.marks}
-                </Td>
-                <Td className="align-top text-[0.8125rem] text-mute">{q.feedback ?? "—"}</Td>
-              </Tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-
-      {/* mobile cards */}
-      <ul className="mt-5 space-y-3 md:hidden">
-        {r.questions.map((q) => (
-          <li key={q.position} className="surface-card px-4 py-4">
-            <div className="flex items-start justify-between gap-3">
-              <p className="text-[0.9375rem] text-ink">
-                <span className="num text-mute">{pad2(q.position)} · </span>
-                {q.stem}
-              </p>
-              <span className={cn("num shrink-0 text-sm", q.marksAwarded >= q.marks ? "text-cobalt" : "text-danger")}>
-                {q.marksAwarded}/{q.marks}
-              </span>
-            </div>
-            <dl className="mt-3 space-y-1.5 text-[0.8125rem]">
-              <div>
-                <dt className="meta-label">Your answer</dt>
-                <dd className="whitespace-pre-line text-ink">{q.yourAnswer || "No answer"}</dd>
+      <ol className="mt-5 space-y-3">
+        {r.questions.map((q) => {
+          const tone = q.marksAwarded >= q.marks ? "full" : q.marksAwarded > 0 ? "part" : "none";
+          return (
+            <li key={q.position} className="surface-card relative overflow-hidden p-4 sm:p-5">
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute inset-y-0 left-0 w-1",
+                  tone === "full" ? "bg-success" : tone === "part" ? "bg-warning" : "bg-danger",
+                )}
+              />
+              <div className="flex items-start gap-3 sm:gap-4">
+                <span className="num flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-sand text-[0.75rem] text-mute">
+                  {pad2(q.position)}
+                </span>
+                <p className="min-w-0 flex-1 whitespace-pre-line break-words pt-1 text-[0.9375rem] leading-relaxed text-ink">{q.stem}</p>
+                <span
+                  className={cn(
+                    "num shrink-0 rounded-full px-2.5 py-1 text-[0.8125rem] font-semibold",
+                    tone === "full"
+                      ? "bg-success-soft text-success"
+                      : tone === "part"
+                        ? "bg-warning-soft text-warning"
+                        : "bg-danger-soft text-danger",
+                  )}
+                >
+                  {q.marksAwarded}/{q.marks}
+                </span>
               </div>
-              {q.correctAnswer && (
-                <div>
+              <dl className="mt-4 grid gap-3 text-[0.8125rem] sm:ml-12 md:grid-cols-2">
+                <div className="rounded-[12px] bg-paper px-3.5 py-3">
+                  <dt className="meta-label">Your answer</dt>
+                  <dd className="mt-1 whitespace-pre-line break-words text-ink">
+                    {q.yourAnswer || <span className="italic text-mute">No answer</span>}
+                  </dd>
+                </div>
+                <div className="rounded-[12px] bg-paper px-3.5 py-3">
                   <dt className="meta-label">Correct answer</dt>
-                  <dd className="text-ink">{q.correctAnswer}</dd>
+                  <dd className="mt-1 break-words text-ink">
+                    {q.correctAnswer ?? <span className="text-mute">Graded by examiner</span>}
+                  </dd>
                 </div>
-              )}
-              {q.feedback && (
-                <div>
-                  <dt className="meta-label">Feedback</dt>
-                  <dd className="text-mute">{q.feedback}</dd>
-                </div>
-              )}
-            </dl>
-          </li>
-        ))}
-      </ul>
+                {q.feedback && (
+                  <div className="rounded-[12px] border border-cobalt/20 bg-tint px-3.5 py-3 md:col-span-2">
+                    <dt className="meta-label text-cobalt">Examiner feedback</dt>
+                    <dd className="mt-1 text-ink">{q.feedback}</dd>
+                  </div>
+                )}
+              </dl>
+            </li>
+          );
+        })}
+      </ol>
     </>
   );
 }

@@ -764,7 +764,7 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-mute transition-colors hover:border-line-strong hover:text-ink"
+      className="group flex w-fit items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-mute transition-colors hover:border-line-strong hover:text-ink"
     >
       <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
       {children}
