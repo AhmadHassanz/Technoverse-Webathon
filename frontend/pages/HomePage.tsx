@@ -1,200 +1,228 @@
 "use client";
 
-// Landing page, built from Pngs/Public/Landing.png (1440 px design).
-// Hero art and footer art are crops of that design (public/landing-*.jpg); everything else is live markup.
+// Landing page — Design System 02 "Midnight Iris".
+// Everything is live markup (no raster art): a dark hero with a floating product mock,
+// a four-step flow, a bento grid of the real features, roles, FAQ and a closing call to action.
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUpRight, Flag, ShieldCheck, SlidersHorizontal, WifiOff } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  ArrowUpRight,
+  BookOpenCheck,
+  Check,
+  CloudOff,
+  Contrast,
+  FileCheck2,
+  Flag,
+  GraduationCap,
+  Library,
+  Menu,
+  Plus,
+  QrCode,
+  Radio,
+  Scale,
+  ShieldCheck,
+  ShieldUser,
+  Sparkles,
+  Timer,
+  UserCog,
+  X,
+} from "lucide-react";
 import { roleHome, useAuth } from "@/frontend/lib/auth";
+import { cn } from "@/frontend/lib/utils";
 
 const NAV = [
-  { label: "Platform", href: "#platform", x: 0 },
-  { label: "How it works", href: "#how", x: 0 },
-  { label: "For your institution", href: "#roles", x: 9 },
+  { label: "How it works", href: "#how" },
+  { label: "Platform", href: "#platform" },
+  { label: "Roles", href: "#roles" },
+  { label: "FAQ", href: "#faq" },
 ];
-
-const PILLARS = ["Prepare with purpose", "Take with confidence", "Review with context", "Verify with trust"];
 
 const STEPS = [
-  { n: "01", title: "Reuse your best questions", note: "From a reusable question bank" },
-  { n: "02", title: "Balance every paper", note: "With difficulty-aware blueprints" },
-  { n: "03", title: "Keep every answer moving", note: "Even when the network drops" },
-  { n: "04", title: "Publish a clearer result", note: "With feedback and a verified report" },
-];
-
-const FEATURES = [
-  { icon: SlidersHorizontal, title: "Fairer papers", text: "Difficulty blueprints help keep randomised papers balanced." },
-  { icon: ShieldCheck, title: "Time, held steady", text: "Visible timers and consistent deadlines keep every attempt on track." },
-  { icon: WifiOff, title: "Progress, protected", text: "Autosave and local answer storage support connection interruptions." },
-  { icon: Flag, title: "Indicators, not verdicts", text: "Review relevant events with context before taking action." },
-];
-
-const PROMISES = [
-  { icon: ShieldCheck, title: "Clear before the clock starts", text: "Instructions, eligibility and schedules are visible before an attempt begins." },
-  { icon: Flag, title: "Useful context, not noise", text: "Progress, connectivity and indicators help examiners review the full picture." },
-  { icon: SlidersHorizontal, title: "Confidence beyond the score", text: "Feedback and verified reports make results easier to understand and trust." },
+  { icon: Library, title: "Prepare", text: "Build a reusable question bank by topic and difficulty, then set a blueprint so every random paper is equally hard." },
+  { icon: Timer, title: "Take", text: "One server clock, autosave on every change and an offline outbox that keeps answers safe when Wi-Fi drops." },
+  { icon: Activity, title: "Review", text: "Live monitor, integrity indicators with context, fair time compensation and side-by-side grading." },
+  { icon: FileCheck2, title: "Verify", text: "Publish results with feedback. Every report carries a QR code anyone can check in one tap." },
 ];
 
 const ROLES = [
-  { n: "01", title: "Examiner", sub: "Prepare & conduct", points: ["Question bank and balanced blueprints", "Live monitoring and announcements", "Grading, results and analytics"] },
-  { n: "02", title: "Candidate", sub: "Take & reflect", points: ["Personal examination dashboard", "Focused, offline-aware workspace", "Feedback and verified reports"] },
-  { n: "03", title: "Administrator", sub: "Manage & govern", points: ["Create and manage user accounts", "Assign institutional roles", "Activate or deactivate access"] },
+  {
+    icon: UserCog,
+    role: "Examiner",
+    tag: "Prepare & conduct",
+    points: ["Question bank with CSV import", "Difficulty blueprints for fair papers", "Live monitor, grading and analytics"],
+  },
+  {
+    icon: BookOpenCheck,
+    role: "Candidate",
+    tag: "Take & reflect",
+    points: ["Personal exam dashboard", "Focused, offline-aware workspace", "Feedback and verified reports"],
+  },
+  {
+    icon: ShieldUser,
+    role: "Administrator",
+    tag: "Manage & govern",
+    points: ["Create and manage accounts", "Assign institutional roles", "Activate or deactivate access"],
+  },
 ];
 
 const FAQS = [
-  { q: "Can candidates keep working offline?", a: "Answers are stored on the device during a connection gap, then synced on reconnection. The examination timer continues." },
-  { q: "Are indicators proof of misconduct?", a: "No. Indicators are a starting point for review, not a verdict. Examiners should consider context before taking action." },
-  { q: "Who can see a candidate’s result?", a: "Candidates see their own results after publication. Examiners access only the examinations they are authorised to review." },
-  { q: "How does report verification work?", a: "A unique report code confirms the exam, initials, score and date, without exposing the candidate’s full personal details." },
+  { q: "Can candidates keep working offline?", a: "Yes. Answers are stored on the device during a connection gap, then synced on reconnection. The server timer keeps running, and examiners can approve fair compensation for the outage." },
+  { q: "How are randomised papers kept fair?", a: "Examiners set a difficulty blueprint (for example 4 easy, 3 medium, 2 hard). Every candidate's paper is drawn to the same blueprint, and analytics show the difficulty spread after publishing." },
+  { q: "Are integrity indicators proof of misconduct?", a: "No. Indicators such as a hidden tab or a connection gap are a starting point for review, not a verdict. They never change a score on their own." },
+  { q: "How does report verification work?", a: "Each published report has a unique code and QR. Anyone can open the verify page to confirm the exam, initials, score and date, without seeing personal details." },
 ];
 
-const WRAP = "mx-auto w-full max-w-[1440px] px-5 sm:px-8 xl:px-16";
+const WRAP = "mx-auto w-full max-w-[1200px] px-5 sm:px-8";
 
-function LightButton({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
+/* ------------------------------------------------------------------ */
+
+function Logo() {
   return (
-    <Link
-      href={href}
-      className={`inline-flex h-12 w-full max-w-[230px] items-center justify-center gap-2 rounded-[4px] bg-surface text-[0.875rem] text-cobalt transition-colors hover:bg-white sm:w-[230px] ${className}`}
-    >
-      {children}
+    <Link href="/" className="group inline-flex items-center gap-2.5" aria-label="ExamCore home">
+      <span className="flex size-8 items-center justify-center rounded-[10px] bg-lime text-on-lime transition-transform group-hover:-rotate-6">
+        <GraduationCap className="size-[18px]" strokeWidth={2.2} />
+      </span>
+      <span className="display text-[1.3rem] leading-none tracking-[-0.04em] text-white">ExamCore</span>
     </Link>
   );
 }
 
-function GhostLink({ href, children }: { href: string; children: React.ReactNode }) {
+function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
-    <a href={href} className="inline-flex h-12 items-center gap-2 px-2 text-[0.875rem] text-parchment transition-opacity hover:opacity-80">
+    <p
+      className={cn(
+        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em]",
+        dark ? "border border-white/15 bg-white/5 text-lime" : "border border-cobalt/15 bg-tint text-cobalt",
+      )}
+    >
+      <Sparkles className="size-3.5" />
       {children}
-    </a>
+    </p>
   );
 }
 
-/** The blue "live workspace" card in the middle of the connected-experience diagram (420 x 444). */
-function WorkspaceCard() {
+function SectionHead({ eyebrow, title, text }: { eyebrow: string; title: React.ReactNode; text?: string }) {
   return (
-    <div className="relative h-[444px] w-[420px] shrink-0 rounded-[6px] bg-cobalt text-on-cobalt max-sm:[zoom:0.8]">
-      <div className="absolute left-2 right-2 top-2 flex h-12 items-center rounded-[3px] bg-surface px-3.5">
-        <span className="display text-[1.4rem] leading-none text-cobalt">ExamCore</span>
-        <span className="absolute left-[255px] text-[0.625rem] uppercase tracking-[0.04em] text-cobalt">Live workspace</span>
-      </div>
-      <p className="absolute left-6 top-[78px] text-[1.125rem] leading-6">Data Structures &amp; Algorithms</p>
-      <p className="num absolute left-6 top-[112px] text-[1.875rem] leading-[40px]">00:42:18</p>
-      <p className="absolute left-[236px] top-[122px] text-[0.75rem] leading-4">✓ All answers saved</p>
-      <div className="absolute left-5 top-[173px] h-[208px] w-[380px] rounded-[4px] bg-surface">
-        <p className="absolute left-4 top-[11px] text-[0.625rem] uppercase leading-4 tracking-[0.04em] text-cobalt">Question 4 of 20 · 2 marks</p>
-        <p className="absolute left-4 top-[40px] text-[1rem] leading-6 text-ink">Which structure supports undo?</p>
-        <div className="absolute left-4 top-[88px] flex h-[38px] w-[348px] items-center gap-2.5 rounded-[3px] border border-cobalt/40 bg-tint px-3.5 text-[0.8125rem] text-cobalt">
-          <span className="size-2.5 rounded-full bg-cobalt" />
-          Stack — last in, first out
-        </div>
-        <div className="absolute left-4 top-[136px] flex h-[38px] w-[348px] items-center gap-2.5 px-3.5 text-[0.8125rem] text-mute">
-          <span className="size-2.5 rounded-full border border-mute/60" />
-          Queue — first in, first out
-        </div>
-      </div>
-      <div className="absolute left-5 top-[394px] flex gap-2.5">
-        {["01", "02", "03", "04", "05"].map((n) => (
-          <span key={n} className="num flex h-8 w-[43px] items-center justify-center rounded-[4px] border border-white/70 text-[0.75rem]">
-            {n}
-          </span>
-        ))}
-      </div>
-      <p className="absolute left-[328px] top-[403px] text-[0.75rem] leading-5">Next →</p>
+    <div className="mx-auto max-w-[720px] text-center">
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 className="display mt-5 text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.02] text-balance">{title}</h2>
+      {text && <p className="mx-auto mt-4 max-w-[560px] text-[1rem] leading-relaxed text-mute">{text}</p>}
     </div>
   );
 }
 
-function StepPill({ n, title, className = "" }: { n: string; title: string; className?: string }) {
+/** The floating product mock in the hero. Pure markup, no images. */
+function HeroMock() {
   return (
-    <span className={`flex h-12 w-[302px] items-center gap-3 rounded-full bg-cobalt px-[18px] text-[0.875rem] text-on-cobalt ${className}`}>
-      <span className="opacity-90">{n}</span>
-      {title}
-    </span>
-  );
-}
-
-function Connected() {
-  return (
-    <>
-      {/* ≥1280 px: the exact floating diagram */}
-      <div className="relative hidden h-[444px] xl:-mx-16 xl:block xl:w-[calc(100%+8rem)]">
-        <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1440 444" preserveAspectRatio="none" fill="none" aria-hidden>
-          {[
-            "M366 74 C 440 74, 440 129, 510 129",
-            "M412 318 C 470 312, 450 293, 510 293",
-            "M1054 74 C 990 74, 990 129, 930 129",
-            "M930 293 C 990 293, 1000 368, 1054 368",
-          ].map((d) => (
-            <path key={d} d={d} stroke="#0046cf" strokeOpacity="0.35" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-          ))}
-        </svg>
-        <div className="absolute left-1/2 top-0 -translate-x-1/2">
-          <WorkspaceCard />
+    <div className="relative mx-auto w-full max-w-[560px]">
+      <div className="relative rounded-[22px] border border-white/10 bg-[#111627] p-2 shadow-[0_40px_120px_-30px_rgb(80_70_230/0.6)]">
+        <div className="flex items-center gap-1.5 px-3 py-2">
+          <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="size-2.5 rounded-full bg-[#febc2e]" />
+          <span className="size-2.5 rounded-full bg-[#28c840]" />
+          <span className="ml-3 truncate text-[0.6875rem] text-night-mute">examcore · Computer Networks — Quiz 2</span>
         </div>
-        <StepPill {...STEPS[0]} className="absolute left-[4.44%] top-[50px]" />
-        <p className="absolute left-[4.72%] top-[113px] text-[0.8125rem] leading-5 text-mute">{STEPS[0].note}</p>
-        <StepPill {...STEPS[1]} className="absolute left-[7.64%] top-[298px]" />
-        <p className="absolute left-[7.92%] top-[362px] text-[0.8125rem] leading-5 text-mute">{STEPS[1].note}</p>
-        <StepPill {...STEPS[2]} className="absolute right-[5.83%] top-[50px]" />
-        <p className="absolute right-[5.83%] top-[113px] w-[302px] pl-1 text-[0.8125rem] leading-5 text-mute">{STEPS[2].note}</p>
-        <StepPill {...STEPS[3]} className="absolute right-[5.83%] top-[344px]" />
-        <p className="absolute right-[5.83%] top-[407px] w-[302px] pl-1 text-[0.8125rem] leading-5 text-mute">{STEPS[3].note}</p>
-      </div>
-      {/* smaller screens: card, then the four steps */}
-      <div className="xl:hidden">
-        <div className="flex justify-center">
-          <WorkspaceCard />
+        <div className="rounded-[16px] bg-white p-4 text-[#0d1324] sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="num flex h-7 min-w-7 items-center justify-center rounded-[8px] bg-[#0b0f1e] px-1.5 text-[0.75rem] text-[#c6f36b]">04</span>
+              <span className="text-[0.75rem] text-[#5b6479]">of 08 · 2 marks</span>
+            </div>
+            <span className="num rounded-[10px] bg-[#0b0f1e] px-2.5 py-1 text-[0.875rem] text-white">
+              <span className="text-[#c6f36b]">●</span> 24:18
+            </span>
+          </div>
+          <p className="mt-4 text-[1rem] font-medium leading-snug sm:text-[1.0625rem]">Which data structure is best suited for undo?</p>
+          <div className="mt-4 space-y-2">
+            {[
+              { l: "A", t: "Queue — first in, first out", on: false },
+              { l: "B", t: "Stack — last in, first out", on: true },
+              { l: "C", t: "Hash table", on: false },
+            ].map((o) => (
+              <div
+                key={o.l}
+                className={cn(
+                  "flex items-center gap-3 rounded-[12px] border px-3 py-2.5 text-[0.8125rem]",
+                  o.on ? "border-[#5046e6] bg-[#efeeff]" : "border-[#e1e4ec]",
+                )}
+              >
+                <span
+                  className={cn(
+                    "num flex size-7 items-center justify-center rounded-full text-[0.75rem] font-semibold",
+                    o.on ? "bg-[#5046e6] text-white" : "bg-[#eef0f5] text-[#5b6479]",
+                  )}
+                >
+                  {o.on ? <Check className="size-3.5" strokeWidth={3} /> : o.l}
+                </span>
+                {o.t}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <span
+                key={n}
+                className={cn(
+                  "num flex h-7 flex-1 items-center justify-center rounded-[8px] text-[0.6875rem]",
+                  n < 4
+                    ? "bg-[#5046e6] text-white"
+                    : n === 4
+                      ? "bg-[#0b0f1e] text-[#c6f36b]"
+                      : n === 6
+                        ? "bg-[#fff0d4] text-[#9a5700]"
+                        : "border border-[#e1e4ec] text-[#5b6479]",
+                )}
+              >
+                {n === 6 ? <Flag className="size-3" /> : n}
+              </span>
+            ))}
+          </div>
         </div>
-        <ul className="mx-auto mt-8 grid max-w-3xl gap-6 sm:grid-cols-2">
-          {STEPS.map((s) => (
-            <li key={s.n}>
-              <StepPill n={s.n} title={s.title} className="max-w-full" />
-              <p className="mt-2 pl-1 text-[0.8125rem] text-mute">{s.note}</p>
-            </li>
-          ))}
-        </ul>
       </div>
-    </>
-  );
-}
 
-function FeatureCell({ icon: Icon, title, text }: (typeof FEATURES)[number]) {
-  return (
-    <div className="relative mx-auto h-[235px] w-[259px]">
-      {[0, 1, 2, 3, 4, 5].map((k) => (
-        <span
-          key={k}
-          aria-hidden
-          className="absolute border border-ink/[0.07]"
-          style={{ left: 5 * k, top: 25 - 5 * k, width: 259 - 10 * k, height: 119 - 10 * k }}
-        />
-      ))}
-      <Icon className="absolute left-[120px] top-[43px] size-5 text-cobalt" strokeWidth={2} aria-hidden />
-      <h3 className="display absolute inset-x-0 top-[122px] text-center text-[1.5625rem] leading-7 text-cobalt">{title}</h3>
-      <p className="absolute inset-x-0 top-[162px] text-center text-[0.8125rem] leading-[18px] text-mute">{text}</p>
-      <span className="absolute left-[106px] top-[229px] h-0.5 w-[46px] bg-cobalt" aria-hidden />
+      <div className="float-a absolute -bottom-7 -left-4 hidden rounded-[14px] border border-white/10 bg-[#151a2e]/95 p-3 text-white shadow-pop backdrop-blur sm:block lg:-left-10">
+        <p className="flex items-center gap-2 text-[0.75rem] font-semibold">
+          <CloudOff className="size-4 text-[#ff8593]" /> Offline
+        </p>
+        <p className="mt-1 text-[0.6875rem] text-night-mute">3 answers safe on device</p>
+      </div>
+      <div className="float-b absolute -top-4 right-6 hidden rounded-[14px] bg-lime p-3 text-on-lime shadow-pop sm:block">
+        <p className="flex items-center gap-2 text-[0.75rem] font-bold">
+          <Check className="size-4" strokeWidth={3} /> All answers saved
+        </p>
+      </div>
+      <div className="float-c absolute -bottom-7 right-4 hidden items-center gap-3 rounded-[14px] border border-white/10 bg-[#151a2e]/95 p-3 text-white shadow-pop backdrop-blur sm:flex lg:-right-8">
+        <span className="flex size-9 items-center justify-center rounded-[10px] bg-white text-[#0b0f1e]">
+          <QrCode className="size-5" />
+        </span>
+        <div>
+          <p className="text-[0.75rem] font-semibold">Verified report</p>
+          <p className="num text-[0.6875rem] text-night-mute">C97L57LLPJ · 25/30</p>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Caption({ title, children, tight }: { title: string; children: React.ReactNode; tight?: boolean }) {
-  return (
-    <div className={`mx-auto max-w-[460px] text-center ${tight ? "mt-[30px]" : "mt-[34px]"}`}>
-      <h3 className="display text-[1.8125rem] leading-8 text-cobalt">{title}</h3>
-      <p className="mt-3.5 text-[0.875rem] leading-5 text-mute">{children}</p>
-    </div>
-  );
-}
+const FLOAT_CSS = `
+@keyframes ec-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.float-a{animation:ec-float 6s ease-in-out infinite}
+.float-b{animation:ec-float 7s ease-in-out 1s infinite}
+.float-c{animation:ec-float 8s ease-in-out 2s infinite}
+@media (prefers-reduced-motion:reduce){.float-a,.float-b,.float-c{animation:none}}
+`;
 
-const DOTS =
-  "bg-[radial-gradient(circle,rgba(19,40,70,0.14)_1px,transparent_1.2px)] [background-size:20px_20px] [background-position:12px_14px]";
+/* ------------------------------------------------------------------ */
 
 export default function HomePage() {
   const { me, loading } = useAuth();
   const router = useRouter();
+  const [menu, setMenu] = useState(false);
+  const [open, setOpen] = useState(0);
 
   useEffect(() => {
     if (!loading && me) router.replace(roleHome(me.role));
@@ -202,378 +230,435 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen overflow-x-clip bg-parchment text-ink">
-      {/* ---------------- hero ---------------- */}
-      <section className="bg-cobalt text-on-cobalt">
-        <header className="mx-auto w-full max-w-[1440px] px-5 sm:px-8 xl:px-[52px]">
-          <div className="relative flex h-[100px] items-center justify-between border-b border-parchment/25 pt-2">
-            <Link href="/" className="display relative -top-[3px] text-[2rem] leading-none text-parchment">
-              <span className="text-[2.3rem] text-parchment">ExamCore</span>
-            </Link>
-            <nav className="absolute left-[calc(50%-135px)] top-[44px] hidden items-center gap-[65px] xl:flex" aria-label="Landing">
+      <style>{FLOAT_CSS}</style>
+
+      {/* ============ HERO ============ */}
+      <section className="glow-iris relative overflow-hidden bg-night text-white">
+        <div className="bg-dots-night pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_75%)]" aria-hidden />
+
+        <header className="relative z-20">
+          <div className={cn(WRAP, "flex h-[72px] items-center justify-between")}>
+            <Logo />
+            <nav className="hidden items-center gap-1 rounded-full border border-white/10 bg-white/[0.04] p-1 backdrop-blur md:flex" aria-label="Landing">
               {NAV.map((item) => (
-                <a key={item.href} href={item.href} style={{ marginLeft: item.x }} className="text-[0.875rem] leading-5 text-on-cobalt/90 hover:text-on-cobalt">
+                <a key={item.href} href={item.href} className="rounded-full px-4 py-1.5 text-[0.8125rem] font-medium text-night-mute transition-colors hover:bg-white/10 hover:text-white">
                   {item.label}
                 </a>
               ))}
             </nav>
-            <div className="flex items-center gap-[54px]">
-              <Link href="/login" className="hidden text-[0.875rem] text-on-cobalt/90 hover:text-on-cobalt sm:block">
+            <div className="hidden items-center gap-2 md:flex">
+              <Link href="/login" className="rounded-full px-4 py-2 text-[0.8125rem] font-medium text-white/85 hover:text-white">
                 Log in
               </Link>
-              <Link
-                href="/signup"
-                className="inline-flex h-[47px] w-[166px] items-center justify-center gap-2 rounded-[4px] bg-surface text-[0.875rem] text-cobalt transition-colors hover:bg-white"
-              >
+              <Link href="/signup" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-[0.8125rem] font-semibold text-[#0b0f1e] transition-transform hover:-translate-y-0.5">
                 Create account <ArrowUpRight className="size-3.5" />
               </Link>
             </div>
+            <button
+              type="button"
+              onClick={() => setMenu((v) => !v)}
+              aria-label={menu ? "Close menu" : "Open menu"}
+              aria-expanded={menu}
+              className="flex size-10 items-center justify-center rounded-[12px] border border-white/15 bg-white/5 md:hidden"
+            >
+              {menu ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
           </div>
+          {menu && (
+            <div className="animate-rise mx-4 rounded-[18px] border border-white/10 bg-[#151a2e] p-2 md:hidden">
+              {NAV.map((item) => (
+                <a key={item.href} href={item.href} onClick={() => setMenu(false)} className="block rounded-[12px] px-4 py-3 text-[0.9375rem] font-medium text-white/90 hover:bg-white/5">
+                  {item.label}
+                </a>
+              ))}
+              <div className="mt-2 grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+                <Link href="/login" className="flex h-11 items-center justify-center rounded-[12px] border border-white/15 text-[0.875rem] font-medium">
+                  Log in
+                </Link>
+                <Link href="/signup" className="flex h-11 items-center justify-center rounded-[12px] bg-lime text-[0.875rem] font-semibold text-on-lime">
+                  Create account
+                </Link>
+              </div>
+            </div>
+          )}
         </header>
 
-        <div className="mx-auto max-w-[900px] px-5 pb-[10px] pt-[44px] text-center">
-          <p className="text-[0.75rem] uppercase leading-4 tracking-[0.15em] text-parchment/85">Focus on what you know.</p>
-          <h1 className="mt-5 text-parchment">
-            <span className="block text-[clamp(2.75rem,4.9vw,4.375rem)] font-light leading-[1.2] tracking-[-0.02em] sm:leading-[102px]">Exams that let</span>
-            <span className="display block text-[clamp(3.25rem,7.5vw,6.75rem)] leading-[1.05] text-parchment sm:leading-[105px]">knowledge speak.</span>
-          </h1>
-          <p className="mx-auto mt-[23px] max-w-[520px] text-[1.1875rem] leading-[25px] text-parchment">
-            Create, take and assess online examinations with clarity, fairness and resilience.
-          </p>
-          <div className="mt-[37px] flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-[27px]">
-            <LightButton href="/login" className="w-[230px]">
-              Log in to ExamCore <ArrowUpRight className="size-3.5" />
-            </LightButton>
-            <GhostLink href="#platform">
-              Explore the platform <ArrowDown className="size-3.5" />
-            </GhostLink>
-          </div>
-        </div>
-      </section>
-
-      <Image src="/landing-hero.jpg" alt="A candidate sitting calmly at a desk in the centre of concentric rings. A calm place to demonstrate your best." width={1440} height={575} priority className="block h-auto w-full" />
-
-      {/* ---------------- pillars ---------------- */}
-      <section className={`${WRAP} pt-[14px]`}>
-        <p className="text-center text-[0.6875rem] uppercase tracking-[0.08em] text-mute">One connected examination experience</p>
-        <div className="mx-auto mt-9 grid max-w-[1376px] grid-cols-2 gap-y-6 xl:grid-cols-4 min-[1440px]:ml-[-42px] min-[1440px]:w-[1376px] min-[1440px]:max-w-none">
-          {PILLARS.map((p, i) => (
-            <div key={p} className="relative flex h-6 items-center justify-center">
-              {i > 0 && <span aria-hidden className={`absolute left-0 h-6 w-px bg-cobalt ${i % 2 === 0 ? "max-xl:hidden" : ""}`} />}
-              <span className="display text-[1.3125rem] leading-6 text-cobalt xl:pl-5">{p}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------------- connected diagram ---------------- */}
-      <section id="platform" className={`${WRAP} pt-[96px]`}>
-        <Connected />
-        <div className="mt-[39px] text-center">
-          <h2 className="display text-[clamp(2.25rem,3.5vw,3.125rem)] leading-[52px] text-cobalt">One exam. Every part connected.</h2>
-          <p className="mt-2.5 text-[1rem] leading-6 text-mute">From the first question to the final report, nothing works in isolation.</p>
-        </div>
-
-        <div className="mx-auto mt-[90px] grid max-w-[1320px] gap-10 md:grid-cols-3 md:gap-0">
-          {[
-            { big: "03", title: "Purpose-built roles", detail: "Administrator · Examiner · Candidate" },
-            { big: "03", title: "Ways to show knowledge", detail: "Single answer · Multiple select · Written" },
-            { big: "Offline-ready", title: "Confidence through disruption", detail: "Local saving · Clear status · Reconnection" },
-          ].map((s, i) => (
-            <div key={s.title} className="relative flex flex-col items-center gap-2 text-center md:block md:h-[112px]">
-              {i > 0 && <span aria-hidden className="absolute left-0 top-0 hidden h-full w-px bg-cobalt md:block" />}
-              {s.big === "03" ? (
-                <p className="num text-[3.25rem] leading-[40px] text-cobalt md:absolute md:inset-x-0 md:-top-[3px]">{s.big}</p>
-              ) : (
-                <p className="display text-[2.7rem] leading-[34px] text-cobalt md:absolute md:inset-x-0 md:-top-[9px]">{s.big}</p>
-              )}
-              <p className="display text-[1.1875rem] leading-7 text-cobalt md:absolute md:inset-x-0 md:top-[58px]">{s.title}</p>
-              <p className="text-[0.75rem] leading-4 text-mute md:absolute md:inset-x-0 md:top-[100px]">{s.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ---------------- less friction ---------------- */}
-      <section className={`${WRAP} pt-[149px]`}>
-        <div className="grid gap-12 xl:grid-cols-[minmax(0,604px)_591px] xl:gap-x-16">
-          <div className="xl:pt-[83px]">
-            <p className="eyebrow !tracking-[0.02em]">Made for the exam hall</p>
-            <h2 className="display mt-[30px] text-[clamp(2.75rem,4.7vw,4.25rem)] leading-[1.32] text-cobalt xl:leading-[90px]">
-              Less friction.
-              <br />
-              More focus.
-            </h2>
-            <p className="mt-5 pl-1 text-[1rem] leading-6 text-mute">
-              The important work is already demanding.
-              <br />
-              Your examination platform shouldn’t be.
+        <div className={cn(WRAP, "relative z-10 grid items-center gap-14 pb-24 pt-12 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pb-32 lg:pt-20")}>
+          <div className="animate-rise text-center lg:text-left">
+            <Eyebrow dark>Secure examination platform</Eyebrow>
+            <h1 className="display mt-6 text-[clamp(2.75rem,6.4vw,5rem)] leading-[0.98] tracking-[-0.045em] text-white">
+              Exams that let <span className="text-gradient">knowledge</span> speak.
+            </h1>
+            <p className="mx-auto mt-6 max-w-[520px] text-[1.0625rem] leading-relaxed text-night-mute lg:mx-0">
+              Create, take and assess online examinations with clarity, fairness and resilience — even when the Wi-Fi gives up.
             </p>
-            <a href="#how" className="mt-[43px] inline-flex items-center gap-1.5 pl-1 text-[0.8125rem] leading-5 text-cobalt hover:underline">
-              Explore your workspace <ArrowUpRight className="size-3" />
-            </a>
+            <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+              <Link
+                href="/login"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-lime px-6 text-[0.9375rem] font-semibold text-on-lime shadow-[0_14px_40px_-12px_rgb(198_243_107/0.6)] transition-transform hover:-translate-y-0.5 sm:w-auto"
+              >
+                Log in to ExamCore <ArrowRight className="size-4" />
+              </Link>
+              <a
+                href="#how"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-white/15 bg-white/5 px-6 text-[0.9375rem] font-medium text-white transition-colors hover:bg-white/10 sm:w-auto"
+              >
+                See how it works
+              </a>
+            </div>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[0.8125rem] text-night-mute lg:justify-start">
+              {[
+                { icon: CloudOff, t: "Offline-proof" },
+                { icon: Scale, t: "Fair random papers" },
+                { icon: QrCode, t: "QR-verified results" },
+              ].map(({ icon: Icon, t }) => (
+                <span key={t} className="inline-flex items-center gap-2">
+                  <Icon className="size-4 text-lime" /> {t}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-y-[50px] sm:grid-cols-2 sm:gap-x-[73px]">
-            {FEATURES.map((f) => (
-              <FeatureCell key={f.title} {...f} />
+          <div className="animate-rise [animation-delay:120ms]">
+            <HeroMock />
+          </div>
+        </div>
+      </section>
+
+      {/* ============ STATS STRIP ============ */}
+      <section className="relative z-10 -mt-10">
+        <div className={WRAP}>
+          <div className="grid grid-cols-2 overflow-hidden rounded-[22px] border border-line bg-surface shadow-pop md:grid-cols-4">
+            {[
+              { n: "3", l: "Purpose-built roles" },
+              { n: "3", l: "Question types" },
+              { n: "45s", l: "Outage detection" },
+              { n: "100%", l: "Answers kept offline" },
+            ].map((s, i) => (
+              <div
+                key={s.l}
+                className={cn(
+                  "px-6 py-6 text-center",
+                  i % 2 === 1 && "border-l border-line-soft",
+                  i >= 2 && "border-t border-line-soft md:border-t-0",
+                  i === 2 && "md:border-l",
+                )}
+              >
+                <p className="display text-[2.25rem] leading-none tracking-[-0.05em]">{s.n}</p>
+                <p className="mt-2 text-[0.8125rem] text-mute">{s.l}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ---------------- clearer view ---------------- */}
-      <section id="how" className={`${WRAP} pt-[91px]`}>
-        <div className="text-center">
-          <p className="eyebrow !tracking-[0.02em]">Explore the platform</p>
-          <h2 className="display mt-[31px] text-[clamp(2.25rem,3.8vw,3.4rem)] leading-[52px] text-cobalt">A clearer view, at every step.</h2>
-          <p className="mt-3 text-[1rem] leading-6 text-mute">Considered tools for the people preparing, taking and reviewing every examination.</p>
-        </div>
-
-        <div className="mt-[54px] grid gap-12 xl:grid-cols-2 xl:gap-x-12">
-          <div>
-            <div className={`relative h-[280px] overflow-hidden bg-sand ${DOTS}`}>
-              <div className="absolute left-7 top-[27px] h-[223px] w-[min(342px,calc(100%-272px))] rounded-[6px] border border-line bg-surface max-sm:hidden">
-                <p className="display absolute left-3.5 top-[11px] text-[1.375rem] leading-7 text-cobalt">Question bank</p>
-                <p className="absolute left-3.5 top-[48px] text-[0.5625rem] leading-3 text-mute">TOPIC&nbsp; All topics&nbsp;&nbsp; DIFFICULTY&nbsp; All</p>
-                {[
-                  ["Binary search complexity", "Easy"],
-                  ["Properties of a balanced tree", "Medium"],
-                  ["Resolving hash collisions", "Hard"],
-                ].map(([t, d], i) => (
-                  <div key={t} className="absolute left-3.5 right-3.5 flex items-center justify-between text-[0.75rem]" style={{ top: 83 + i * 47 }}>
-                    <span className="text-ink">{t}</span>
-                    <span className="mr-[34px] text-[0.625rem] text-cobalt">{d}</span>
-                  </div>
-                ))}
+      {/* ============ HOW IT WORKS ============ */}
+      <section id="how" className="scroll-mt-10 py-24 sm:py-28">
+        <div className={WRAP}>
+          <SectionHead
+            eyebrow="One connected flow"
+            title={
+              <>
+                From first question <br className="hidden sm:block" /> to verified result.
+              </>
+            }
+            text="Four stages, one platform. Nothing works in isolation, so nothing gets lost between steps."
+          />
+          <div className="relative mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div aria-hidden className="absolute left-[12%] right-[12%] top-[34px] hidden h-px bg-gradient-to-r from-transparent via-cobalt/40 to-transparent lg:block" />
+            {STEPS.map(({ icon: Icon, title, text }, i) => (
+              <div key={title} className="group relative rounded-[20px] border border-line bg-surface p-6 shadow-card transition-all hover:-translate-y-1 hover:shadow-pop">
+                <div className="flex items-center justify-between">
+                  <span className="relative flex size-11 items-center justify-center rounded-[14px] bg-night text-lime transition-transform group-hover:rotate-[-6deg]">
+                    <Icon className="size-5" />
+                  </span>
+                  <span className="num text-[0.75rem] text-mute">0{i + 1}</span>
+                </div>
+                <h3 className="display mt-6 text-[1.4rem] tracking-[-0.03em]">{title}</h3>
+                <p className="mt-2 text-[0.875rem] leading-relaxed text-mute">{text}</p>
               </div>
-              <div className="absolute right-[30px] top-[52px] h-[195px] w-[211px] rounded-[6px] border border-line bg-surface max-sm:left-4 max-sm:right-4 max-sm:top-5 max-sm:w-auto">
-                <p className="display absolute left-3.5 top-3 text-[1.125rem] leading-6 text-cobalt">Balanced blueprint</p>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ BENTO ============ */}
+      <section id="platform" className="scroll-mt-10 pb-24 sm:pb-28">
+        <div className={WRAP}>
+          <SectionHead
+            eyebrow="Built for the exam hall"
+            title="Less friction. More focus."
+            text="The important work is already demanding. Your examination platform shouldn't be."
+          />
+
+          <div className="mt-14 grid gap-4 md:grid-cols-6">
+            <article className="glow-iris relative overflow-hidden rounded-[24px] bg-night p-7 text-white md:col-span-4 md:row-span-2">
+              <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
+              <div className="relative">
+                <span className="flex size-11 items-center justify-center rounded-[14px] bg-lime text-on-lime">
+                  <CloudOff className="size-5" />
+                </span>
+                <h3 className="display mt-6 text-[clamp(1.6rem,3vw,2.2rem)] leading-[1.05] text-white">Failure-resilient by design.</h3>
+                <p className="mt-3 max-w-[440px] text-[0.9375rem] leading-relaxed text-night-mute">
+                  Network drops? Answers wait in an on-device outbox and sync the moment you are back. The server spots the gap and the examiner can give the lost minutes back.
+                </p>
+                <div className="mt-8 space-y-2.5">
+                  {[
+                    { t: "14:02:11", m: "Answer saved", c: "text-lime", i: Check },
+                    { t: "14:02:40", m: "Connection lost — 3 answers kept on device", c: "text-[#ff8593]", i: CloudOff },
+                    { t: "14:03:52", m: "Back online — synced 3 answers", c: "text-[#93daf0]", i: Radio },
+                    { t: "14:05:00", m: "Examiner approved +72 s compensation", c: "text-lime", i: Plus },
+                  ].map(({ t, m, c, i: Icon }) => (
+                    <div key={t} className="flex items-center gap-3 rounded-[12px] border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-[0.8125rem]">
+                      <Icon className={cn("size-4 shrink-0", c)} />
+                      <span className="num text-night-mute">{t}</span>
+                      <span className="truncate">{m}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </article>
+
+            <article className="rounded-[24px] border border-line bg-surface p-6 shadow-card md:col-span-2">
+              <span className="flex size-10 items-center justify-center rounded-[12px] bg-tint text-cobalt">
+                <Scale className="size-5" />
+              </span>
+              <h3 className="display mt-5 text-[1.3rem] tracking-[-0.03em]">Fairer random papers</h3>
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-mute">Difficulty blueprints give every candidate an equally hard paper.</p>
+              <div className="mt-5 space-y-2.5">
                 {[
-                  ["Easy", "4 / 6", 66],
-                  ["Medium", "10 / 12", 83],
-                  ["Hard", "6 / 7", 86],
-                ].map(([l, v, w], i) => (
-                  <div key={l as string} className="absolute left-3.5 right-3.5" style={{ top: 49 + i * 39 }}>
-                    <p className="text-[0.6875rem] leading-4 text-ink">
-                      {l}&nbsp;&nbsp; {v}
-                    </p>
-                    <div className="mt-1.5 h-1 rounded-full bg-tint">
-                      <div className="h-1 rounded-full bg-cobalt" style={{ width: `${w}%` }} />
+                  { l: "Easy", v: 4, t: 6, c: "bg-success" },
+                  { l: "Medium", v: 3, t: 4, c: "bg-cobalt" },
+                  { l: "Hard", v: 2, t: 3, c: "bg-[#b06bff]" },
+                ].map((b) => (
+                  <div key={b.l}>
+                    <div className="flex justify-between text-[0.75rem] text-mute">
+                      <span>{b.l}</span>
+                      <span className="num">
+                        {b.v}/{b.t}
+                      </span>
+                    </div>
+                    <div className="mt-1 h-2 overflow-hidden rounded-full bg-sand">
+                      <div className={cn("h-full rounded-full", b.c)} style={{ width: `${(b.v / b.t) * 100}%` }} />
                     </div>
                   </div>
                 ))}
-                <p className="absolute left-3.5 top-[170px] text-[0.6875rem] leading-4 text-cobalt">40 / 40 marks ✓</p>
               </div>
-            </div>
-            <Caption title="Build the paper, not the busywork.">
-              Reuse well-crafted questions and set a difficulty blueprint
-              <br className="max-sm:hidden" /> that makes variation more deliberate.
-            </Caption>
-          </div>
+            </article>
 
-          <div>
-            <div className={`relative h-[280px] overflow-hidden bg-sand ${DOTS}`}>
-              <div className="absolute inset-x-4 top-[24px] h-[234px] overflow-hidden rounded-[3px] bg-surface xl:inset-x-[37px]">
-                <div className="flex h-[42px] items-center justify-between bg-cobalt px-3.5 text-on-cobalt">
-                  <span className="display text-[1.25rem] leading-none text-on-cobalt">ExamCore</span>
-                  <span className="num text-[0.875rem]">00:42:18</span>
-                  <span className="text-[0.6875rem]">All saved ✓</span>
-                </div>
-                <div className="absolute left-2.5 top-[57px] h-[165px] w-[94px] bg-sand px-2.5 pt-3 max-sm:hidden">
-                  <p className="text-[0.5625rem] uppercase text-mute">Questions</p>
-                  <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2.5">
-                    {["01", "02", "03", "04", "05", "06"].map((n) => (
-                      <span key={n} className="num flex h-7 w-[33px] items-center justify-center rounded-[4px] bg-cobalt text-[0.6875rem] text-on-cobalt">
-                        {n}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="absolute left-[123px] right-[22px] top-[57px] max-sm:left-4">
-                  <p className="text-[0.625rem] uppercase leading-4 text-cobalt">Question 4 of 20 · 2 marks</p>
-                  <p className="display mt-2.5 text-[1.125rem] leading-6 text-ink">Which structure supports undo?</p>
-                  <div className="mt-[16px] flex h-[38px] items-center gap-2.5 rounded-[3px] border border-cobalt/60 bg-tint px-3.5 text-[0.75rem] text-cobalt">
-                    <span className="size-2 rounded-full bg-cobalt" /> Stack — last in, first out
-                  </div>
-                  <div className="mt-[10px] flex h-[38px] items-center gap-2.5 px-3.5 text-[0.75rem] text-mute">
-                    <span className="size-2 rounded-full border border-mute/60" /> Queue — first in, first out
-                  </div>
-                </div>
-              </div>
-            </div>
-            <Caption title="A workspace that makes room to think.">
-              Readable timing, clear navigation and automatic saving.
-              <br className="max-sm:hidden" /> The essentials stay visible; distractions stay out.
-            </Caption>
-          </div>
-        </div>
-
-        <div className="mt-[77px] grid gap-10 md:grid-cols-3 xl:grid-cols-[minmax(0,454px)_minmax(0,454px)_minmax(0,404px)]">
-          {PROMISES.map((p) => (
-            <div key={p.title}>
-              <p.icon className="size-[22px] text-cobalt" strokeWidth={1.5} aria-hidden />
-              <h3 className="display mt-[38px] text-[1.5rem] leading-7 text-cobalt">{p.title}</h3>
-              <p className="mt-[19px] max-w-[252px] text-[0.875rem] leading-5 text-mute">{p.text}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-[69px] grid gap-12 xl:grid-cols-2 xl:gap-x-12">
-          <div>
-            <div className="relative flex h-[250px] items-center justify-center bg-cobalt px-5">
-              <div className="relative h-[196px] w-full max-w-[462px] bg-surface">
-                <p className="absolute left-5 top-[19px] text-[0.5625rem] uppercase leading-3 text-mute">Your published result</p>
-                <p className="num absolute left-5 top-[48px] text-[2.5rem] leading-[54px] text-cobalt">32 / 40</p>
-                <p className="absolute left-5 top-[104px] text-[0.8125rem] leading-4 text-success">80%&nbsp; ·&nbsp; Passed</p>
-                <p className="display absolute left-[249px] top-[54px] text-[1.25rem] leading-6 text-ink max-sm:hidden">Discrete Mathematics</p>
-                <p className="absolute left-[249px] top-[96px] text-[0.75rem] leading-4 text-mute max-sm:hidden">16 correct · 4 incorrect</p>
-                <p className="absolute inset-x-4 top-[145px] flex h-[33px] items-center rounded-[3px] bg-tint px-2.5 text-[0.75rem] uppercase text-cobalt">
-                  ✓&nbsp; Valid report&nbsp;&nbsp;&nbsp;&nbsp; EC-26-7F3A9
-                </p>
-              </div>
-            </div>
-            <Caption tight title="A result you can understand. And verify.">
-              See the marking decision, learn from feedback and download
-              <br className="max-sm:hidden" /> a report with privacy-conscious public verification.
-            </Caption>
-          </div>
-          <div>
-            <div className="relative flex h-[250px] items-center justify-center bg-cobalt px-5">
-              <div className="relative h-[196px] w-full max-w-[556px] bg-surface">
-                <p className="display absolute left-[18px] top-[15px] text-[1.25rem] leading-6 text-cobalt">Examination overview</p>
-                <p className="absolute right-[46px] top-[17px] text-[0.625rem] uppercase text-cobalt">Live</p>
+            <article className="rounded-[24px] border border-line bg-surface p-6 shadow-card md:col-span-2">
+              <span className="flex size-10 items-center justify-center rounded-[12px] bg-tint text-cobalt">
+                <Activity className="size-5" />
+              </span>
+              <h3 className="display mt-5 text-[1.3rem] tracking-[-0.03em]">Live monitoring</h3>
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-mute">Who is online, how far along, and what needs context — every 5 seconds.</p>
+              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
                 {[
-                  ["42", "Active", 24],
-                  ["06", "Submitted", 201],
-                  ["02", "Offline", 378],
-                ].map(([n, l, x]) => (
-                  <div key={l as string} className="absolute top-[56px]" style={{ left: x as number }}>
-                    <p className="num text-[2rem] leading-[36px] text-cobalt">{n}</p>
-                    <p className="mt-[3px] text-[0.6875rem] leading-4 text-mute">{l}</p>
+                  { n: "42", l: "Active" },
+                  { n: "06", l: "Done" },
+                  { n: "02", l: "Offline" },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-[12px] bg-paper py-2.5">
+                    <p className="display text-[1.4rem] leading-none tracking-[-0.04em]">{s.n}</p>
+                    <p className="mt-1 text-[0.6875rem] text-mute">{s.l}</p>
                   </div>
                 ))}
-                <p className="absolute inset-x-[17px] top-[139px] flex h-[38px] items-center rounded-[3px] bg-tint px-3 text-[0.75rem] text-cobalt">Indicators — review before acting</p>
               </div>
-            </div>
-            <Caption tight title="The right context, while it still matters.">
-              Follow active attempts, review indicators and send
-              <br className="max-sm:hidden" /> announcements without losing the wider view.
-            </Caption>
-          </div>
-        </div>
-      </section>
+            </article>
 
-      {/* ---------------- roles ---------------- */}
-      <section id="roles" className={`${WRAP} pt-[109px]`}>
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,624px)_minmax(0,688px)] xl:gap-x-0">
-          <div className="xl:pt-[67px]">
-            <p className="eyebrow !tracking-[0.02em]">Purpose-built, not one-size-fits-all</p>
-            <h2 className="display mt-[41px] text-[clamp(2.75rem,4.4vw,3.9375rem)] leading-[1.3] text-cobalt xl:leading-[87px]">
-              The right tools.
-              <br />
-              For every role.
-            </h2>
-            <p className="mt-[14px] max-w-[380px] pl-1 text-[1rem] leading-[22px] text-mute">
-              Separate responsibilities. A shared standard. Everyone gets the space and access they need.
-            </p>
-            <p className="mt-[60px] pl-1 text-[0.75rem] text-cobalt">One account. Your assigned role.</p>
-          </div>
-          <div>
-            {ROLES.map((r) => (
-              <div key={r.n} className="relative min-h-[192px] border-t border-line py-0 max-sm:pb-8">
-                <span className="num absolute left-0 top-7 text-[0.6875rem] leading-4 text-cobalt">{r.n}</span>
-                <div className="absolute left-[47px] top-0 sm:static sm:grid sm:grid-cols-[47px_292px_1fr]">
-                  <span className="max-sm:hidden" />
-                  <div className="max-sm:relative max-sm:left-0 max-sm:pl-[47px]">
-                    <h3 className="display mt-6 text-[2rem] leading-[34px] text-cobalt">{r.title}</h3>
-                    <p className="mt-[11px] text-[0.8125rem] leading-4 text-mute">{r.sub}</p>
-                    <Link href="/login" className="mt-[24px] inline-flex h-12 w-[145px] items-center justify-center gap-2 rounded-[4px] bg-cobalt text-[0.875rem] text-on-cobalt transition-colors hover:bg-cobalt-deep">
-                      Log in <ArrowUpRight className="size-3.5" />
-                    </Link>
-                  </div>
-                  <ul className="mt-[26px] space-y-0 text-[0.8125rem] leading-[18px] text-ink max-sm:pl-[47px] max-sm:pt-4">
-                    {r.points.map((pt) => (
-                      <li key={pt}>✓ {pt}</li>
-                    ))}
-                  </ul>
+            <article className="flex flex-col justify-between gap-6 rounded-[24px] bg-lime p-6 text-on-lime sm:flex-row sm:items-center md:col-span-3">
+              <div>
+                <QrCode className="size-8" />
+                <h3 className="display mt-4 text-[1.5rem] tracking-[-0.03em] text-on-lime">Results anyone can verify.</h3>
+                <p className="mt-2 max-w-[320px] text-[0.8125rem] leading-relaxed opacity-75">A PDF report with a QR code. Scan it to confirm score and date, privately.</p>
+              </div>
+              <Link
+                href="/verify/C97L57LLPJ"
+                className="inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-[12px] bg-[#0b0f1e] px-5 text-[0.875rem] font-semibold text-white transition-transform hover:-translate-y-0.5 sm:self-auto"
+              >
+                Try a real code <ArrowUpRight className="size-4" />
+              </Link>
+            </article>
+
+            <article className="rounded-[24px] border border-line bg-surface p-6 shadow-card md:col-span-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="flex size-10 items-center justify-center rounded-[12px] bg-tint text-cobalt">
+                    <Contrast className="size-5" />
+                  </span>
+                  <h3 className="display mt-5 text-[1.3rem] tracking-[-0.03em]">Comfortable for everyone</h3>
+                  <p className="mt-2 max-w-[340px] text-[0.8125rem] leading-relaxed text-mute">
+                    Light, dark and high-contrast themes, three text sizes, keyboard shortcuts and a built-in scratchpad.
+                  </p>
+                </div>
+                <div className="hidden shrink-0 gap-1.5 sm:flex" aria-hidden>
+                  <span className="size-9 rounded-full border border-line bg-white" />
+                  <span className="size-9 rounded-full bg-[#111627]" />
+                  <span className="size-9 rounded-full border-2 border-[#ffd400] bg-black" />
                 </div>
               </div>
-            ))}
+            </article>
           </div>
         </div>
       </section>
 
-      {/* ---------------- faq ---------------- */}
-      <section className={`${WRAP} pb-[36px] pt-[95px]`}>
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,624px)_minmax(0,688px)] xl:gap-x-0">
-          <div className="xl:pt-[22px]">
-            <p className="eyebrow !tracking-[0.02em]">A little more clarity</p>
-            <h2 className="display mt-[31px] text-[clamp(2.5rem,3.8vw,3.4rem)] leading-[1.3] text-cobalt">Before you begin.</h2>
-            <p className="mt-[19px] max-w-[380px] pl-1 text-[1rem] leading-6 text-mute">The practical details, without the small print.</p>
-          </div>
-          <div>
-            {FAQS.map((f) => (
-              <div key={f.q} className="min-h-[119px] border-t border-line pt-5">
-                <h3 className="display text-[1.25rem] leading-[22px] text-cobalt">{f.q}</h3>
-                <p className="mt-[13px] max-w-[365px] text-[0.875rem] leading-[18px] text-mute">{f.a}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ---------------- closing + footer ---------------- */}
-      <section className="bg-cobalt text-on-cobalt">
-        <div className={`${WRAP} text-center`}>
-          <p className="pt-[65px] text-[0.6875rem] uppercase tracking-[0.06em] text-parchment/85">A better space for what you know</p>
-          <h2 className="display mt-[28px] text-[clamp(2.75rem,4.8vw,4.3125rem)] leading-[1.3] text-parchment xl:leading-[92px]">
-            Ready for a clearer
-            <br />
-            examination experience?
-          </h2>
-          <p className="mt-[18px] text-[1.0625rem] leading-[26px] text-parchment">Bring preparation, delivery and reflection into one connected experience.</p>
-          <div className="mt-[34px] flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-11">
-            <LightButton href="/login">
-              Log in to ExamCore <ArrowUpRight className="size-3.5" />
-            </LightButton>
-            <Link href="/signup" className="inline-flex h-12 items-center gap-2 text-[0.875rem] text-parchment hover:opacity-80 sm:pr-5">
-              Create an account <ArrowUpRight className="size-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <footer className={`${WRAP} mt-[57px] border-t border-parchment/30 pb-[23px] pt-[52px] xl:[&]:max-w-[1440px]`}>
-          <div className="grid gap-10 text-left sm:grid-cols-2 xl:grid-cols-[506px_280px_280px_280px] xl:gap-x-0">
-            <div>
-              <p className="display text-[2.4rem] leading-[34px] text-parchment">ExamCore</p>
-              <p className="mt-[19px] pl-1 text-[0.875rem] leading-5 text-parchment">
-                Exams that let knowledge speak.
-                <br />
-                A calmer, more considered way to
-                <br />
-                create, take and assess examinations.
-              </p>
-            </div>
-            {[
-              { h: "Platform", links: [["Question bank", "/login"], ["Exam workspace", "/login"], ["Results & analytics", "/login"]] },
-              { h: "For every role", links: [["Examiners", "/login"], ["Candidates", "/login"], ["Administrators", "/login"]] },
-              { h: "Your account", links: [["Log in", "/login"], ["Create account", "/signup"], ["Verify a report", "/verify/C97L57LLPJ"]] },
-            ].map((col) => (
-              <div key={col.h}>
-                <p className="text-[0.875rem] leading-5 text-parchment">{col.h}</p>
-                <ul className="mt-[25px] space-y-[17px] text-[0.8125rem] leading-5">
-                  {col.links.map(([label, href]) => (
-                    <li key={label}>
-                      <Link href={href} className="text-parchment hover:underline">
-                        {label}
-                      </Link>
+      {/* ============ ROLES ============ */}
+      <section id="roles" className="scroll-mt-10 border-y border-line bg-surface py-24 sm:py-28">
+        <div className={WRAP}>
+          <SectionHead
+            eyebrow="Purpose-built, not one-size-fits-all"
+            title="The right tools for every role."
+            text="Separate responsibilities. A shared standard. One account, your assigned role."
+          />
+          <div className="mt-14 grid gap-5 lg:grid-cols-3">
+            {ROLES.map(({ icon: Icon, role, tag, points }, i) => (
+              <article
+                key={role}
+                className={cn(
+                  "relative flex flex-col overflow-hidden rounded-[24px] border p-7 transition-all hover:-translate-y-1",
+                  i === 1 ? "glow-iris border-transparent bg-night text-white shadow-pop" : "border-line bg-parchment",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={cn("flex size-11 items-center justify-center rounded-[14px]", i === 1 ? "bg-lime text-on-lime" : "bg-night text-lime")}>
+                    <Icon className="size-5" />
+                  </span>
+                  <span className={cn("num text-[0.75rem]", i === 1 ? "text-night-mute" : "text-mute")}>0{i + 1}</span>
+                </div>
+                <h3 className={cn("display mt-6 text-[1.75rem] tracking-[-0.035em]", i === 1 && "text-white")}>{role}</h3>
+                <p className={cn("text-[0.875rem]", i === 1 ? "text-night-mute" : "text-mute")}>{tag}</p>
+                <ul className="mt-6 space-y-3">
+                  {points.map((p) => (
+                    <li key={p} className="flex items-start gap-3 text-[0.875rem]">
+                      <span className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full", i === 1 ? "bg-lime/20 text-lime" : "bg-tint text-cobalt")}>
+                        <Check className="size-3" strokeWidth={3} />
+                      </span>
+                      {p}
                     </li>
                   ))}
                 </ul>
-              </div>
+                <Link
+                  href="/login"
+                  className={cn(
+                    "mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-[12px] text-[0.875rem] font-semibold transition-transform hover:-translate-y-0.5",
+                    i === 1 ? "bg-lime text-on-lime" : "bg-night text-white",
+                  )}
+                >
+                  Log in as {role.toLowerCase()} <ArrowRight className="size-4" />
+                </Link>
+              </article>
             ))}
           </div>
-        </footer>
-        <Image src="/landing-footer.jpg" alt="" aria-hidden width={1440} height={390} loading="eager" className="block h-auto w-full" />
+        </div>
+      </section>
+
+      {/* ============ FAQ ============ */}
+      <section id="faq" className="scroll-mt-10 py-24 sm:py-28">
+        <div className={cn(WRAP, "grid gap-12 lg:grid-cols-[0.9fr_1.1fr]")}>
+          <div>
+            <Eyebrow>A little more clarity</Eyebrow>
+            <h2 className="display mt-5 text-[clamp(2rem,4vw,3rem)] leading-[1.02]">Before you begin.</h2>
+            <p className="mt-4 max-w-[380px] text-[1rem] leading-relaxed text-mute">
+              Short answers to the questions examiners and candidates ask most.
+            </p>
+            <div className="mt-8 flex items-center gap-3 rounded-[18px] border border-line bg-surface p-4 shadow-card">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-success-soft text-success">
+                <ShieldCheck className="size-5" />
+              </span>
+              <p className="text-[0.8125rem] leading-relaxed text-mute">
+                Answers are private, roles are checked on every request, and indicators never change a score.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {FAQS.map((f, i) => {
+              const isOpen = open === i;
+              return (
+                <div key={f.q} className={cn("rounded-[18px] border bg-surface transition-shadow", isOpen ? "border-cobalt/30 shadow-card" : "border-line")}>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(isOpen ? -1 : i)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+                  >
+                    <span className="text-[1rem] font-semibold tracking-[-0.01em]">{f.q}</span>
+                    <span
+                      className={cn(
+                        "flex size-8 shrink-0 items-center justify-center rounded-full transition-all",
+                        isOpen ? "rotate-45 bg-cobalt text-on-cobalt" : "bg-sand text-mute",
+                      )}
+                    >
+                      <Plus className="size-4" />
+                    </span>
+                  </button>
+                  {isOpen && <p className="animate-rise px-5 pb-5 text-[0.9375rem] leading-relaxed text-mute">{f.a}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============ CTA + FOOTER ============ */}
+      <section className="px-3 pb-3 sm:px-5 sm:pb-5">
+        <div className="glow-iris relative overflow-hidden rounded-[28px] bg-night text-white">
+          <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
+          <div className={cn(WRAP, "relative py-20 text-center sm:py-24")}>
+            <Eyebrow dark>A better space for what you know</Eyebrow>
+            <h2 className="display mx-auto mt-6 max-w-[760px] text-[clamp(2.25rem,5vw,4rem)] leading-[1] text-white">
+              Ready for a clearer examination experience?
+            </h2>
+            <p className="mx-auto mt-5 max-w-[520px] text-[1rem] text-night-mute">
+              Bring preparation, delivery and reflection into one connected experience.
+            </p>
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/login"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-lime px-6 text-[0.9375rem] font-semibold text-on-lime transition-transform hover:-translate-y-0.5 sm:w-auto"
+              >
+                Log in to ExamCore <ArrowRight className="size-4" />
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[14px] border border-white/15 bg-white/5 px-6 text-[0.9375rem] font-medium hover:bg-white/10 sm:w-auto"
+              >
+                Create an account
+              </Link>
+            </div>
+          </div>
+
+          <footer className={cn(WRAP, "relative border-t border-white/10 py-12")}>
+            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+              <div>
+                <Logo />
+                <p className="mt-4 max-w-[280px] text-[0.8125rem] leading-relaxed text-night-mute">
+                  Exams that let knowledge speak. A calmer, more considered way to create, take and assess examinations.
+                </p>
+              </div>
+              {[
+                { h: "Platform", l: [["How it works", "#how"], ["Features", "#platform"], ["FAQ", "#faq"]] },
+                { h: "For every role", l: [["Examiners", "/login"], ["Candidates", "/login"], ["Administrators", "/login"]] },
+                { h: "Your account", l: [["Log in", "/login"], ["Create account", "/signup"], ["Verify a report", "/verify/C97L57LLPJ"]] },
+              ].map((col) => (
+                <div key={col.h}>
+                  <p className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-white">{col.h}</p>
+                  <ul className="mt-4 space-y-2.5">
+                    {col.l.map(([label, href]) => (
+                      <li key={label}>
+                        <Link href={href} className="text-[0.875rem] text-night-mute transition-colors hover:text-white">
+                          {label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+            <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-[0.75rem] text-night-mute sm:flex-row sm:justify-between">
+              <p>© 2026 ExamCore · Secure Examination Management</p>
+              <p>COMSATS University Lahore · Technoverse 5.0</p>
+            </div>
+          </footer>
+        </div>
       </section>
     </div>
   );
