@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Check, TriangleAlert } from "lucide-react";
+import { Check, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Logo } from "@/frontend/components/shell/AppShell";
 import { fmtDate } from "@/frontend/lib/format";
 import { apiGet } from "@/frontend/lib/api-client";
 import type { VerifyResult } from "@/shared/types";
@@ -33,33 +34,30 @@ function VerifyInner() {
 
   return (
     <div className="min-h-screen bg-parchment">
-      <header className="mx-auto flex w-full max-w-[1180px] items-end justify-between gap-6 px-5 pb-3 pt-7 sm:px-8">
-        <div>
-          <Link href="/" className="display text-[1.75rem] leading-none text-cobalt">
-            ExamCore
+      <section className="glow-iris relative overflow-hidden bg-night pb-28 text-white">
+        <div className="bg-dots-night pointer-events-none absolute inset-0" aria-hidden />
+        <header className="relative mx-auto flex w-full max-w-[1180px] items-center justify-between gap-6 px-5 py-5 sm:px-8">
+          <Logo />
+          <Link
+            href="/login"
+            className="inline-flex h-9 items-center rounded-full bg-white px-4 text-[0.8125rem] font-semibold text-[#0b0f1e] transition-transform hover:-translate-y-0.5"
+          >
+            Log in
           </Link>
-          <p className="mt-2 text-[0.625rem] uppercase tracking-[0.12em] text-mute">
-            Public report verification
+        </header>
+        <div className="relative mx-auto w-full max-w-[780px] px-5 pt-10 text-center sm:px-8">
+          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-lime">
+            <ShieldCheck className="size-3.5" /> Public report verification
+          </p>
+          <h1 className="display mt-5 text-[clamp(2.2rem,5vw,3.4rem)] leading-[1.02] text-white">Trust, without oversharing.</h1>
+          <p className="mx-auto mt-4 max-w-[460px] text-[0.9375rem] text-night-mute">
+            Verify an issued report. No account or personal information required.
           </p>
         </div>
-        <Link
-          href="/login"
-          className="inline-flex h-10 items-center rounded-md border border-line bg-surface px-6 text-[0.8125rem] font-medium text-cobalt transition-colors hover:border-cobalt/50"
-        >
-          Log in
-        </Link>
-      </header>
-      <div className="mx-auto w-full max-w-[1180px] px-5 sm:px-8">
-        <div className="h-px w-full bg-line" />
-      </div>
+      </section>
 
-      <main className="mx-auto w-full max-w-[780px] px-5 py-12 sm:px-8 sm:py-16">
-        <h1 className="display display-lg text-balance">Trust, without oversharing.</h1>
-        <p className="mt-4 text-[0.9375rem] text-mute">
-          Verify an issued report. No account or personal information required.
-        </p>
-
-        <div className="surface-card mt-9 p-5 sm:p-7">
+      <main className="relative mx-auto -mt-20 w-full max-w-[780px] px-4 pb-16 sm:px-8">
+        <div className="surface-card animate-rise p-5 shadow-pop sm:p-7">
           {current?.failed ? (
             <div className="py-8 text-center">
               <TriangleAlert className="mx-auto size-6 text-danger" />
@@ -78,19 +76,22 @@ function VerifyInner() {
             </div>
           ) : !result ? (
             <div className="space-y-4" aria-busy="true" aria-label="Verifying report">
-              <div className="h-16 animate-pulse rounded-md bg-sand" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-sand" />
-              <div className="h-8 animate-pulse rounded bg-sand" />
-              <div className="h-4 w-1/3 animate-pulse rounded bg-sand" />
-              <div className="h-8 animate-pulse rounded bg-sand" />
+              <div className="h-16 animate-pulse rounded-[12px] bg-line-soft" />
+              <div className="h-4 w-1/3 animate-pulse rounded-[8px] bg-line-soft" />
+              <div className="h-8 animate-pulse rounded-[8px] bg-line-soft" />
+              <div className="h-4 w-1/3 animate-pulse rounded-[8px] bg-line-soft" />
+              <div className="h-8 animate-pulse rounded-[8px] bg-line-soft" />
             </div>
           ) : result.valid ? (
             <>
-              <div className="flex items-center gap-3 rounded-md bg-success-soft px-5 py-4 text-success">
-                <Check className="size-6 shrink-0" strokeWidth={2} />
-                <p className="display text-[1.6rem] uppercase tracking-[0.02em]">
-                  Valid report
-                </p>
+              <div className="flex items-center gap-4 rounded-[16px] bg-success-soft px-5 py-4 text-success">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-success text-white shadow-[0_8px_20px_-8px_var(--success)]">
+                  <Check className="size-6" strokeWidth={3} />
+                </span>
+                <div>
+                  <p className="display text-[1.5rem] leading-none tracking-[-0.03em]">Valid report</p>
+                  <p className="mt-1 text-[0.8125rem] opacity-80">Issued by ExamCore and unchanged since.</p>
+                </div>
               </div>
 
               <dl className="mt-2 divide-y divide-line-soft">
@@ -191,7 +192,7 @@ export default function VerifyPage() {
       fallback={
         <div className="min-h-screen bg-parchment px-6 py-16">
           <div className="mx-auto max-w-[780px] space-y-4">
-            <div className="h-10 w-2/3 animate-pulse rounded bg-sand" />
+            <div className="h-10 w-2/3 animate-pulse rounded-[8px] bg-line-soft" />
             <div className="h-64 animate-pulse rounded-[10px] bg-sand" />
           </div>
         </div>
