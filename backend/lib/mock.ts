@@ -1,8 +1,8 @@
 // TEMPORARY mock data for stub endpoints, so the frontend never waits.
 // Every real endpoint replaces its stub in its own stage; delete this file when none are left.
 import type {
-  CandidateExam, Enrollment, EnrollResult, Exam, ExamDetail, ImportResult, Me, MyExams,
-  Preferences, PublishCheck, Question, Topic, User,
+  AttemptView, CandidateExam, Enrollment, EnrollResult, Exam, ExamDetail, HeartbeatResult, ImportResult, Me, MyExams,
+  Preferences, PublishCheck, Question, SaveResult, StartAttemptResult, SubmitResult, SyncResult, Topic, User,
 } from "@/shared/types";
 
 const preferences: Preferences = { theme: "light", fontScale: "md", navigatorSide: "left", layout: "single" };
@@ -111,3 +111,54 @@ export const mockMyExams: MyExams = {
     blockedReason: "Already submitted", resultPublished: true,
     attempt: { id: "77777777-7777-4777-8777-777777777777", status: "graded", endsAt: created, submittedAt: created } }],
 };
+
+// ---------- Stage 3 mocks (attempt engine stubs) ----------
+
+const attemptId = "88888888-8888-4888-8888-888888888888";
+const aq = (n: number) => `99999999-9999-4999-8999-99999999999${n}`;
+
+export const mockStartAttempt: StartAttemptResult = { attemptId, resumed: false };
+
+export const mockAttemptView: AttemptView = {
+  id: attemptId,
+  examId: mockExam.id,
+  examTitle: mockExam.title,
+  instructions: mockExam.instructions,
+  isSandbox: false,
+  status: "in_progress",
+  startedAt: "2026-12-01T09:05:00.000Z",
+  endsAt: "2026-12-01T10:05:00.000Z",
+  serverNow: "2026-12-01T09:10:00.000Z",
+  totalMarks: 16,
+  questions: [
+    { aqId: aq(1), position: 1, type: "mcq_single", stem: mockQuestions[0].stem, marks: 2,
+      options: mockQuestions[0].options.map(({ id, label }) => ({ id, label })) },
+    { aqId: aq(2), position: 2, type: "mcq_multi", stem: mockQuestions[1].stem, marks: 4,
+      options: mockQuestions[1].options.map(({ id, label }) => ({ id, label })) },
+    { aqId: aq(3), position: 3, type: "written", stem: mockQuestions[2].stem, marks: 10, options: [] },
+  ],
+  answers: [
+    { aqId: aq(1), selectedOptionIds: [mockQuestions[0].options[0].id], textAnswer: "", flagged: false, clientSeq: 1, savedAt: "2026-12-01T09:08:00.000Z" },
+  ],
+  scratchpad: { text: "", drawing: null },
+  announcements: [],
+  preferences,
+};
+
+export const mockSaveResult: SaveResult = {
+  aqId: aq(1), accepted: true, savedAt: "2026-12-01T09:10:00.000Z",
+  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt,
+};
+
+export const mockSyncResult: SyncResult = {
+  results: [{ aqId: aq(1), accepted: true, reason: null }],
+  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt, status: "in_progress",
+};
+
+export const mockHeartbeat: HeartbeatResult = {
+  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt, status: "in_progress", announcements: [],
+};
+
+export const mockSubmit: SubmitResult = { status: "submitted", submittedAt: "2026-12-01T09:50:00.000Z" };
+
+export const mockPreferences: Preferences = preferences;

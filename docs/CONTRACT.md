@@ -81,6 +81,12 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 | POST | `/api/import/candidates` | examiner | `ImportInput` → `ImportResult` | 400 bad header / > 500 rows / > 1 MB | ✅ |
 | POST | `/api/import/questions` | examiner | `ImportInput` → `ImportResult` | 400 same | ✅ |
 
+**How the Stage 2 endpoints behave (details, no shape changes):**
+- `PUT /api/exams/[id]/questions` returns 400 (`fields.questionIds`) for unknown or not-yours questions and 400 (`fields.blueprint`) if the blueprint asks for more questions of a difficulty than the pool has. "Marks add up" problems are NOT rejected here; they appear in `publish-check` so a draft can be worked on step by step.
+- `POST .../enrollments`: emails that are unknown, deactivated or not candidates come back in `notFound` (not an error). Enrolling while the exam is still a draft is allowed.
+- `POST /api/import/*`: valid rows are imported and invalid rows are reported and skipped (no all-or-nothing). Header must contain the required columns and no unknown ones. Questions import ignores `examId`.
+- `GET /api/me/exams`: `blockedReason` for upcoming is `"Opens at <date> UTC"`; completed ones say `"Already submitted"`, `"Time is over"` or `"You did not take this exam"`.
+
 **CSV formats** (first row = header, exact names, UTF-8):
 
 - **Candidates:** `full_name,email,password` — password optional (default `Demo@1234`). Existing emails are skipped (and enrolled if `examId` is given).

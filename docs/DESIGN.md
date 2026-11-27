@@ -34,6 +34,9 @@
 - 10-hour build, team of 2, free-tier services only (no paid APIs, per brief §06).
 - Server clock is the only source of truth for time; device clocks are used only with a server offset.
 - Live updates use polling (5 s monitor, 15 s heartbeat) instead of websockets: simpler and reliable on Vercel serverless.
+- CSV import imports the valid rows and reports the bad ones (no all-or-nothing), so one typo does not block 200 good rows.
+- A draft exam may be incomplete (marks not adding up); the publish-check checklist is what blocks publishing, so examiners can build step by step.
+- Publishing needs the end time in the future, so a finished exam can only come from real time passing (the demo seed in Stage 5 handles this).
 - _Add more as we build._
 
 ## 4. Database design
@@ -94,4 +97,8 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Ownership: examiner sees only own, admin all | `assertOwner` in `lib/auth.ts`, used by every service |
 | Exam CRUD, derived state, draft-only edit (3.2) | `handlers/exams*` -> `services/exams.service.ts` -> `data/exams.ts`; `examState` in `lib/time.ts` |
 | Demo accounts | `backend/scripts/seed.ts` (`npm run seed`) |
+| Exam assembly: pool, blueprint, publish-check, publish (3.2, 5.2) | `handlers/exams/[id]/{questions,publish-check,publish,unpublish}.ts` -> `services/assembly.service.ts` (`buildCheck` = the 5 publish problems) -> `data/exams.ts` |
+| Enrollment + candidate search (3.4) | `handlers/candidates.ts`, `handlers/exams/[id]/enrollments*` -> `services/enrollment.service.ts` -> `data/enrollments.ts` |
+| Candidate dashboard buckets, availability window (3.4) | `handlers/me/exams.ts` -> `services/my-exams.service.ts` -> `data/enrollments.ts`, `data/attempts.ts` |
+| Bulk CSV import with validation and row errors (4.4) | `handlers/import/*` -> `services/import.service.ts`; CSV limits + header check in `lib/csv.ts` |
 | _remaining rows: fill in as features land_ | |
