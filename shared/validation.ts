@@ -178,4 +178,63 @@ export const importSchema = z.object({
   examId: uuid.optional(),
 });
 
+// ---------- attempts / exam workspace (Stage 3) ----------
+
+/** POST /api/exams/[id]/attempts. The body may be empty; the handler treats that as {}. */
+export const startAttemptSchema = z.object({ sandbox: z.boolean("sandbox must be true or false").optional() });
+
+/** PUT /api/attempts/[id]/answers/[aqId]. "Options belong to this question" is checked by the backend against the paper. */
+export const answerSchema = z.object({
+  selectedOptionIds: z
+    .array(uuid, "selectedOptionIds must be a list")
+    .max(6, "At most 6 options can be selected")
+    .default([])
+    .transform((ids) => [...new Set(ids)]), // the same option twice counts once
+  textAnswer: z.string("Answer must be text").max(10000, "Answer must be at most 10000 characters").default(""),
+  flagged: z.boolean("flagged must be true or false").default(false),
+  clientSeq: z
+    .number("clientSeq must be a number")
+    .int("clientSeq must be a whole number")
+    .min(0, "clientSeq can't be below 0")
+    .max(2147483647, "clientSeq is too large"),
+});
+
+/** POST /api/attempts/[id]/sync: the offline outbox, replayed in one request. */
+export const syncSchema = z.object({
+  answers: z.array(answerSchema.extend({ aqId: uuid }), "answers must be a list").max(200, "At most 200 answers per sync"),
+});
+
+/** POST /api/attempts/[id]/incidents. Only the 4 browser-detected types; offline/resumed/late_sync are server-only. */
+export const incidentSchema = z.object({
+  type: z.enum(["tab_hidden", "window_blur", "fullscreen_exit", "copy_paste"], "Unknown incident type"),
+  detail: z.string("detail must be text").trim().max(500, "Detail must be at most 500 characters").optional(),
+});
+
+const PNG_PREFIX = "data:image/png;base64,";
+const MAX_DRAWING = 500 * 1024; // 500 KB of data-URL text
+
+/** PUT /api/attempts/[id]/scratchpad */
+export const scratchpadSchema = z.object({
+  text: z.string("text must be text").max(20000, "Scratchpad text must be at most 20000 characters").default(""),
+  drawing: z
+    .string("drawing must be a PNG data URL or null")
+    .max(MAX_DRAWING, "Drawing must be at most 500 KB")
+    .refine(
+      (v) => v.startsWith(PNG_PREFIX) && /^[A-Za-z0-9+/]*={0,2}$/.test(v.slice(PNG_PREFIX.length)),
+      "Drawing must be a PNG image (data:image/png;base64,...)",
+    )
+    .nullable()
+    .default(null),
+});
+
+/** PATCH /api/me/preferences: any subset; unknown keys are dropped; at least one key is required. */
+export const preferencesSchema = z
+  .object({
+    theme: z.enum(["light", "dark", "contrast"], "Theme must be light, dark or contrast").optional(),
+    fontScale: z.enum(["sm", "md", "lg"], "Font size must be sm, md or lg").optional(),
+    navigatorSide: z.enum(["left", "right"], "Navigator side must be left or right").optional(),
+    layout: z.enum(["single", "scroll"], "Layout must be single or scroll").optional(),
+  })
+  .refine((p) => Object.values(p).some((v) => v !== undefined), "Send at least one preference to change");
+
 export { email as emailSchema, password as passwordSchema, fullName as fullNameSchema };
