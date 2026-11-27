@@ -21,14 +21,15 @@ const MAX_COMPENSATION_SEC = 600; // total extra time per attempt is capped at 1
 
 /** GET /api/exams/[id]/monitor (the frontend polls every 5 s). Real attempts only. */
 export async function getMonitor(user: Me, examId: string): Promise<MonitorView> {
-  const exam = await loadOwnedExam(user, examId);
-  const attempts = await listFinalizedAttempts(examId); // expired attempts are closed first
-  const [progress, counts, incidents, compensations] = await Promise.all([
+  // Owner check + the read-only queries run together; the attempts list comes after (it may close expired attempts first).
+  const [exam, progress, counts, incidents, compensations] = await Promise.all([
+    loadOwnedExam(user, examId),
     attemptProgress(examId),
     incidentCounts(examId),
     listIncidents(examId, 50),
     listCompensations(examId),
   ]);
+  const attempts = await listFinalizedAttempts(examId); // expired attempts are closed first
   const now = Date.now();
 
   const rows = attempts

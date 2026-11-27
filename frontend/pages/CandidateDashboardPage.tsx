@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarClock, CircleCheck, Clock3, ClipboardList, FileCheck2, Hourglass } from "lucide-react";
 import { PageHeader } from "@/frontend/components/shell/PageHeader";
 import { Card, EmptyState, ErrorState, PageSkeleton, StatusBadge } from "@/frontend/components/ui";
 import { useAuth } from "@/frontend/lib/auth";
 import { errorMessage } from "@/frontend/lib/api-client";
 import { countdownLabel, fmtDate, fmtDateTime, fmtTime, fmtTimeRange, greeting } from "@/frontend/lib/format";
+import { Button } from "@/frontend/components/ui/button";
 import { useApi } from "@/frontend/lib/useApi";
 import { useNow } from "@/frontend/lib/useNow";
 import { cn } from "@/frontend/lib/utils";
@@ -155,6 +157,7 @@ export default function CandidateDashboardPage() {
   const { me } = useAuth();
   const { data, error, loading, reload } = useApi<MyExams>("/api/me/exams");
   const now = useNow(1000);
+  const [doneLimit, setDoneLimit] = useState(10); // completed list: 10 at first, then 10 more per click
   const first = me?.fullName.split(" ")[0] ?? "";
   const published = data?.completed.filter((e) => e.resultPublished && e.attempt).length ?? 0;
 
@@ -218,11 +221,23 @@ export default function CandidateDashboardPage() {
 
           <SectionTitle id="results" title="Completed & results" count={data.completed.length}>
             {data.completed.length ? (
+              <>
               <Card className="divide-y divide-line-soft overflow-hidden">
-                {data.completed.map((e) => (
+                {data.completed.slice(0, doneLimit).map((e) => (
                   <CompletedRow key={e.examId} exam={e} />
                 ))}
               </Card>
+              {data.completed.length > doneLimit && (
+                <div className="mt-5 flex flex-col items-center gap-2">
+                  <p className="text-[0.8125rem] text-mute">
+                    Showing {doneLimit} of {data.completed.length}
+                  </p>
+                  <Button variant="secondary" onClick={() => setDoneLimit((n) => n + 10)}>
+                    Show more
+                  </Button>
+                </div>
+              )}
+              </>
             ) : (
               <EmptyState
                 icon={<CircleCheck className="size-5" strokeWidth={1.8} />}

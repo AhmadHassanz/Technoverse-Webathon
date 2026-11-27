@@ -83,6 +83,8 @@ create table public.exams (
   check (end_at > start_at),
   check (pass_marks <= total_marks)
 );
+-- The examiner overview lists one owner's exams, newest first.
+create index if not exists exams_owner_idx on public.exams (created_by, created_at desc);
 
 -- State is DERIVED so it can never be wrong.
 create or replace view public.exam_state as
@@ -108,6 +110,8 @@ create table public.enrollments (
   enrolled_at   timestamptz not null default now(),
   primary key (exam_id, candidate_id)
 );
+-- The candidate dashboard looks up "my enrollments" by candidate (the primary key starts with exam_id).
+create index if not exists enrollments_candidate_idx on public.enrollments (candidate_id);
 
 -- ---------- attempts ----------
 create table public.attempts (
@@ -129,6 +133,8 @@ create table public.attempts (
 create unique index attempts_one_real_per_candidate
   on public.attempts (exam_id, candidate_id) where is_sandbox = false;
 create index on public.attempts (exam_id);
+-- The candidate dashboard reads all of one candidate's attempts.
+create index if not exists attempts_candidate_idx on public.attempts (candidate_id);
 
 -- Frozen paper: what this candidate got, with the marking scheme at that moment.
 -- snapshot = {"type","stem","marks","difficulty","multiScheme","negativeMarks",

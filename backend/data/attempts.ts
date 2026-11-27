@@ -139,15 +139,13 @@ export async function findOpenSandboxAttempt(examId: string, userId: string): Pr
 }
 
 /** The candidate's REAL (non-sandbox) attempts, keyed by exam id. */
-export async function realAttemptsByExam(candidateId: string, examIds: string[]): Promise<Map<string, AttemptRecord>> {
+export async function realAttemptsByExam(candidateId: string): Promise<Map<string, AttemptRecord>> {
   const result = new Map<string, AttemptRecord>();
-  if (examIds.length === 0) return result;
   const { data, error } = await adminClient()
     .from("attempts")
     .select("*")
     .eq("candidate_id", candidateId)
     .eq("is_sandbox", false)
-    .in("exam_id", examIds)
     .returns<AttemptRow[]>();
   if (error) throw error;
   for (const r of data) result.set(r.exam_id, toRecord(r));

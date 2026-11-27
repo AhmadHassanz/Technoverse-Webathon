@@ -37,8 +37,10 @@ function toCandidateExam(e: EnrolledExam, a: AttemptSummary | undefined, canStar
  *  upcoming  = published but not started yet (cannot start)
  */
 export async function getMyExams(user: Me): Promise<MyExams> {
-  const exams = await listEnrolledExams(user.id);
-  const attempts = await realAttemptsByExam(user.id, exams.map((e) => e.examId));
+  // Both lists are read at the same time (a candidate has at most one attempt per exam, so this is small).
+  const [exams, attempts] = await Promise.all([listEnrolledExams(user.id), realAttemptsByExam(user.id)]);
+  const examIds = new Set(exams.map((e) => e.examId));
+  for (const examId of [...attempts.keys()]) if (!examIds.has(examId)) attempts.delete(examId);
   // Close any attempt whose time ran out, so "completed" and attempt.status are right.
   const now = new Date();
   await Promise.all(

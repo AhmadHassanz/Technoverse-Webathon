@@ -80,8 +80,10 @@ function toGradingItem(p: ExamPaperRow, candidateName: string, textAnswer: strin
 
 /** GET /api/exams/[id]/grading?status=pending|all: written answers of finished attempts. */
 export async function getGradingQueue(user: Me, examId: string, status: "pending" | "all"): Promise<GradingItem[]> {
-  await loadOwnedExam(user, examId);
-  const attempts = await listFinalizedAttempts(examId); // expired attempts become gradable
+  const [, attempts] = await Promise.all([
+    loadOwnedExam(user, examId), // 404 / 403
+    listFinalizedAttempts(examId), // expired attempts become gradable
+  ]);
   const names = new Map(attempts.map((a) => [a.id, a.fullName]));
   const [papers, answers] = await Promise.all([listExamPapers(examId, FINISHED), listExamAnswers(examId)]);
   const text = new Map(answers.map((a) => [a.aqId, a.textAnswer]));
@@ -131,8 +133,8 @@ export async function gradeAnswer(user: Me, aqId: string, input: GradeInput): Pr
 
 /** GET /api/exams/[id]/results */
 export async function getResults(user: Me, examId: string): Promise<ExamResults> {
-  const exam = await loadOwnedExam(user, examId);
-  const report = await loadReport(examId);
+  // The owner check and the data load do not depend on each other, so they run together (one round trip, not two).
+  const [exam, report] = await Promise.all([loadOwnedExam(user, examId), loadReport(examId)]);
   const scored = scoredRows(report, exam);
   const percentageOf = new Map(scored.map((s) => [s.attempt.id, s.percentage]));
 
@@ -183,8 +185,8 @@ export async function publishResults(user: Me, examId: string): Promise<Exam> {
 
 /** GET /api/exams/[id]/analytics (real, finished attempts only). */
 export async function getAnalytics(user: Me, examId: string): Promise<ExamAnalytics> {
-  const exam = await loadOwnedExam(user, examId);
-  const report = await loadReport(examId);
+  // The owner check and the data load do not depend on each other, so they run together (one round trip, not two).
+  const [exam, report] = await Promise.all([loadOwnedExam(user, examId), loadReport(examId)]);
   const scored = scoredRows(report, exam);
   const finished = report.attempts.filter((a) => FINISHED.includes(a.status));
   return {

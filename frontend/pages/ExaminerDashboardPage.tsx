@@ -5,13 +5,15 @@ import { useMemo, useState } from "react";
 import { ArrowRight, CalendarDays, CheckCircle2, ClipboardList, FilePen, Plus, Radio, Send } from "lucide-react";
 import { PageHeader } from "@/frontend/components/shell/PageHeader";
 import { EmptyState, ErrorState, PageSkeleton, Select, StatTile, StatusBadge } from "@/frontend/components/ui";
-import { buttonStyles } from "@/frontend/components/ui/button";
+import { Button, buttonStyles } from "@/frontend/components/ui/button";
 import { useAuth } from "@/frontend/lib/auth";
 import { errorMessage } from "@/frontend/lib/api-client";
 import { fmtDate, fmtTimeRange, greeting, plural } from "@/frontend/lib/format";
 import { useApi } from "@/frontend/lib/useApi";
 import { cn } from "@/frontend/lib/utils";
 import type { Exam, ExamState } from "@/shared/types";
+
+const PAGE_SIZE = 12;
 
 const STATE_STYLE: Record<ExamState, { icon: typeof Radio; tile: string; bar: string }> = {
   draft: { icon: FilePen, tile: "bg-sand text-mute", bar: "bg-line-strong" },
@@ -43,7 +45,9 @@ export default function ExaminerDashboardPage() {
   const { data, error, loading, reload } = useApi<Exam[]>("/api/exams");
   const [filter, setFilter] = useState<ExamState | "all">("all");
   const exams = useMemo(() => data ?? [], [data]);
-  const shown = filter === "all" ? exams : exams.filter((e) => e.state === filter);
+  const matching = filter === "all" ? exams : exams.filter((e) => e.state === filter);
+  const [limit, setLimit] = useState(PAGE_SIZE); // show 12 at first, then 12 more per click
+  const shown = matching.slice(0, limit);
 
   const drafts = exams.filter((e) => e.state === "draft").length;
   const published = exams.filter((e) => e.state === "published").length;
@@ -90,7 +94,10 @@ export default function ExaminerDashboardPage() {
               <label htmlFor="state-filter" className="sr-only">
                 Filter by status
               </label>
-              <Select id="state-filter" value={filter} onChange={(e) => setFilter(e.target.value as ExamState | "all")}>
+              <Select id="state-filter" value={filter} onChange={(e) => {
+                setFilter(e.target.value as ExamState | "all");
+                setLimit(PAGE_SIZE);
+              }}>
                 <option value="all">All statuses</option>
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -149,6 +156,16 @@ export default function ExaminerDashboardPage() {
                   </Link>
                 );
               })}
+            </div>
+          )}
+          {matching.length > shown.length && (
+            <div className="mt-6 flex flex-col items-center gap-2">
+              <p className="text-[0.8125rem] text-mute">
+                Showing {shown.length} of {matching.length}
+              </p>
+              <Button variant="secondary" onClick={() => setLimit((n) => n + PAGE_SIZE)}>
+                Show more
+              </Button>
             </div>
           )}
         </>
