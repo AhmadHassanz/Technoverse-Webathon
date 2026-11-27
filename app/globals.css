@@ -416,3 +416,10 @@
     animation: none;
   }
 }
+
+/* Dropdown lists (native <select> popups) take the theme colours, so options stay readable in dark and contrast. */
+select option,
+select optgroup {
+  background-color: var(--surface);
+  color: var(--ink);
+}

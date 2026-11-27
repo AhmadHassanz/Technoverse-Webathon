@@ -57,8 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Keep <html data-theme/data-font> in sync with the logged-in user's preferences.
   useEffect(() => {
-    if (loading) return;
-    applyPreferences(me?.preferences ?? DEFAULT_PREFS);
+    if (loading || !me) return; // logged out: keep the last-used theme (already applied from the saved copy)
+    applyPreferences(me.preferences);
   }, [me, loading]);
 
   const login = useCallback(async (input: LoginInput) => {

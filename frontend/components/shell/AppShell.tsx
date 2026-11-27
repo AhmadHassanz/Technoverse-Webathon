@@ -18,6 +18,7 @@ import {
   Users,
   X,
   type LucideIcon,
+  Contrast,
 } from "lucide-react";
 import { cn } from "@/frontend/lib/utils";
 import { useAuth } from "@/frontend/lib/auth";
@@ -208,19 +209,33 @@ function SidebarContent({
   );
 }
 
+const THEMES = [
+  { value: "light", label: "Light theme", Icon: Sun },
+  { value: "dark", label: "Dark theme", Icon: Moon },
+  { value: "contrast", label: "High contrast theme", Icon: Contrast },
+] as const;
+
+/** Light / dark / high contrast for every role. Applies at once, then saves to the account. */
 function ThemeToggle() {
   const { me, updatePreferences } = useAuth();
-  const dark = me?.preferences.theme === "dark";
+  const current = me?.preferences.theme ?? "light";
   return (
-    <button
-      type="button"
-      onClick={() => void updatePreferences({ theme: dark ? "light" : "dark" }).catch(() => undefined)}
-      className="flex size-9 items-center justify-center rounded-full border border-line bg-surface text-mute transition-colors hover:text-ink"
-      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      title={dark ? "Light theme" : "Dark theme"}
-    >
-      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-    </button>
+    <div role="radiogroup" aria-label="Theme" className="flex items-center gap-0.5 rounded-full border border-line bg-surface p-0.5">
+      {THEMES.map(({ value, label, Icon }) => (
+        <button
+          key={value}
+          type="button"
+          role="radio"
+          aria-checked={current === value}
+          aria-label={label}
+          title={label}
+          onClick={() => void updatePreferences({ theme: value }).catch(() => undefined)}
+          className={`flex size-8 items-center justify-center rounded-full transition-colors ${current === value ? "bg-ink text-parchment" : "text-mute hover:text-ink"}`}
+        >
+          <Icon className="size-4" />
+        </button>
+      ))}
+    </div>
   );
 }
 
