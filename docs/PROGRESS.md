@@ -5,17 +5,21 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Current status
 - Project: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Repo: https://github.com/AhmadHassanz/Technoverse-Webathon. Branches: `main` (merged, deployable), `backend` (user), `frontend` (friend).
-- Stage: **Stage 0** of BACKEND_PLAN in progress. Supabase project created and `schema.sql` run (user). `.env.local` exists with DUMMY keys; the user replaces them with the real ones.
+- Stage: **Stage 0** of BACKEND_PLAN in progress. Supabase project created and `schema.sql` run (user). `.env.local` now has REAL keys (verified 27 Nov: all 15 tables reachable with the secret key; auth works).
+- **Commit/push ONLY on the `backend` branch** (user merges into `main` later).
 - **Not following the plan's clock times** (only stage order and the 8:00 PM deadline matter).
 
 ## Done
 - 27 Nov 10:25: `git init`, first commit, pushed `main`.
 - 27 Nov 11:09: added problem statement, backend/frontend plans, contract, `shared/types.ts`, `backend/db/schema.sql`; CLAUDE.md filled in.
+- 27 Nov: real Supabase keys added and verified; removed stray `env.local`; plan timings declared ignored.
 - 27 Nov: created `backend` branch; removed unused boilerplate (3 starter SVGs, personal `.vscode/`, old quick-reference guides); wrote real README and `docs/DESIGN.md` skeleton.
 
 ## Next steps
-1. User: replace dummy values in `.env.local` with real Supabase URL/keys; add the same 3 vars in Vercel (Production). Schema may need changes later; keep file + Supabase + docs in sync.
-2. Stage 0 (Claude): install all packages in one commit, `backend/lib` helpers (errors, supabase, auth, time, shuffle), Stage 1+2 stub endpoints, `npm run build`, first deploy.
+1. Add the same 3 env vars in Vercel (Production) before the first deploy. Schema may need changes later; keep file + Supabase + docs in sync.
+   - Supabase "Confirm email" is still ON (autoconfirm=false). Harmless because signup/admin-create use `email_confirm: true`, but turn it off if login ever says "email not confirmed".
+   - Check once after seeding that the publishable key cannot read data (RLS with no policies): `GET {SUPABASE_URL}/rest/v1/profiles` with the publishable key must return `[]`.
+2. Stage 0 (new Claude session, following BACKEND_PLAN): install all packages in one commit, `backend/lib` helpers (errors, supabase, auth, time, shuffle), Stage 1+2 stub endpoints, `npm run build`, first deploy.
 3. Add friend as GitHub collaborator; friend creates `frontend` branch from `main`.
 4. Friend: when replacing `HomePage.tsx`, also delete `public/next.svg` and `public/vercel.svg` (only the starter page uses them).
 

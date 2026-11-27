@@ -43,6 +43,7 @@
 @AGENTS.md
 
 ## Git workflow
+- **ALL COMMITS AND PUSHES GO TO THE `backend` BRANCH ONLY.** Never commit or push to `main`; the user merges `backend` into `main` themselves later. Check `git branch --show-current` is `backend` before every commit.
 - **Branches:** the user works on `backend`, the friend works on `frontend`. Each person merges their branch into `main` (plain merge, no rebase, no squash that rewrites history). Never commit directly on the other person's branch.
 - Before starting work: `git pull`. Before pushing: `git pull` (merge, NOT rebase), then `git push`. To get the other side's work: `git merge main` into your branch.
 - Deploy from `main` after merging, so the live site always has both sides.
