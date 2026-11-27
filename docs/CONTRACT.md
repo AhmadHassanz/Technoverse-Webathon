@@ -169,11 +169,17 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 
 | Method | URL | Who | Returns | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/reports/attempts/[attemptId]` | candidate (own, results published) or exam owner | PDF file (`application/pdf`) with QR + verification code | 403, 404 | ⏳ |
-| GET | `/api/reports/exams/[examId]` | owner | PDF file: stats + score table | 403, 404 | ⏳ |
-| GET | `/api/verify/[code]` | public | `{ data: VerifyResult }` (always 200; `valid: false` if unknown) | – | ⏳ |
+| GET | `/api/reports/attempts/[attemptId]` | candidate (own, results published) or exam owner | PDF file (`application/pdf`) with QR + verification code | 403, 404 | ✅ |
+| GET | `/api/reports/exams/[examId]` | owner | PDF file: stats + score table | 403, 404 | ✅ |
+| GET | `/api/verify/[code]` | public | `{ data: VerifyResult }` (always 200; `valid: false` if unknown) | – | ✅ |
 
 PDF links are plain `<a href="/api/reports/..." target="_blank">` (not `apiGet`).
+
+**How the Stage 5 endpoints behave**
+- Candidate report: the candidate (own attempt, only after results are published) or the exam owner/admin. Owner/admin can download before publishing; that PDF is marked PROVISIONAL and has no code. Errors: 401, 403, 404 (unknown id, not a UUID, or a sandbox attempt), 409 (grading not finished).
+- The first download of a published result creates the verification code (10 characters, no 0/O/1/I). It never changes afterwards, even with several downloads at once. The QR code points to `{origin}/verify/{code}` (a frontend page).
+- `GET /api/verify/[code]` is public and always answers 200. It returns `valid: false` for unknown, malformed or unpublished codes (spaces and lower case are accepted). When valid it shows exam title, initials only, score, total, percentage, pass/fail and the issue date; never the name, email or ids.
+- Exam report: owner/admin only (401, 403, 404). Statistics plus one row per attempt.
 
 ## 11. Health
 
