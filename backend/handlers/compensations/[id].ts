@@ -1,9 +1,16 @@
-// STUB (mock data). Real version arrives in Stage 4; see docs/CONTRACT.md.
+// PATCH /api/compensations/[id]: approve or reject outage compensation. See docs/CONTRACT.md section 8.
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockCompensation } from "@/backend/lib/mock";
-import type { CompensationRequest } from "@/shared/types";
+import { parseBody, parseId } from "@/backend/lib/http";
+import { decideCompensation } from "@/backend/services/monitor.service";
+import { compensationDecisionSchema } from "@/shared/validation";
 
-export const PATCH = withErrors(async () => {
-  return ok<CompensationRequest>({ ...mockCompensation, status: "approved", decidedAt: new Date().toISOString() });
+type Ctx = { params: Promise<{ id: string }> };
+
+export const PATCH = withErrors(async (req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  const id = parseId((await params).id, "Request");
+  const { decision } = await parseBody(req, compensationDecisionSchema);
+  return ok(await decideCompensation(user, id, decision));
 });

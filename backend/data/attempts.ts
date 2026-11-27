@@ -2,6 +2,7 @@
 // The only place that queries these tables. snake_case rows -> camelCase records.
 import { adminClient } from "@/backend/lib/supabase";
 import type { Snapshot } from "@/backend/lib/grading";
+import { fetchAll } from "@/backend/data/paging";
 import type { AttemptStatus } from "@/shared/types";
 
 type AttemptRow = {
@@ -16,6 +17,7 @@ type AttemptRow = {
   submitted_at: string | null;
   last_heartbeat_at: string | null;
   score: number | string | null;
+  paper_difficulty?: number | string | null;
 };
 
 /** One attempt, as the services use it. */
@@ -33,6 +35,52 @@ export type AttemptRecord = {
   lastHeartbeatAt: string | null;
   score: number | null;
 };
+
+/** A real attempt with who took it (monitor, results, grading, analytics). */
+export type ExamAttempt = AttemptRecord & { fullName: string; email: string; paperDifficulty: number | null };
+
+/** All REAL (non-sandbox) attempts of an exam, oldest first. Sandbox previews never show up here. */
+export async function listRealAttemptsOfExam(examId: string): Promise<ExamAttempt[]> {
+  const rows = await fetchAll<AttemptRow & { profiles: { full_name: string; email: string } | null }>((from, to) =>
+    adminClient()
+      .from("attempts")
+      .select("*, profiles(full_name, email)")
+      .eq("exam_id", examId)
+      .eq("is_sandbox", false)
+      .order("started_at")
+      .order("id")
+      .range(from, to)
+      .returns<(AttemptRow & { profiles: { full_name: string; email: string } | null })[]>(),
+  );
+  return rows.map((r) => ({
+    ...toRecord(r),
+    fullName: r.profiles?.full_name ?? "",
+    email: r.profiles?.email ?? "",
+    paperDifficulty: r.paper_difficulty === null || r.paper_difficulty === undefined ? null : Number(r.paper_difficulty),
+  }));
+}
+
+/** Store the paper difficulty (0-100) on the attempt when results are published. */
+export async function setPaperDifficulty(id: string, value: number): Promise<void> {
+  const { error } = await adminClient().from("attempts").update({ paper_difficulty: value }).eq("id", id);
+  if (error) throw error;
+}
+
+/**
+ * Optimistic "add compensation seconds": only changes the row if compensation_sec still has the value we read
+ * AND the attempt is still in progress. Returns true when this request's update won.
+ */
+export async function setCompensationSec(id: string, previous: number, next: number): Promise<boolean> {
+  const { data, error } = await adminClient()
+    .from("attempts")
+    .update({ compensation_sec: next })
+    .eq("id", id)
+    .eq("compensation_sec", previous)
+    .eq("status", "in_progress")
+    .select("id");
+  if (error) throw error;
+  return data.length > 0;
+}
 
 /** Kept for the dashboard code written in Stage 2. */
 export type AttemptSummary = AttemptRecord;
@@ -189,6 +237,7 @@ export type AttemptQuestionRow = {
   position: number;
   snapshot: Snapshot;
   marks_awarded: number | string | null;
+  feedback?: string | null;
 };
 
 export type PaperQuestion = {
@@ -197,6 +246,7 @@ export type PaperQuestion = {
   position: number;
   snapshot: Snapshot;
   marksAwarded: number | null;
+  feedback: string | null; // the examiner's comment on a written answer
 };
 
 function toPaperQuestion(r: AttemptQuestionRow): PaperQuestion {
@@ -206,6 +256,7 @@ function toPaperQuestion(r: AttemptQuestionRow): PaperQuestion {
     position: r.position,
     snapshot: r.snapshot,
     marksAwarded: r.marks_awarded === null ? null : Number(r.marks_awarded),
+    feedback: r.feedback ?? null,
   };
 }
 
@@ -224,7 +275,7 @@ export async function insertPaper(
 export async function listPaper(attemptId: string): Promise<PaperQuestion[]> {
   const { data, error } = await adminClient()
     .from("attempt_questions")
-    .select("id, attempt_id, question_id, position, snapshot, marks_awarded")
+    .select("id, attempt_id, question_id, position, snapshot, marks_awarded, feedback")
     .eq("attempt_id", attemptId)
     .order("position")
     .returns<AttemptQuestionRow[]>();
@@ -236,12 +287,32 @@ export async function listPaper(attemptId: string): Promise<PaperQuestion[]> {
 export async function findPaperQuestion(attemptId: string, aqId: string): Promise<PaperQuestion | null> {
   const { data, error } = await adminClient()
     .from("attempt_questions")
-    .select("id, attempt_id, question_id, position, snapshot, marks_awarded")
+    .select("id, attempt_id, question_id, position, snapshot, marks_awarded, feedback")
     .eq("id", aqId)
     .eq("attempt_id", attemptId)
     .maybeSingle<AttemptQuestionRow>();
   if (error) throw error;
   return data ? toPaperQuestion(data) : null;
+}
+
+/** Same as findPaperQuestion, but starting from the question id alone (the grading screen only knows aqId). */
+export async function findPaperQuestionById(aqId: string): Promise<(PaperQuestion & { attemptId: string }) | null> {
+  const { data, error } = await adminClient()
+    .from("attempt_questions")
+    .select("id, attempt_id, question_id, position, snapshot, marks_awarded, feedback")
+    .eq("id", aqId)
+    .maybeSingle<AttemptQuestionRow>();
+  if (error) throw error;
+  return data ? { ...toPaperQuestion(data), attemptId: data.attempt_id } : null;
+}
+
+/** The examiner's grade for one written answer. */
+export async function saveGrade(aqId: string, marks: number, feedback: string | null, gradedBy: string): Promise<void> {
+  const { error } = await adminClient()
+    .from("attempt_questions")
+    .update({ marks_awarded: marks, feedback, graded_by: gradedBy })
+    .eq("id", aqId);
+  if (error) throw error;
 }
 
 /**

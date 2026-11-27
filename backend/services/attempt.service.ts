@@ -7,7 +7,7 @@ import { buildPaper } from "@/backend/lib/paper";
 import { GRACE_MS, effectiveEnd, isExpired } from "@/backend/lib/time";
 import {
   deleteAttemptRow, findAttempt, findOpenSandboxAttempt, findRealAttempt, finishAttempt, insertAttempt, insertPaper,
-  listPaper, type AttemptRecord,
+  listPaper, listRealAttemptsOfExam, type AttemptRecord, type ExamAttempt,
 } from "@/backend/data/attempts";
 import { getScratchpad, listAnswers } from "@/backend/data/answers";
 import { findExam, listPool } from "@/backend/data/exams";
@@ -27,6 +27,19 @@ export async function finalizeIfExpired(attempt: AttemptRecord, now: Date = new 
   const changed = await finishAttempt(attempt.id, "auto_submitted", effectiveEnd(attempt).toISOString());
   if (changed) await gradeAttempt(attempt.id);
   return (await findAttempt(attempt.id)) ?? attempt;
+}
+
+/**
+ * The exam's real attempts, after closing every one whose time ran out.
+ * Used by the monitor, results, grading and publish, so they never show a stale "in progress".
+ */
+export async function listFinalizedAttempts(examId: string): Promise<ExamAttempt[]> {
+  const now = new Date();
+  const attempts = await listRealAttemptsOfExam(examId);
+  const expired = attempts.filter((a) => isExpired(a, now));
+  if (expired.length === 0) return attempts;
+  await Promise.all(expired.map((a) => finalizeIfExpired(a, now)));
+  return listRealAttemptsOfExam(examId);
 }
 
 /** Load an attempt the CALLER is taking: 404 unknown, 403 someone else's. Finalizes it if expired. */
