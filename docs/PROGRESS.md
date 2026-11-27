@@ -5,7 +5,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Current status
 - Project: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Repo: https://github.com/AhmadHassanz/Technoverse-Webathon. Branches: `main` (merged, deployable), `backend` (user), `frontend` (friend).
-- Stage: **Stage 0** of BACKEND_PLAN almost done (code finished 27 Nov; first deploy still to do). **Stages 1-5 finished and tested locally (27 Nov)**; ONLY the first deploy + Stage 6 freeze remain; nothing deployed yet. Supabase project created and `schema.sql` run (user). `.env.local` now has REAL keys (verified 27 Nov: all 15 tables reachable with the secret key; auth works).
+- Stage: **all stages done and DEPLOYED** (27 Nov). Supabase project, `schema.sql` and seed are in place; live site works. Remaining work is only demo preparation (see Known issues and Next steps).
 - **Frontend: all screens built and wired to the real API (27 Nov, 13:30-15:10)**, following `docs/FRONTEND_BUILD_PROMPT.md` Phases 0-6 on the `backend` branch. Tested in real headless Chrome (see "Frontend test results" below). Not merged into `main`, not deployed.
 - **Commit/push ONLY on the `backend` branch** (user merges into `main` later).
 - **Not following the plan's clock times** (only stage order and the 8:00 PM deadline matter).
@@ -43,7 +43,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - **Not verified:** real phones and Safari/Firefox (only Chrome), touch drawing on the scratchpad canvas, the PDF files' look (only that the links download), a full 15-minute demo run by a person, and a pixel-by-pixel match with every Figma PNG (checked by eye from screenshots).
 
 ## Known issues / notes for the demo
-- **Lots of `ZZ Test` exams now show on the examiner overview and on `zz.*` accounts** (from the automated tests). Before the demo, run the cleanup SQL in "Next steps" below so the judges only see the 5 demo exams.
+- **Test data cleaned (27 Nov, ~18:45, by the user in the Supabase SQL editor):** the `ZZ Test` and other test exams, plus test topics/questions not used by a remaining exam, were deleted. Now 7 exams (the 5 demo exams plus the teammate's `CNIK` and `DB FINAL PAPER`) and 59 questions. Five `zz.*` test accounts still exist in Admin > Users (deactivate or delete them if the judges will see that list). Quiz 2 is open until 30 Nov 08:13 UTC, so it is still open during the evaluation (28 Nov 11:00-13:00 UTC). `Computer Networks - Quiz 2` already has 1 attempt.
 - A timer-triggered submit is stored as `submitted` (it reaches the server inside the 5 s grace); only attempts that never come back become `auto_submitted`. The screen still says "submitted automatically when time ran out". Optional backend tweak: treat a submit within the grace after `endsAt` as `auto_submitted`.
 - The `Operating Systems - Final` grading queue and pending compensation were left untouched for the demo; Quiz 2 demo attempts were not used (tests used `zz.test1-3@demo.com` and examiner previews only).
 
@@ -105,4 +105,4 @@ Claude updates this file at the end of every task, so a new session can pick up 
 | Merge your branch into main | `git switch main && git pull && git merge backend && git push && git switch backend` |
 
 ## Live URL
-- (not deployed yet)
+- https://technoverse-webathon.vercel.app (deployed from `main`, last deploy 27 Nov 18:32, includes the performance work, 7 themes and the new PDF reports).
