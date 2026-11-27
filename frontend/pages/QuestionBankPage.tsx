@@ -193,7 +193,7 @@ export default function QuestionBankPage() {
                 {questions.map((question) => (
                   <Tr key={question.id}>
                     <Td>
-                      <p className="line-clamp-2 text-ink">{question.stem}</p>
+                      <p className="line-clamp-2 max-w-[30rem] break-words text-ink">{question.stem}</p>
                       {question.type !== "written" && (
                         <p className="mt-1 text-xs text-mute">
                           {question.options.length} options · {question.options.filter((o) => o.isCorrect).length} correct

@@ -52,7 +52,7 @@ function toLocal(merged: Record<string, OutboxEntry>): Record<string, LocalAnswe
   return out;
 }
 
-type Finished = { status: AttemptStatus | null; submittedAt: string | null; timeUpOffline?: boolean };
+type Finished = { status: AttemptStatus | null; submittedAt: string | null; timeUpOffline?: boolean; timeUp?: boolean };
 
 function Workspace({ attemptId }: { attemptId: string }) {
   const router = useRouter();
@@ -164,9 +164,9 @@ function Workspace({ attemptId }: { attemptId: string }) {
       await flush();
       try {
         const r = await apiPost<SubmitResult>(`/api/attempts/${attemptId}/submit`, {});
-        setFinished({ status: r.status, submittedAt: r.submittedAt });
+        setFinished({ status: r.status, submittedAt: r.submittedAt, timeUp: true });
       } catch (err) {
-        setFinished({ status: null, submittedAt: null, timeUpOffline: toApiError(err).status === 0 });
+        setFinished({ status: null, submittedAt: null, timeUpOffline: toApiError(err).status === 0, timeUp: true });
       }
       clearAttemptStorage(attemptId);
     })();
@@ -303,6 +303,7 @@ function Workspace({ attemptId }: { attemptId: string }) {
         attemptId={attemptId}
         sandboxExamId={view?.isSandbox ? view.examId : null}
         timeUpOffline={finished.timeUpOffline}
+        timeUp={finished.timeUp}
       />
     );
   }

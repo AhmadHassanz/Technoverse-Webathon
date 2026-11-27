@@ -14,6 +14,7 @@ export function SubmittedScreen({
   attemptId,
   sandboxExamId,
   timeUpOffline,
+  timeUp,
 }: {
   title: string;
   status: AttemptStatus | null;
@@ -22,6 +23,8 @@ export function SubmittedScreen({
   attemptId: string;
   sandboxExamId?: string | null;
   timeUpOffline?: boolean;
+  /** The timer reached 00:00 and the app submitted for the candidate. */
+  timeUp?: boolean;
 }) {
   const back = sandboxExamId ? `/examiner/exams/${sandboxExamId}?tab=questions` : "/candidate";
   return (
@@ -45,7 +48,7 @@ export function SubmittedScreen({
             <h1 className="display display-xl mt-5">You can take a breath.</h1>
             <p className="mt-6 text-[1.125rem] leading-relaxed text-ink">
               {submittedAt
-                ? `Your answers were ${status === "auto_submitted" ? "submitted automatically when time ran out" : "submitted"} at ${fmtTime(submittedAt)} on ${fmtDate(submittedAt)}.`
+                ? `Your answers were ${status === "auto_submitted" || timeUp ? "submitted automatically when time ran out" : "submitted"} at ${fmtTime(submittedAt)} on ${fmtDate(submittedAt)}.`
                 : "Your answers were submitted."}
             </p>
           </>
