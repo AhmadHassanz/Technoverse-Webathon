@@ -80,4 +80,11 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 ## 8. Design → code map
 | Design item | Files |
 |---|---|
-| _fill in as features land_ | |
+| Response format `{ data }` / `{ error, fields? }` | `backend/lib/api-response.ts` (`ok`, `fail`) |
+| Error handling (one place, no leaked DB errors) | `backend/lib/errors.ts` (`HttpError`, `withErrors`) |
+| Server-only DB access (secret key) + login cookie | `backend/lib/supabase.ts` (`adminClient`, `authClient`) |
+| Backend permission checks (3.1) | `backend/lib/auth.ts` (`requireUser`, `requireRole`) |
+| Server-side timing (data integrity) | `backend/lib/time.ts` (`effectiveEnd`, `isExpired`, 5 s grace) |
+| Fair randomization (3.3, 5.2) | `backend/lib/shuffle.ts` (`crypto.randomInt`) |
+| Thin URL connectors | `app/api/**/route.ts` -> `backend/handlers/**` (stubs for now, see `backend/lib/mock.ts`) |
+| _remaining rows: fill in as features land_ | |

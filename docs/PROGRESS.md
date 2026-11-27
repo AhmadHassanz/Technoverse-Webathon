@@ -5,7 +5,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Current status
 - Project: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Repo: https://github.com/AhmadHassanz/Technoverse-Webathon. Branches: `main` (merged, deployable), `backend` (user), `frontend` (friend).
-- Stage: **Stage 0** of BACKEND_PLAN in progress. Supabase project created and `schema.sql` run (user). `.env.local` now has REAL keys (verified 27 Nov: all 15 tables reachable with the secret key; auth works).
+- Stage: **Stage 0** of BACKEND_PLAN almost done (code finished 27 Nov; first deploy still to do). Waiting for user go-ahead for Stage 1. Supabase project created and `schema.sql` run (user). `.env.local` now has REAL keys (verified 27 Nov: all 15 tables reachable with the secret key; auth works).
 - **Commit/push ONLY on the `backend` branch** (user merges into `main` later).
 - **Not following the plan's clock times** (only stage order and the 8:00 PM deadline matter).
 
@@ -14,12 +14,13 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - 27 Nov 11:09: added problem statement, backend/frontend plans, contract, `shared/types.ts`, `backend/db/schema.sql`; CLAUDE.md filled in.
 - 27 Nov: real Supabase keys added and verified; removed stray `env.local`; plan timings declared ignored.
 - 27 Nov: created `backend` branch; removed unused boilerplate (3 starter SVGs, personal `.vscode/`, old quick-reference guides); wrote real README and `docs/DESIGN.md` skeleton.
+- 27 Nov: Stage 0 code: packages installed (one commit); `backend/lib` = api-response (`fail` takes `fields`), errors (`HttpError`, generic `withErrors`), supabase (`adminClient`, `authClient`), auth (`getCurrentUser`/`requireUser`/`requireRole`), time, shuffle; 21 stub endpoints (Stage 1+2, mock data in `backend/lib/mock.ts`) with 1-line `app/api` connectors. `npm run build` + lint pass; stubs curl-tested.
 
 ## Next steps
 1. Add the same 3 env vars in Vercel (Production) before the first deploy. Schema may need changes later; keep file + Supabase + docs in sync.
    - Supabase "Confirm email" is still ON (autoconfirm=false). Harmless because signup/admin-create use `email_confirm: true`, but turn it off if login ever says "email not confirmed".
    - Check once after seeding that the publishable key cannot read data (RLS with no policies): `GET {SUPABASE_URL}/rest/v1/profiles` with the publishable key must return `[]`.
-2. Stage 0 (new Claude session, following BACKEND_PLAN): install all packages in one commit, `backend/lib` helpers (errors, supabase, auth, time, shuffle), Stage 1+2 stub endpoints, `npm run build`, first deploy.
+2. Stage 0 leftovers: first deploy (`npx vercel --prod` from `main` after merge) + live URL in README. Then Stage 1 (zod `shared/validation.ts`, auth, admin, questions, exams, seed v1). Stubs have NO auth checks, so replace them before real data matters.
 3. Add friend as GitHub collaborator; friend creates `frontend` branch from `main`.
 4. Friend: when replacing `HomePage.tsx`, also delete `public/next.svg` and `public/vercel.svg` (only the starter page uses them).
 
@@ -33,6 +34,8 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - Folders: `frontend/` (friend), `backend/` (user), `shared/` + `CONTRACT.md` (user owns, both use). `app/` = 1-line connectors only.
 - API format: `{ data }` on success, `{ error, fields? }` on failure.
 - Commits: no Claude co-author lines. (The first two commits on `main` have one by mistake; left as-is because pushed history must not be rewritten.)
+- `withErrors` re-throws Next's internal errors (they carry `digest`), otherwise `connection()` in GET handlers breaks the build.
+- Stubs = `backend/handlers/*` returning `backend/lib/mock.ts` data; each real endpoint replaces its stub and flips ⏳ to ✅ in CONTRACT.
 - Cache Components is ON in next.config.ts → no `export const dynamic`; use `await connection()` for live GET data.
 
 ## Useful commands
