@@ -1,69 +1,19 @@
-// TEMPORARY mock data for stub endpoints, so the frontend never waits.
+// TEMPORARY mock data for Stage 4 stub endpoints, so the frontend never waits.
 // Every real endpoint replaces its stub in its own stage; delete this file when none are left.
 import type {
-  AttemptView, CandidateExam, Enrollment, EnrollResult, Exam, ExamDetail, HeartbeatResult, ImportResult, Me, MyExams,
-  Preferences, PublishCheck, Question, SaveResult, StartAttemptResult, SubmitResult, SyncResult, Topic, User,
+  Announcement, CandidateResult, CompensationRequest, Exam, ExamAnalytics, ExamResults, ExamStats, GradingItem,
+  Incident, MonitorView, VerifyResult,
 } from "@/shared/types";
 
-const preferences: Preferences = { theme: "light", fontScale: "md", navigatorSide: "left", layout: "single" };
-const created = "2026-11-27T05:00:00.000Z";
-
-export const mockUser: User = {
-  id: "11111111-1111-4111-8111-111111111111",
-  email: "examiner@demo.com",
-  fullName: "Dr. Ayesha Khan",
-  role: "examiner",
-  isActive: true,
-  createdAt: created,
-};
-
-export const mockCandidate: User = {
-  id: "22222222-2222-4222-8222-222222222222",
-  email: "ali@demo.com",
-  fullName: "Ali Raza",
-  role: "candidate",
-  isActive: true,
-  createdAt: created,
-};
-
-export const mockMe: Me = { ...mockUser, preferences };
-
-export const mockTopic: Topic = { id: "33333333-3333-4333-8333-333333333333", name: "Networking", questionCount: 3 };
-
-export const mockQuestions: Question[] = [
-  {
-    id: "44444444-4444-4444-8444-444444444441", topicId: mockTopic.id, topicName: mockTopic.name,
-    type: "mcq_single", stem: "Which layer of the OSI model handles routing?", difficulty: "easy",
-    marks: 2, multiScheme: "all_or_nothing", negativeMarks: 0.5, createdAt: created,
-    options: [
-      { id: "55555555-5555-4555-8555-555555555551", label: "Network layer", isCorrect: true },
-      { id: "55555555-5555-4555-8555-555555555552", label: "Transport layer", isCorrect: false },
-      { id: "55555555-5555-4555-8555-555555555553", label: "Data link layer", isCorrect: false },
-    ],
-  },
-  {
-    id: "44444444-4444-4444-8444-444444444442", topicId: mockTopic.id, topicName: mockTopic.name,
-    type: "mcq_multi", stem: "Select all protocols that work at the transport layer.", difficulty: "medium",
-    marks: 4, multiScheme: "partial", negativeMarks: 0, createdAt: created,
-    options: [
-      { id: "55555555-5555-4555-8555-555555555561", label: "TCP", isCorrect: true },
-      { id: "55555555-5555-4555-8555-555555555562", label: "UDP", isCorrect: true },
-      { id: "55555555-5555-4555-8555-555555555563", label: "HTTP", isCorrect: false },
-      { id: "55555555-5555-4555-8555-555555555564", label: "IP", isCorrect: false },
-    ],
-  },
-  {
-    id: "44444444-4444-4444-8444-444444444443", topicId: mockTopic.id, topicName: mockTopic.name,
-    type: "written", stem: "Explain the difference between TCP and UDP in your own words.", difficulty: "hard",
-    marks: 10, multiScheme: "all_or_nothing", negativeMarks: 0, createdAt: created, options: [],
-  },
-];
+const examId = "66666666-6666-4666-8666-666666666666";
+const attempt = (n: number) => `88888888-8888-4888-8888-88888888888${n}`;
+const t = (min: number) => new Date(Date.UTC(2026, 11, 1, 9, min)).toISOString(); // 1 Dec 2026, 09:mm UTC
 
 export const mockExam: Exam = {
-  id: "66666666-6666-4666-8666-666666666666",
+  id: examId,
   title: "Networking Midterm",
   instructions: "Answer all questions. You cannot return after submitting.",
-  startAt: "2026-12-01T09:00:00.000Z",
+  startAt: t(0),
   endAt: "2026-12-01T11:00:00.000Z",
   durationMin: 60,
   totalMarks: 16,
@@ -71,94 +21,122 @@ export const mockExam: Exam = {
   shuffleQuestions: true,
   shuffleOptions: true,
   blueprint: null,
-  state: "draft",
+  state: "completed",
   resultsPublishedAt: null,
   questionCount: 3,
-  enrolledCount: 2,
-  attemptCount: 0,
-  createdAt: created,
+  enrolledCount: 3,
+  attemptCount: 3,
+  createdAt: "2026-11-27T05:00:00.000Z",
 };
 
-export const mockExamDetail: ExamDetail = { ...mockExam, questions: mockQuestions };
-
-export const mockPublishCheck: PublishCheck = {
-  canPublish: false,
-  problems: ["No candidates are enrolled yet"],
-  summary: { poolSize: 3, paperQuestionCount: 3, paperMarks: 16, enrolledCount: 0 },
-};
-
-export const mockEnrollments: Enrollment[] = [
-  { candidateId: mockCandidate.id, fullName: mockCandidate.fullName, email: mockCandidate.email,
-    enrolledAt: created, attemptStatus: "not_started", score: null },
+export const mockAnnouncements: Announcement[] = [
+  { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", message: "Question 2: 'transport layer' means OSI layer 4.", createdAt: t(20) },
+  { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", message: "The exam has started. Good luck!", createdAt: t(1) },
 ];
 
-export const mockEnrollResult: EnrollResult = { enrolled: 1, alreadyEnrolled: 0, notFound: [] };
-
-export const mockImportResult: ImportResult = { totalRows: 3, validRows: 3, created: 0, skipped: 0, errors: [] };
-
-const candidateExam: CandidateExam = {
-  examId: mockExam.id, title: mockExam.title, instructions: mockExam.instructions,
-  startAt: mockExam.startAt, endAt: mockExam.endAt, durationMin: mockExam.durationMin,
-  totalMarks: mockExam.totalMarks, state: "ongoing", attempt: null, resultPublished: false,
-  canStart: true, blockedReason: null,
+export const mockIncident: Incident = {
+  id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb1",
+  attemptId: attempt(1),
+  candidateName: "Ali Raza",
+  type: "tab_hidden",
+  detail: "Switched to another tab",
+  createdAt: t(12),
+  reviewed: false,
+  reviewerNote: null,
 };
 
-export const mockMyExams: MyExams = {
-  available: [candidateExam],
-  upcoming: [{ ...candidateExam, title: "Databases Quiz", state: "published", canStart: false,
-    blockedReason: "Opens at 2:00 PM" }],
-  completed: [{ ...candidateExam, title: "OOP Basics", state: "completed", canStart: false,
-    blockedReason: "Already submitted", resultPublished: true,
-    attempt: { id: "77777777-7777-4777-8777-777777777777", status: "graded", endsAt: created, submittedAt: created } }],
+export const mockCompensation: CompensationRequest = {
+  id: "cccccccc-cccc-4ccc-8ccc-ccccccccccc1",
+  attemptId: attempt(2),
+  candidateName: "Sara Ahmed",
+  gapSec: 95,
+  status: "pending",
+  createdAt: t(25),
+  decidedAt: null,
 };
 
-// ---------- Stage 3 mocks (attempt engine stubs) ----------
+export const mockMonitor: MonitorView = {
+  exam: { id: examId, title: mockExam.title, state: "ongoing", endAt: mockExam.endAt },
+  summary: { enrolled: 4, notStarted: 1, inProgress: 2, submitted: 1, online: 1 },
+  attempts: [
+    { attemptId: attempt(1), candidateId: "22222222-2222-4222-8222-222222222221", fullName: "Ali Raza", email: "ali@demo.com",
+      status: "in_progress", answeredCount: 2, questionCount: 3, startedAt: t(2), endsAt: t(62), lastSeenAt: t(30), online: true, incidentCount: 1 },
+    { attemptId: attempt(2), candidateId: "22222222-2222-4222-8222-222222222222", fullName: "Sara Ahmed", email: "sara@demo.com",
+      status: "in_progress", answeredCount: 1, questionCount: 3, startedAt: t(3), endsAt: t(63), lastSeenAt: t(24), online: false, incidentCount: 1 },
+    { attemptId: attempt(3), candidateId: "22222222-2222-4222-8222-222222222223", fullName: "Hamza Malik", email: "hamza@demo.com",
+      status: "submitted", answeredCount: 3, questionCount: 3, startedAt: t(1), endsAt: t(61), lastSeenAt: t(28), online: false, incidentCount: 0 },
+  ],
+  incidents: [mockIncident, { ...mockIncident, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2", attemptId: attempt(2), candidateName: "Sara Ahmed",
+    type: "offline", detail: "No connection for about 95 s", createdAt: t(25) }],
+  compensations: [mockCompensation],
+};
 
-const attemptId = "88888888-8888-4888-8888-888888888888";
-const aq = (n: number) => `99999999-9999-4999-8999-99999999999${n}`;
+export const mockGradingItems: GradingItem[] = [
+  { aqId: "99999999-9999-4999-8999-999999999991", attemptId: attempt(1), candidateName: "Ali Raza", position: 3,
+    stem: "Explain the difference between TCP and UDP in your own words.", marks: 10,
+    textAnswer: "TCP is connection-oriented and reliable; UDP is connectionless and faster.", marksAwarded: null, feedback: null },
+  { aqId: "99999999-9999-4999-8999-999999999992", attemptId: attempt(3), candidateName: "Hamza Malik", position: 1,
+    stem: "Explain the difference between TCP and UDP in your own words.", marks: 10,
+    textAnswer: "TCP checks delivery, UDP does not.", marksAwarded: 6, feedback: "Mention ordering and handshakes." },
+];
 
-export const mockStartAttempt: StartAttemptResult = { attemptId, resumed: false };
+const stats: ExamStats = { attempts: 3, average: 10.33, median: 11, highest: 14, lowest: 6, passRate: 66.67, averagePercentage: 64.58 };
 
-export const mockAttemptView: AttemptView = {
-  id: attemptId,
-  examId: mockExam.id,
-  examTitle: mockExam.title,
-  instructions: mockExam.instructions,
-  isSandbox: false,
-  status: "in_progress",
-  startedAt: "2026-12-01T09:05:00.000Z",
-  endsAt: "2026-12-01T10:05:00.000Z",
-  serverNow: "2026-12-01T09:10:00.000Z",
-  totalMarks: 16,
+export const mockResults: ExamResults = {
+  exam: mockExam,
+  stats,
+  rows: [
+    { attemptId: attempt(1), candidateName: "Ali Raza", email: "ali@demo.com", status: "graded", score: 14, percentage: 87.5,
+      passed: true, submittedAt: t(55), paperDifficulty: 48.2 },
+    { attemptId: attempt(2), candidateName: "Sara Ahmed", email: "sara@demo.com", status: "graded", score: 11, percentage: 68.75,
+      passed: true, submittedAt: t(58), paperDifficulty: 51.0 },
+    { attemptId: attempt(3), candidateName: "Hamza Malik", email: "hamza@demo.com", status: "graded", score: 6, percentage: 37.5,
+      passed: false, submittedAt: t(50), paperDifficulty: 50.4 },
+  ],
+};
+
+export const mockAnalytics: ExamAnalytics = {
+  stats,
+  distribution: ["0-9", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "90-100"].map((bucket) => ({
+    bucket,
+    count: bucket === "30-39" || bucket === "60-69" || bucket === "80-89" ? 1 : 0,
+  })),
   questions: [
-    { aqId: aq(1), position: 1, type: "mcq_single", stem: mockQuestions[0].stem, marks: 2,
-      options: mockQuestions[0].options.map(({ id, label }) => ({ id, label })) },
-    { aqId: aq(2), position: 2, type: "mcq_multi", stem: mockQuestions[1].stem, marks: 4,
-      options: mockQuestions[1].options.map(({ id, label }) => ({ id, label })) },
-    { aqId: aq(3), position: 3, type: "written", stem: mockQuestions[2].stem, marks: 10, options: [] },
+    { questionId: "44444444-4444-4444-8444-444444444441", stem: "Which layer of the OSI model handles routing?", type: "mcq_single",
+      labelledDifficulty: "easy", observedDifficulty: "easy", mismatch: false, timesShown: 3, correctPct: 100, skippedPct: 0, mostChosenWrong: null },
+    { questionId: "44444444-4444-4444-8444-444444444442", stem: "Select all protocols that work at the transport layer.", type: "mcq_multi",
+      labelledDifficulty: "medium", observedDifficulty: "hard", mismatch: true, timesShown: 3, correctPct: 33.33, skippedPct: 0,
+      mostChosenWrong: { label: "IP", pct: 66.67 } },
+    { questionId: "44444444-4444-4444-8444-444444444443", stem: "Explain the difference between TCP and UDP in your own words.", type: "written",
+      labelledDifficulty: "hard", observedDifficulty: "medium", mismatch: true, timesShown: 3, correctPct: 56.67, skippedPct: 0, mostChosenWrong: null },
   ],
-  answers: [
-    { aqId: aq(1), selectedOptionIds: [mockQuestions[0].options[0].id], textAnswer: "", flagged: false, clientSeq: 1, savedAt: "2026-12-01T09:08:00.000Z" },
+  fairness: [
+    { attemptId: attempt(1), candidateName: "Ali Raza", paperDifficulty: 48.2, deviationPct: -3 },
+    { attemptId: attempt(2), candidateName: "Sara Ahmed", paperDifficulty: 51.0, deviationPct: 2 },
+    { attemptId: attempt(3), candidateName: "Hamza Malik", paperDifficulty: 50.4, deviationPct: 1 },
   ],
-  scratchpad: { text: "", drawing: null },
-  announcements: [],
-  preferences,
 };
 
-export const mockSaveResult: SaveResult = {
-  aqId: aq(1), accepted: true, savedAt: "2026-12-01T09:10:00.000Z",
-  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt,
+export const mockCandidateResult: CandidateResult = {
+  attemptId: attempt(1),
+  examTitle: mockExam.title,
+  score: 14,
+  totalMarks: 16,
+  percentage: 87.5,
+  passed: true,
+  submittedAt: t(55),
+  publishedAt: "2026-12-02T10:00:00.000Z",
+  questions: [
+    { position: 1, stem: "Which layer of the OSI model handles routing?", type: "mcq_single", marks: 2, marksAwarded: 2,
+      yourAnswer: "Network layer", correctAnswer: "Network layer", feedback: null },
+    { position: 2, stem: "Select all protocols that work at the transport layer.", type: "mcq_multi", marks: 4, marksAwarded: 4,
+      yourAnswer: "TCP, UDP", correctAnswer: "TCP, UDP", feedback: null },
+    { position: 3, stem: "Explain the difference between TCP and UDP in your own words.", type: "written", marks: 10, marksAwarded: 8,
+      yourAnswer: "TCP is connection-oriented and reliable; UDP is connectionless and faster.", correctAnswer: null, feedback: "Good, add ordering." },
+  ],
 };
 
-export const mockSyncResult: SyncResult = {
-  results: [{ aqId: aq(1), accepted: true, reason: null }],
-  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt, status: "in_progress",
+export const mockVerify: VerifyResult = {
+  valid: true, examTitle: mockExam.title, candidateInitials: "A. R.", score: 14, totalMarks: 16, percentage: 87.5, passed: true,
+  issuedAt: "2026-12-02T10:05:00.000Z",
 };
-
-export const mockHeartbeat: HeartbeatResult = {
-  serverNow: "2026-12-01T09:10:00.000Z", endsAt: mockAttemptView.endsAt, status: "in_progress", announcements: [],
-};
-
-export const mockSubmit: SubmitResult = { status: "submitted", submittedAt: "2026-12-01T09:50:00.000Z" };
-
-export const mockPreferences: Preferences = preferences;
