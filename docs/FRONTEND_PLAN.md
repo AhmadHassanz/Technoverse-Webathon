@@ -32,7 +32,7 @@ The frontend only ever talks to `/api/...`. No Supabase in the browser, no Realt
 | Data fetching | `"use client"` pages that call `apiGet` / `apiPost` / `apiPut` / `apiPatch` / `apiDelete` from `frontend/lib/api-client.ts`, typed with `shared/types.ts` |
 | Auth | `POST /api/auth/login` sets a cookie (same-origin fetch sends it automatically). An `AuthProvider` loads `GET /api/auth/me` once; role layouts redirect if not allowed. Real security is on the backend |
 | Live updates | Polling: monitor every 5 s; workspace heartbeat every 15 s (also brings announcements) |
-| UI components | Our own small kit in `frontend/components/ui/` (no shadcn CLI — it rewrites globals.css and can break the Tailwind v4 + Turbopack setup) |
+| UI components | shadcn (Base UI, Nova preset) in `frontend/components/ui/`. Add with `npx shadcn@latest add <name>`. Keep the `@import "tw-animate-css"` and `@import "shadcn/tailwind.css"` lines in `globals.css`. |
 | Icons | `lucide-react` (installed by Zoro in Stage 0) |
 | Charts | Plain divs / inline SVG with Tailwind (histogram, bars). No chart library |
 | Forms | Controlled inputs + zod schemas from `shared/validation.ts` for the same rules as the backend; also show backend `fields` errors under inputs |
@@ -176,7 +176,7 @@ Seven stages, matched minute-for-minute with Zoro's backend doc. At every checkp
 - `git pull`, `npm i` after Zoro's package commit.
 - `app/globals.css`: tokens from section 5 for light / dark / contrast via `[data-theme=…]`, font sizes via `[data-font=…]`, `@theme inline` mapping, focus ring. Remove the `prefers-color-scheme` block.
 - `app/layout.tsx`: title "ExamCore — Secure Examinations" (or your name), `data-theme` / `data-font` defaults.
-- UI kit in `frontend/components/ui/` (list in section 3). Keep each component small and typed.
+- UI kit: shadcn is already initialized. Add the pieces in section 3 with `npx shadcn@latest add button input textarea select checkbox card badge tabs table` (and the rest by hand only if shadcn has no match: Modal, Drawer, Toast, Spinner, Skeleton, EmptyState, ErrorState, StatTile, ProgressBar). Files go to `frontend/components/ui/`.
 - `frontend/lib/api-client.ts` changes (section 2) + `format.ts`.
 - `components/shell/`: AppShell with sidebar (logo, nav links per role, user menu with logout) and topbar; collapses to a top bar on mobile.
 - Replace `HomePage.tsx` with a simple landing: product name, one line, "Log in" button.
@@ -296,7 +296,7 @@ Paste one prompt, let Claude finish, check it in the browser (all states), commi
 
 > Extend frontend/lib/api-client.ts as described in FRONTEND_PLAN section 2 (apiPut, apiPatch, apiDelete, ApiClientError with status and fields, 401 redirect, status 0 for network failure). Create frontend/lib/format.ts with date, percent, duration and toLocalInput helpers.
 
-> Build the UI kit in frontend/components/ui listed in FRONTEND_PLAN section 3, using only the CSS-variable Tailwind classes, accessible (labels, focus ring, aria). Then build components/shell (AppShell, Sidebar, Topbar, UserMenu), responsive. Replace HomePage with a simple landing page. Run npm run build.
+> shadcn is already set up. Add the UI kit pieces from FRONTEND_PLAN section 3 with `npx shadcn@latest add …` into frontend/components/ui (hand-build only the ones shadcn does not have). Keep the shadcn imports at the top of app/globals.css. Then build components/shell (AppShell, Sidebar, Topbar, UserMenu), responsive. Replace HomePage with a simple landing page. Run npm run build.
 
 **Stage 1**
 > Create frontend/lib/auth.tsx (AuthProvider + useAuth using GET /api/auth/me, logout via POST /api/auth/logout) and AdminLayout, ExaminerLayout, CandidateLayout in frontend/layouts with role guards and AppShell, plus their 1-line connectors in app/. Wire AuthProvider and ToastProvider into app/layout.tsx. Follow the route table in FRONTEND_PLAN section 3.
