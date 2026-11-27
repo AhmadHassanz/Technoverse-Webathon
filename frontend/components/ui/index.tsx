@@ -61,7 +61,7 @@ export function Field({
 }
 
 const fieldBase =
-  "w-full rounded-md border border-line bg-surface px-3.5 text-[0.9375rem] text-ink transition-colors placeholder:text-mute/70 hover:border-line-strong focus:border-cobalt focus:outline-2 focus:outline-offset-2 focus:outline-cobalt/45 disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
+  "w-full rounded-[10px] border border-line bg-surface px-3.5 text-[0.9375rem] text-ink shadow-[0_1px_2px_rgb(13_19_36/0.04)] transition-[border-color,box-shadow] placeholder:text-mute/70 hover:border-line-strong focus:border-cobalt focus:shadow-[0_0_0_4px_var(--tint)] focus:outline-none disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
 
 export function Input({
   className,
@@ -183,7 +183,7 @@ export function CardHeader({
     <div className={cn("flex flex-wrap items-start justify-between gap-4", className)}>
       <div>
         {eyebrow && <p className="meta-label mb-2">{eyebrow}</p>}
-        <h2 className="display display-sm">{title}</h2>
+        <h2 className="display text-[1.15rem] leading-tight tracking-[-0.02em]">{title}</h2>
         {description && (
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mute">{description}</p>
         )}
@@ -205,7 +205,7 @@ export function Badge({
   className?: string;
 }) {
   const tones: Record<string, string> = {
-    neutral: "bg-sand text-mute border-transparent",
+    neutral: "bg-sand text-mute ring-1 ring-inset ring-line",
     blue: "bg-tint text-cobalt border-transparent",
     tint: "bg-tint text-cobalt border-transparent",
     success: "bg-success-soft text-success border-transparent",
@@ -218,7 +218,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-[4px] px-2.5 py-1 text-[0.6875rem] font-medium leading-none",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold capitalize leading-none",
         tones[tone],
         className,
       )}
@@ -233,7 +233,7 @@ export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { tone: Parameters<typeof Badge>[0]["tone"]; label?: string }> = {
     draft: { tone: "neutral" },
     published: { tone: "tint" },
-    ongoing: { tone: "solid" },
+    ongoing: { tone: "solid", label: "live" },
     completed: { tone: "success" },
     in_progress: { tone: "lavender" },
     submitted: { tone: "sky" },
@@ -246,7 +246,11 @@ export function StatusBadge({ status }: { status: string }) {
   };
   const entry = map[status] ?? { tone: "neutral" as const };
   const label = entry.label ?? status.replace(/_/g, " ");
-  return <Badge tone={entry.tone}>{label}</Badge>;
+  return (
+    <Badge tone={entry.tone} dot>
+      {label}
+    </Badge>
+  );
 }
 
 export function StatTile({
@@ -263,12 +267,13 @@ export function StatTile({
   className?: string;
 }) {
   return (
-    <Card className={cn("px-6 py-5", className)}>
+    <Card className={cn("relative overflow-hidden px-5 py-5 sm:px-6", className)}>
+      <span aria-hidden className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-cobalt via-cobalt/50 to-transparent" />
       <p className="meta-label">{label}</p>
       <p
         className={cn(
-          "num mt-2 leading-none text-cobalt",
-          size === "lg" ? "text-[2.6rem]" : "text-[2.15rem]",
+          "display mt-3 leading-none tracking-[-0.04em] text-ink",
+          size === "lg" ? "text-[2.75rem]" : "text-[2.25rem]",
         )}
       >
         {value}
@@ -293,14 +298,14 @@ export function ProgressBar({
 }) {
   const pct = total <= 0 ? 0 : Math.min(100, Math.max(0, (value / total) * 100));
   const tones = {
-    cobalt: "bg-cobalt",
+    cobalt: "bg-gradient-to-r from-cobalt to-[#9b6bff]",
     warning: "bg-warning",
     success: "bg-success",
     danger: "bg-danger",
   };
   return (
     <div
-      className={cn("h-1.5 w-full overflow-hidden rounded-full bg-tint", className)}
+      className={cn("h-2 w-full overflow-hidden rounded-full bg-sand", className)}
       role="progressbar"
       aria-valuenow={value}
       aria-valuemin={0}
@@ -320,21 +325,21 @@ export function Table({ children, className }: { children: ReactNode; className?
   return (
     <div className={cn("surface-card overflow-hidden", className)}>
       <div className="overflow-x-auto scrollbar-thin">
-        <table className="w-full min-w-[680px] border-collapse text-left text-sm">{children}</table>
+        <table className="w-full min-w-[640px] border-collapse text-left text-sm">{children}</table>
       </div>
     </div>
   );
 }
 
 export function THead({ children }: { children: ReactNode }) {
-  return <thead className="bg-sand">{children}</thead>;
+  return <thead className="border-b border-line bg-paper">{children}</thead>;
 }
 
 export function Th({ children, className }: { children?: ReactNode; className?: string }) {
   return (
     <th
       className={cn(
-        "whitespace-nowrap px-5 py-3 text-[0.6875rem] font-medium uppercase tracking-[0.07em] text-mute",
+        "whitespace-nowrap px-5 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-mute",
         className,
       )}
       scope="col"
@@ -346,7 +351,7 @@ export function Th({ children, className }: { children?: ReactNode; className?: 
 
 export function Tr({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <tr className={cn("border-t border-line-soft first:border-t-0", className)}>{children}</tr>
+    <tr className={cn("border-t border-line-soft transition-colors first:border-t-0 hover:bg-paper/70", className)}>{children}</tr>
   );
 }
 
@@ -386,7 +391,13 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-center gap-1 border-b border-line", className)} role="tablist">
+    <div
+      className={cn(
+        "scrollbar-none flex items-center gap-1 overflow-x-auto rounded-[12px] border border-line bg-surface p-1 shadow-[0_1px_2px_rgb(13_19_36/0.04)]",
+        className,
+      )}
+      role="tablist"
+    >
       {items.map((item) => {
         const active = item.value === value;
         return (
@@ -398,15 +409,22 @@ export function Tabs<T extends string>({
             ref={active ? revealTab : undefined}
             onClick={() => onChange(item.value)}
             className={cn(
-              "relative -mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-[0.875rem] transition-colors",
+              "relative inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-[9px] px-3.5 text-[0.8125rem] font-medium transition-colors",
               active
-                ? "border-cobalt font-medium text-cobalt"
-                : "border-transparent text-mute hover:text-ink",
+                ? "bg-night text-white shadow-[0_4px_12px_-6px_rgb(11_15_30/0.6)]"
+                : "text-mute hover:bg-sand hover:text-ink",
             )}
           >
             {item.label}
             {typeof item.count === "number" && (
-              <span className="num text-[0.6875rem] text-mute">{item.count}</span>
+              <span
+                className={cn(
+                  "num rounded-full px-1.5 py-0.5 text-[0.625rem] leading-none",
+                  active ? "bg-white/15 text-white" : "bg-sand text-mute",
+                )}
+              >
+                {item.count}
+              </span>
             )}
           </button>
         );
@@ -423,7 +441,7 @@ export function LinkTabs({
   active: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-line">
+    <div className="scrollbar-none flex items-center gap-1 overflow-x-auto rounded-[12px] border border-line bg-surface p-1">
       {items.map((item) => {
         const isActive = item.href === active;
         return (
@@ -431,10 +449,8 @@ export function LinkTabs({
             key={item.href}
             href={item.href}
             className={cn(
-              "relative -mb-px border-b-2 px-4 py-3 text-[0.875rem] transition-colors",
-              isActive
-                ? "border-cobalt font-medium text-cobalt"
-                : "border-transparent text-mute hover:text-ink",
+              "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-[9px] px-3.5 text-[0.8125rem] font-medium transition-colors",
+              isActive ? "bg-night text-white" : "text-mute hover:bg-sand hover:text-ink",
             )}
           >
             {item.label}
@@ -494,7 +510,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-overlay px-4 py-[6vh] backdrop-blur-[1px]">
+    <div className="fixed inset-0 z-[80] flex items-end justify-center overflow-y-auto bg-overlay backdrop-blur-[3px] sm:items-start sm:px-4 sm:py-[6vh]">
       <button
         type="button"
         aria-label="Close dialog"
@@ -507,7 +523,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={labelledBy}
         className={cn(
-          "relative z-10 w-full rounded-[10px] border border-line bg-surface p-7 shadow-[0_24px_60px_-30px_rgba(19,40,70,0.5)] sm:p-9",
+          "animate-rise relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-[22px] border border-line bg-surface p-6 pb-8 shadow-pop sm:max-h-none sm:overflow-visible sm:rounded-[20px] sm:p-8",
           widths[width],
         )}
       >
@@ -554,13 +570,13 @@ export function Drawer({
   if (!open) return null;
   const positions =
     side === "bottom"
-      ? "inset-x-0 bottom-0 max-h-[86vh] w-full rounded-t-[14px] border-t"
+      ? "inset-x-0 bottom-0 max-h-[86vh] w-full rounded-t-[22px] border-t"
       : side === "left"
         ? "inset-y-0 left-0 h-full w-full max-w-md border-r"
         : "inset-y-0 right-0 h-full w-full max-w-lg border-l";
 
   return (
-    <div className="fixed inset-0 z-[75] flex bg-overlay">
+    <div className="fixed inset-0 z-[75] flex bg-overlay backdrop-blur-[3px]">
       <button
         type="button"
         aria-label="Close panel"
@@ -573,7 +589,7 @@ export function Drawer({
         aria-modal="true"
         aria-label={typeof title === "string" ? title : undefined}
         className={cn(
-          "relative flex flex-col border-line bg-surface shadow-[0_20px_60px_-30px_rgba(19,40,70,0.5)]",
+          "relative flex flex-col border-line bg-surface shadow-pop",
           positions,
           widthClass,
         )}
@@ -581,7 +597,7 @@ export function Drawer({
         <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
           <div>
             <p className="eyebrow">Workspace</p>
-            <h2 className="display display-sm mt-1">{title}</h2>
+            <h2 className="display mt-1 text-[1.25rem] tracking-[-0.025em]">{title}</h2>
           </div>
           <button
             type="button"
@@ -650,7 +666,7 @@ export function ConfirmModal({
       }
     >
       {warning && (
-        <div className="rounded-md border border-warning/25 bg-warning-soft px-4 py-3.5">
+        <div className="rounded-[12px] border border-warning/25 bg-warning-soft px-4 py-3.5">
           <p className="text-sm font-medium text-warning">{warning}</p>
           {warningDetail && <p className="mt-1 text-xs leading-relaxed text-ink/75">{warningDetail}</p>}
         </div>
@@ -668,7 +684,7 @@ export function Spinner({ className }: { className?: string }) {
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-sand", className)} />;
+  return <div className={cn("animate-pulse rounded-[12px] bg-line-soft", className)} />;
 }
 
 export function EmptyState({
@@ -687,14 +703,14 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-[10px] border border-dashed border-line px-6 py-14 text-center",
+        "bg-dots flex flex-col items-center justify-center rounded-[18px] border border-dashed border-line-strong px-6 py-14 text-center",
         className,
       )}
     >
-      <div className="mb-4 flex size-11 items-center justify-center rounded-full border border-line bg-surface text-cobalt">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-[14px] bg-night text-lime shadow-[0_10px_24px_-12px_rgb(11_15_30/0.8)]">
         {icon ?? <FileText className="size-5" strokeWidth={1.6} />}
       </div>
-      <h3 className="display display-sm">{title}</h3>
+      <h3 className="display text-[1.2rem] tracking-[-0.025em]">{title}</h3>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-mute">{description}</p>
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -715,7 +731,7 @@ export function ErrorState({
   return (
     <div className={cn("surface-card flex flex-col items-center px-6 py-14 text-center", className)}>
       <CircleAlert className="size-6 text-danger" strokeWidth={1.6} />
-      <h3 className="display display-sm mt-4">{title}</h3>
+      <h3 className="display mt-4 text-[1.2rem] tracking-[-0.025em]">{title}</h3>
       <p className="mt-2 max-w-md text-sm text-mute">{description}</p>
       {onRetry && (
         <Button variant="secondary" className="mt-5" onClick={onRetry}>
@@ -748,9 +764,9 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-cobalt hover:underline"
+      className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-mute transition-colors hover:border-line-strong hover:text-ink"
     >
-      <ArrowLeft className="size-3.5" />
+      <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
       {children}
     </Link>
   );

@@ -3,9 +3,12 @@
 @import "shadcn/tailwind.css";
 
 /* ============================================================
-   ExamCore — Design System 01
-   Parchment + cobalt. Semantic tokens live here; never invent a
-   new colour in a component.
+   ExamCore — Design System 02 "Midnight Iris"
+   Cool paper background, deep midnight chrome, electric iris
+   brand colour and a lime signal accent.
+   Token NAMES are kept from System 01 (cobalt = brand,
+   parchment = page background) so every screen re-themes from
+   this one file. Never invent a colour inside a component.
    ============================================================ */
 
 @theme inline {
@@ -36,10 +39,17 @@
   --color-sky: var(--sky);
   --color-sky-ink: var(--sky-ink);
   --color-overlay: var(--overlay);
+  /* new in System 02 */
+  --color-night: var(--night);
+  --color-night-2: var(--night-2);
+  --color-night-line: var(--night-line);
+  --color-night-mute: var(--night-mute);
+  --color-lime: var(--lime);
+  --color-on-lime: var(--on-lime);
 
-  --font-sans: var(--font-dm);
-  --font-display: var(--font-serif);
-  --font-mono: var(--font-plex);
+  --font-sans: var(--font-geist);
+  --font-display: var(--font-bricolage);
+  --font-mono: var(--font-geist-mono);
 
   /* shadcn compatibility tokens */
   --color-background: var(--parchment);
@@ -61,75 +71,90 @@
   --color-input: var(--line);
   --color-ring: var(--cobalt);
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-card: 0 1px 2px rgb(13 19 36 / 0.04), 0 12px 32px -18px rgb(13 19 36 / 0.16);
+  --shadow-pop: 0 2px 6px rgb(13 19 36 / 0.06), 0 30px 70px -28px rgb(13 19 36 / 0.35);
+  --shadow-glow: 0 10px 30px -10px rgb(80 70 230 / 0.55);
 }
 
 :root,
 [data-theme="light"] {
-  --parchment: #f0e3c7;
-  --surface: #fffcf5;
-  --paper: #fffdf8;
-  --ink: #132846;
-  --mute: #596270;
-  --cobalt: #0046cf;
-  --cobalt-deep: #0038a8;
+  --parchment: #f3f4f8;
+  --surface: #ffffff;
+  --paper: #f8f9fc;
+  --ink: #0d1324;
+  --mute: #5b6479;
+  --cobalt: #5046e6;
+  --cobalt-deep: #3e34c8;
   --on-cobalt: #ffffff;
-  --line: #cec7b8;
-  --line-soft: #e2dbc9;
-  --line-strong: #b9b0a0;
-  --tint: #e8eeff;
-  --tint-strong: #dbe5ff;
-  --sand: #e9e3d3;
-  --danger: #a12b2b;
-  --danger-deep: #8a2323;
+  --line: #e1e4ec;
+  --line-soft: #eceef4;
+  --line-strong: #c9cedb;
+  --tint: #efeeff;
+  --tint-strong: #e1dfff;
+  --sand: #eef0f5;
+  --danger: #c3283a;
+  --danger-deep: #a11f2f;
   --on-danger: #ffffff;
-  --danger-soft: #f5ded9;
-  --warning: #805500;
-  --warning-soft: #f4e7c8;
-  --success: #21623e;
-  --success-soft: #dcebe1;
-  --lavender: #e9e3f6;
-  --lavender-ink: #4b3c7a;
-  --sky: #e1f0f4;
-  --sky-ink: #235a66;
-  --overlay: rgba(19, 40, 70, 0.35);
-  --radius: 8px;
+  --danger-soft: #fde6e8;
+  --warning: #9a5700;
+  --warning-soft: #fff0d4;
+  --success: #0b7a4b;
+  --success-soft: #dcf5e8;
+  --lavender: #f1ecff;
+  --lavender-ink: #5a3db6;
+  --sky: #e2f3fb;
+  --sky-ink: #0b6283;
+  --overlay: rgba(9, 12, 24, 0.5);
+  --night: #0b0f1e;
+  --night-2: #151a2e;
+  --night-line: #232a42;
+  --night-mute: #8f97ad;
+  --lime: #c6f36b;
+  --on-lime: #10170a;
   --border-w: 1px;
   color-scheme: light;
 }
 
-/* Dark: deep ink/navy surfaces derived from the parchment palette, cobalt lightened for contrast. */
+/* Dark: midnight surfaces, iris lifted for contrast. */
 [data-theme="dark"] {
-  --parchment: #0e1828;
-  --surface: #152238;
-  --paper: #18263e;
-  --ink: #ece4d2;
-  --mute: #a9b1bf;
-  --cobalt: #8fb0ff;
-  --cobalt-deep: #b0c8ff;
-  --on-cobalt: #0b1424;
-  --line: #2f3e5a;
-  --line-soft: #243149;
-  --line-strong: #44557a;
-  --tint: #1e2f55;
-  --tint-strong: #263a66;
-  --sand: #1c2a44;
-  --danger: #f39a9a;
-  --danger-deep: #f7b3b3;
-  --on-danger: #2a0d0d;
-  --danger-soft: #3a1f27;
-  --warning: #f0c060;
-  --warning-soft: #3a2f16;
-  --success: #7fd6a2;
-  --success-soft: #183528;
-  --lavender: #2c2648;
-  --lavender-ink: #c9bdf2;
-  --sky: #17363f;
-  --sky-ink: #9fd6e2;
-  --overlay: rgba(0, 0, 0, 0.6);
+  --parchment: #080b15;
+  --surface: #111627;
+  --paper: #151b2f;
+  --ink: #e8ebf4;
+  --mute: #98a0b6;
+  --cobalt: #8c84ff;
+  --cobalt-deep: #a9a3ff;
+  --on-cobalt: #0b0e1c;
+  --line: #232a40;
+  --line-soft: #1a2034;
+  --line-strong: #343d5a;
+  --tint: #1d1f45;
+  --tint-strong: #272a5c;
+  --sand: #171d31;
+  --danger: #ff8593;
+  --danger-deep: #ffa6b0;
+  --on-danger: #2a0a10;
+  --danger-soft: #3a1620;
+  --warning: #f6c25c;
+  --warning-soft: #392a10;
+  --success: #6be3a6;
+  --success-soft: #11321f;
+  --lavender: #261f47;
+  --lavender-ink: #cdbfff;
+  --sky: #10303d;
+  --sky-ink: #93daf0;
+  --overlay: rgba(0, 0, 0, 0.65);
+  --night: #05070f;
+  --night-2: #0f1322;
+  --night-line: #1c2236;
+  --night-mute: #8790a8;
+  --lime: #c6f36b;
+  --on-lime: #10170a;
   color-scheme: dark;
 }
 
@@ -162,6 +187,12 @@
   --sky: #002a33;
   --sky-ink: #9ff0ff;
   --overlay: rgba(0, 0, 0, 0.75);
+  --night: #000000;
+  --night-2: #111111;
+  --night-line: #ffffff;
+  --night-mute: #e6e6e6;
+  --lime: #ffd400;
+  --on-lime: #000000;
   --border-w: 2px;
   color-scheme: dark;
 }
@@ -190,15 +221,17 @@
     border-color: var(--line);
   }
   html {
-    font-family: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     background: var(--parchment);
     color: var(--ink);
     font-size: 1rem;
     line-height: 1.55;
+    font-feature-settings: "ss01", "cv11";
   }
   ::selection {
     background: var(--cobalt);
@@ -222,48 +255,54 @@
 
 @layer components {
   .display {
-    font-family: var(--font-serif), Georgia, "Times New Roman", serif;
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    line-height: 1.02;
+    font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-variation-settings: "opsz" 40, "wdth" 96;
+    letter-spacing: -0.028em;
+    line-height: 1.04;
     color: var(--ink);
   }
   .display-xl {
-    font-size: clamp(2.75rem, 5.2vw, 4.5rem);
+    font-size: clamp(2.4rem, 5vw, 4.25rem);
   }
   .display-lg {
-    font-size: clamp(2.25rem, 3.4vw, 3.25rem);
+    font-size: clamp(1.85rem, 3vw, 2.6rem);
   }
   .display-md {
-    font-size: clamp(1.75rem, 2.4vw, 2.35rem);
+    font-size: clamp(1.5rem, 2.2vw, 1.95rem);
   }
   .display-sm {
-    font-size: 1.55rem;
-    line-height: 1.15;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    letter-spacing: -0.025em;
   }
   .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.09em;
+    font-weight: 600;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--cobalt);
   }
   .meta-label {
     font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.08em;
+    font-weight: 600;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--mute);
   }
   .num {
-    font-family: var(--font-plex), ui-monospace, monospace;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
   .surface-card {
     background: var(--surface);
     border: var(--border-w, 1px) solid var(--line);
-    border-radius: 10px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
   }
   .rule {
     border-top: 1px solid var(--line);
@@ -277,7 +316,37 @@
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--line) transparent;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  /* Soft dotted grid used behind hero areas and empty states. */
+  .bg-dots {
+    background-image: radial-gradient(color-mix(in srgb, var(--ink) 14%, transparent) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .bg-dots-night {
+    background-image: radial-gradient(rgb(255 255 255 / 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  /* Iris glow blob for dark panels. */
+  .glow-iris {
+    background:
+      radial-gradient(60% 60% at 80% 0%, rgb(80 70 230 / 0.55), transparent 70%),
+      radial-gradient(50% 50% at 0% 100%, rgb(198 243 107 / 0.16), transparent 70%);
+  }
+  .text-gradient {
+    background: linear-gradient(100deg, var(--cobalt) 0%, #a35cff 55%, #ff6fa8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .pad-safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   }
 }
 
@@ -287,5 +356,24 @@
   }
   .text-pretty {
     text-wrap: pretty;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: none;
   }
 }

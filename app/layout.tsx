@@ -1,29 +1,34 @@
-import type { Metadata } from "next";
-import { DM_Sans, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "@/frontend/components/providers";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-serif",
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
   subsets: ["latin"],
-  weight: "400",
+  axes: ["opsz", "wdth"],
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
   display: "swap",
 });
 
 const THEME_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("examcore:prefs")||"null");if(p){var d=document.documentElement;if(p.theme)d.dataset.theme=p.theme;if(p.fontScale)d.dataset.font=p.fontScale;}}catch(e){}`;
+
+export const viewport: Viewport = {
+  themeColor: "#0b0f1e",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "ExamCore — Secure Examinations",
@@ -41,7 +46,7 @@ export default function RootLayout({
       lang="en"
       data-theme="light"
       data-font="md"
-      className={`${dmSans.variable} ${instrumentSerif.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${geist.variable} ${bricolage.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

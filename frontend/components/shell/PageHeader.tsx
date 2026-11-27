@@ -16,15 +16,18 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "mb-7 flex flex-wrap items-start justify-between gap-5 sm:mb-9",
+        "animate-rise mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8",
         className,
       )}
     >
       <div className="min-w-0">
-        <p className="eyebrow">{eyebrow}</p>
-        <h1 className="display display-lg mt-3 text-balance">{title}</h1>
+        <p className="eyebrow">
+          <span aria-hidden className="size-1.5 rounded-full bg-lime ring-2 ring-cobalt/20" />
+          {eyebrow}
+        </p>
+        <h1 className="display display-lg mt-2.5 text-balance">{title}</h1>
         {description && (
-          <p className="mt-3 max-w-3xl text-[0.9375rem] leading-relaxed text-mute">
+          <p className="mt-2.5 max-w-2xl text-[0.9375rem] leading-relaxed text-mute">
             {description}
           </p>
         )}
