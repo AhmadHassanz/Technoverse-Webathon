@@ -2,6 +2,8 @@
 
 > Markdown copy of "Frontend Build Guide — Secure Exam System.pdf" (27 Nov 2026). This is the final frontend plan. If it disagrees with older docs, **this doc wins**. Contract = `docs/CONTRACT.md` + `shared/types.ts`.
 
+> **Timing note (27 Nov):** we are NOT following the clock times in this plan. Follow the stage **order** and the "Done when" checks, not the hours. The only hard time is the **8:00 PM deadline** (aim to finish by 7:30 PM, no commit/push after 7:45 PM). If time runs short, use the cut lists.
+
 ## 1. How to use this doc
 
 **Setup (do first):**

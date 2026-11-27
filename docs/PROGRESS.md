@@ -5,7 +5,8 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Current status
 - Project: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Repo: https://github.com/AhmadHassanz/Technoverse-Webathon. Branches: `main` (merged, deployable), `backend` (user), `frontend` (friend).
-- Stage: about to start **Stage 0** of BACKEND_PLAN (behind schedule: plan said 10:50–11:30).
+- Stage: **Stage 0** of BACKEND_PLAN in progress. Supabase project created and `schema.sql` run (user). `.env.local` exists with DUMMY keys; the user replaces them with the real ones.
+- **Not following the plan's clock times** (only stage order and the 8:00 PM deadline matter).
 
 ## Done
 - 27 Nov 10:25: `git init`, first commit, pushed `main`.
@@ -13,7 +14,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - 27 Nov: created `backend` branch; removed unused boilerplate (3 starter SVGs, personal `.vscode/`, old quick-reference guides); wrote real README and `docs/DESIGN.md` skeleton.
 
 ## Next steps
-1. Stage 0 (BACKEND_PLAN): user creates Supabase project, runs `schema.sql`, fills `.env.local` (+ Vercel env vars).
+1. User: replace dummy values in `.env.local` with real Supabase URL/keys; add the same 3 vars in Vercel (Production). Schema may need changes later; keep file + Supabase + docs in sync.
 2. Stage 0 (Claude): install all packages in one commit, `backend/lib` helpers (errors, supabase, auth, time, shuffle), Stage 1+2 stub endpoints, `npm run build`, first deploy.
 3. Add friend as GitHub collaborator; friend creates `frontend` branch from `main`.
 4. Friend: when replacing `HomePage.tsx`, also delete `public/next.svg` and `public/vercel.svg` (only the starter page uses them).
@@ -22,6 +23,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - Team of 2: user = backend (branch `backend`), friend = frontend (branch `frontend`). Merge into `main`, deploy from `main`.
 - Stack: Next.js 16 (App Router) + Tailwind v4 + TypeScript, ONE app, repo root = `webathon/`, no `src/`.
 - DB = Supabase Postgres; auth via Supabase behind our API (httpOnly cookie); backend uses the secret key only; RLS on with no policies.
+- Plan clock times are ignored by choice; deadline 8:00 PM still applies.
 - Polling instead of Realtime; pdf-lib + qrcode for PDFs; zod schemas in `shared/validation.ts`.
 - Innovation challenges: 5.3 (outage compensation) + 5.2 (blueprint fairness).
 - Folders: `frontend/` (friend), `backend/` (user), `shared/` + `CONTRACT.md` (user owns, both use). `app/` = 1-line connectors only.

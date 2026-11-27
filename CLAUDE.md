@@ -51,6 +51,8 @@
 
 ## Problem statement
 **Secure Examination Management System** (roles: admin, examiner, candidate). Full brief: `docs/PROBLEM_STATEMENT.md`.
+- **We do NOT follow the clock times in the plans**; follow stage order only. The 8:00 PM deadline is the only hard time.
+- `backend/db/schema.sql` may change as we build (keep file, Supabase, DESIGN.md, types and CONTRACT in sync).
 - Final plans (these win over older docs): `docs/BACKEND_PLAN.md` (user) and `docs/FRONTEND_PLAN.md` (friend).
 - Contract (treat as law; change only together, in one commit): `docs/CONTRACT.md` + `shared/types.ts` + `backend/db/schema.sql`.
 - Innovation challenges chosen: **5.3 failure-resilient exams** + **5.2 fairness of randomized papers**.

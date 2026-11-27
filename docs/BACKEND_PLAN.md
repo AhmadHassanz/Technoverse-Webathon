@@ -2,6 +2,9 @@
 
 > Markdown copy of "Backend Build Guide — Secure Exam System (Zoro).pdf" (27 Nov 2026). This is the final backend plan. If it disagrees with older docs, **this doc wins**. Contract = `docs/CONTRACT.md` + `shared/types.ts` + `backend/db/schema.sql`.
 
+> **Timing note (27 Nov):** we are NOT following the clock times in this plan. Follow the stage **order** and the "Done when" checks, not the hours. The only hard time is the **8:00 PM deadline** (aim to finish by 7:30 PM, no commit/push/deploy after 7:45 PM). If time runs short, use the cut lists.
+> **Schema note:** `backend/db/schema.sql` is not absolute. When we change it, update the file, run the change in the Supabase SQL editor, and update `docs/DESIGN.md` + `shared/types.ts` + `docs/CONTRACT.md` in the same commit.
+
 ## 1. How to use this doc
 
 **Setup (do first):**
