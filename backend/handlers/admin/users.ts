@@ -1,15 +1,26 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET, POST /api/admin/users: see docs/CONTRACT.md
 import { connection } from "next/server";
+import { z } from "zod";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockCandidate, mockUser } from "@/backend/lib/mock";
-import type { User } from "@/shared/types";
+import { parseBody, parseQuery } from "@/backend/lib/http";
+import { createUser, listUsers } from "@/backend/services/users.service";
+import { createUserSchema, optionalText } from "@/shared/validation";
 
-export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<User[]>([mockUser, mockCandidate]);
+const querySchema = z.object({
+  role: z.enum(["admin", "examiner", "candidate"]).optional().catch(undefined),
+  q: optionalText,
 });
 
-export const POST = withErrors(async () => {
-  return ok<User>(mockCandidate, 201);
+export const GET = withErrors(async (req: Request) => {
+  await connection();
+  const admin = await requireRole("admin");
+  return ok(await listUsers(admin, parseQuery(req, querySchema)));
+});
+
+export const POST = withErrors(async (req: Request) => {
+  const admin = await requireRole("admin");
+  const input = await parseBody(req, createUserSchema);
+  return ok(await createUser(admin, input), 201);
 });

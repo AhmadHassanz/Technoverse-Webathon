@@ -40,9 +40,9 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/admin/users?role=&q=` | admin | – → `User[]` (q searches name/email) | 403 | ⏳ |
-| POST | `/api/admin/users` | admin | `CreateUserInput` → `User` (201) | 400, 409 email exists | ⏳ |
-| PATCH | `/api/admin/users/[id]` | admin | `UpdateUserInput` → `User` | 400 (cannot change own role / deactivate self), 404 | ⏳ |
+| GET | `/api/admin/users?role=&q=` | admin | – → `User[]` (q searches name/email) | 403 | ✅ |
+| POST | `/api/admin/users` | admin | `CreateUserInput` → `User` (201) | 400, 409 email exists | ✅ |
+| PATCH | `/api/admin/users/[id]` | admin | `UpdateUserInput` → `User` | 400 (cannot change own role / deactivate self), 404 | ✅ |
 
 ## 3. Topics & question bank
 
