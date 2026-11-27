@@ -1,6 +1,7 @@
 // DATA layer for enrollments (which candidates may take which exam).
 import { adminClient } from "@/backend/lib/supabase";
-import type { AttemptStatus, Enrollment } from "@/shared/types";
+import { examState } from "@/backend/lib/time";
+import type { AttemptStatus, Enrollment, ExamState } from "@/shared/types";
 
 type EnrollmentRow = {
   candidate_id: string;
@@ -60,4 +61,45 @@ export async function hasAttempt(examId: string, candidateId: string): Promise<b
     .eq("candidate_id", candidateId);
   if (error) throw error;
   return (count ?? 0) > 0;
+}
+
+export type EnrolledExam = {
+  examId: string;
+  title: string;
+  instructions: string;
+  startAt: string;
+  endAt: string;
+  durationMin: number;
+  totalMarks: number;
+  state: ExamState;
+  resultPublished: boolean;
+};
+
+type EnrolledExamRow = {
+  exams: {
+    id: string; title: string; instructions: string; start_at: string; end_at: string;
+    duration_min: number; total_marks: number | string; status: "draft" | "published"; results_published_at: string | null;
+  };
+};
+
+/** Published exams this candidate is enrolled in (drafts are never visible to candidates). */
+export async function listEnrolledExams(candidateId: string): Promise<EnrolledExam[]> {
+  const { data, error } = await adminClient()
+    .from("enrollments")
+    .select("exams!inner(id, title, instructions, start_at, end_at, duration_min, total_marks, status, results_published_at)")
+    .eq("candidate_id", candidateId)
+    .eq("exams.status", "published")
+    .returns<EnrolledExamRow[]>();
+  if (error) throw error;
+  return data.map(({ exams: e }) => ({
+    examId: e.id,
+    title: e.title,
+    instructions: e.instructions,
+    startAt: new Date(e.start_at).toISOString(),
+    endAt: new Date(e.end_at).toISOString(),
+    durationMin: e.duration_min,
+    totalMarks: Number(e.total_marks),
+    state: examState({ status: e.status, startAt: e.start_at, endAt: e.end_at }),
+    resultPublished: e.results_published_at !== null,
+  }));
 }

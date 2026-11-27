@@ -93,7 +93,7 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/me/exams` | candidate | – → `MyExams` | – | ⏳ |
+| GET | `/api/me/exams` | candidate | – → `MyExams` | – | ✅ |
 | GET | `/api/me/results/[examId]` | candidate | – → `CandidateResult` | 403 not published / not yours, 404 | ⏳ |
 
 ## 7. Attempts (exam workspace)
