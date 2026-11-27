@@ -7,8 +7,10 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - Git: repo initialized 27 Nov 10:25 AM, pushed to https://github.com/AhmadHassanz/Technoverse-Webathon (branch `main`).
 - Problem statement: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Stage: about to start **Stage 0** of BACKEND_PLAN (Supabase project, packages, backend/lib helpers, stubs, first deploy).
+- shadcn is installed (Nova + Base UI). Button lives in `frontend/components/ui/`. `npx shadcn@latest add <name>` adds more there.
 
 ## Done
+- 2026-11-27: Installed shadcn (`npx shadcn@latest init --defaults`). Packages: `@base-ui/react`, `class-variance-authority`, `cn`, `lucide-react`, `shadcn`, `tw-animate-css`. Components go in `frontend/components/ui/`. Geist is wired to `--font-sans`.
 - 2026-11-27: Added docs/PROBLEM_STATEMENT.md, BACKEND_PLAN.md, FRONTEND_PLAN.md, new CONTRACT.md, shared/types.ts, backend/db/schema.sql; updated CLAUDE.md + quick-reference guides.
 - 2026-11-26: Set up CLAUDE.md + PROGRESS.md for memory between sessions.
 - 2026-11-26: Created Next.js app (`webathon/`), moved CLAUDE.md + PROGRESS.md into it so they're shared via git. Build OK.
@@ -23,6 +25,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 4. Stage 0 (BACKEND_PLAN): create Supabase project, run schema.sql, `.env.local` + Vercel env vars, install packages (one commit), backend/lib helpers, Stage 1+2 stubs, first deploy.
 
 ## Decisions
+- 27 Nov: UI kit = shadcn (user asked to install it). Overrides the earlier "no shadcn CLI" line in FRONTEND_PLAN.
 - 27 Nov: DB = Supabase Postgres, auth via Supabase behind our API (httpOnly cookie), polling not Realtime, pdf-lib + qrcode for PDFs, zod in shared/validation.ts. Innovation 5.3 + 5.2.
 - Team of 2: user = backend, friend = frontend. One GitHub repo, user owns it, friend added as collaborator.
 - Stack: Next.js 16 (App Router) + Tailwind v4 + TypeScript, repo root = `webathon/`, no `src/`. ONE app, one deploy.

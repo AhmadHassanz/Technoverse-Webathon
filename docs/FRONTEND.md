@@ -5,7 +5,7 @@
 ## Your files
 - `frontend/pages/<Name>Page.tsx` — one component per screen.
 - `frontend/layouts/` — role layouts with guards (Admin / Examiner / Candidate).
-- `frontend/components/` — `ui/`, `shell/`, `exam/`, `charts/`.
+- `frontend/components/` — `ui/` (shadcn), `shell/`, `exam/`, `charts/`. Add a shadcn component with `npx shadcn@latest add button`. Import: `import { Button } from "@/frontend/components/ui/button"`.
 - `frontend/lib/` — `api-client.ts`, `auth.tsx`, `format.ts`, `mock.ts`, workspace hooks.
 - `app/layout.tsx`, `app/globals.css`, and page/layout connector files in `app/` (not `app/api`).
 
