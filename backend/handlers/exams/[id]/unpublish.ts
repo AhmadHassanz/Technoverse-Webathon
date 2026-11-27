@@ -1,9 +1,11 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// POST /api/exams/[id]/unpublish: see docs/CONTRACT.md
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockExam } from "@/backend/lib/mock";
-import type { Exam } from "@/shared/types";
+import { parseId } from "@/backend/lib/http";
+import { unpublishExam } from "@/backend/services/assembly.service";
 
-export const POST = withErrors(async () => {
-  return ok<Exam>(mockExam);
+export const POST = withErrors(async (_req: Request, { params }: { params: Promise<{ id: string }> }) => {
+  const user = await requireRole("examiner", "admin");
+  return ok(await unpublishExam(user, parseId((await params).id, "Exam")));
 });

@@ -150,3 +150,32 @@ export const optionalText = z
   .max(100)
   .optional()
   .transform((v) => (v ? v : undefined));
+
+// ---------- exam assembly, enrollment, import (Stage 2) ----------
+
+const blueprintCount = (label: string) =>
+  z.number(`${label} count must be a number`).int(`${label} count must be a whole number`).min(0, `${label} count can't be below 0`).max(500, `${label} count is too large`);
+
+export const blueprintSchema = z
+  .object({ easy: blueprintCount("Easy"), medium: blueprintCount("Medium"), hard: blueprintCount("Hard") })
+  .refine((b) => b.easy + b.medium + b.hard >= 1, "Blueprint must ask for at least 1 question");
+
+/** PUT /api/exams/[id]/questions */
+export const examQuestionsSchema = z.object({
+  questionIds: z.array(uuid).max(500, "At most 500 questions").refine((ids) => new Set(ids).size === ids.length, "Each question can be added only once"),
+  blueprint: blueprintSchema.nullable(),
+});
+
+/** POST /api/exams/[id]/enrollments */
+export const enrollSchema = z.object({
+  emails: z.array(email).min(1, "Add at least 1 email").max(500, "At most 500 emails at once"),
+});
+
+/** POST /api/import/candidates and /api/import/questions. Size/row limits are checked in backend/lib/csv.ts. */
+export const importSchema = z.object({
+  csv: z.string("CSV text is required").min(1, "CSV is empty"),
+  dryRun: z.boolean("dryRun must be true or false"),
+  examId: uuid.optional(),
+});
+
+export { email as emailSchema, password as passwordSchema, fullName as fullNameSchema };

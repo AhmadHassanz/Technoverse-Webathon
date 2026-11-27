@@ -123,3 +123,11 @@ export async function deleteQuestion(id: string): Promise<{ error: { code?: stri
   const { error } = await adminClient().from("questions").delete().eq("id", id);
   return { error };
 }
+
+/** Several questions at once (with their owners). Unknown ids are simply missing from the result. */
+export async function listQuestionsByIds(ids: string[]): Promise<{ question: Question; createdBy: string }[]> {
+  if (ids.length === 0) return [];
+  const { data, error } = await adminClient().from("questions").select(QUESTION_SELECT).in("id", ids).returns<QuestionRow[]>();
+  if (error) throw error;
+  return data.map((r) => ({ question: toQuestion(r), createdBy: r.created_by }));
+}

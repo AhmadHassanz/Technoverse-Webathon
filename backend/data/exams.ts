@@ -119,3 +119,30 @@ export async function deleteExamRow(id: string): Promise<void> {
   const { error } = await adminClient().from("exams").delete().eq("id", id);
   if (error) throw error;
 }
+
+/**
+ * Replace the exam's question pool. Safe order: add/update the new rows first, then remove the rest,
+ * so a failure half-way never leaves the exam with an empty pool.
+ */
+export async function replacePool(examId: string, questionIds: string[]): Promise<void> {
+  const db = adminClient();
+  if (questionIds.length) {
+    const rows = questionIds.map((qid, i) => ({ exam_id: examId, question_id: qid, position: i }));
+    const { error } = await db.from("exam_questions").upsert(rows, { onConflict: "exam_id,question_id" });
+    if (error) throw error;
+  }
+  let del = db.from("exam_questions").delete().eq("exam_id", examId);
+  if (questionIds.length) del = del.not("question_id", "in", `(${questionIds.join(",")})`);
+  const { error } = await del;
+  if (error) throw error;
+}
+
+export async function setBlueprint(examId: string, blueprint: Blueprint | null): Promise<void> {
+  const { error } = await adminClient().from("exams").update({ blueprint }).eq("id", examId);
+  if (error) throw error;
+}
+
+export async function setStatus(examId: string, status: "draft" | "published"): Promise<void> {
+  const { error } = await adminClient().from("exams").update({ status }).eq("id", examId);
+  if (error) throw error;
+}
