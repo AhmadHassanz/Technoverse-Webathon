@@ -237,4 +237,36 @@ export const preferencesSchema = z
   })
   .refine((p) => Object.values(p).some((v) => v !== undefined), "Send at least one preference to change");
 
+// ---------- monitoring, grading (Stage 4) ----------
+
+/** POST /api/exams/[id]/announcements */
+export const announcementSchema = z.object({
+  message: z.string("Message is required").trim().min(1, "Write a message").max(500, "Message must be at most 500 characters"),
+});
+
+/** PATCH /api/incidents/[id] */
+export const incidentReviewSchema = z.object({
+  reviewed: z.boolean("reviewed must be true or false"),
+  reviewerNote: z.string("Note must be text").trim().max(500, "Note must be at most 500 characters").optional(),
+});
+
+/** PATCH /api/compensations/[id] */
+export const compensationDecisionSchema = z.object({
+  decision: z.enum(["approved", "rejected"], "Decision must be approved or rejected"),
+});
+
+/** PATCH /api/attempt-questions/[aqId]/grade. The upper limit (the question's marks) is checked by the backend. */
+export const gradeSchema = z.object({
+  marksAwarded: z
+    .number("Marks must be a number")
+    .min(0, "Marks can't be below 0")
+    .refine(twoDecimals, "Marks can have at most 2 decimals"),
+  feedback: z.string("Feedback must be text").trim().max(1000, "Feedback must be at most 1000 characters").optional(),
+});
+
+/** GET /api/exams/[id]/grading?status=pending|all */
+export const gradingQuerySchema = z.object({
+  status: z.enum(["pending", "all"], "status must be pending or all").default("pending"),
+});
+
 export { email as emailSchema, password as passwordSchema, fullName as fullNameSchema };
