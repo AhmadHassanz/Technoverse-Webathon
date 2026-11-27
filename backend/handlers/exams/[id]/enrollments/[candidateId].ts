@@ -1,8 +1,14 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// DELETE /api/exams/[id]/enrollments/[candidateId]: see docs/CONTRACT.md
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import type { OkResult } from "@/shared/types";
+import { parseId } from "@/backend/lib/http";
+import { unenroll } from "@/backend/services/enrollment.service";
 
-export const DELETE = withErrors(async () => {
-  return ok<OkResult>({ ok: true });
-});
+export const DELETE = withErrors(
+  async (_req: Request, { params }: { params: Promise<{ id: string; candidateId: string }> }) => {
+    const user = await requireRole("examiner", "admin");
+    const { id, candidateId } = await params;
+    return ok(await unenroll(user, parseId(id, "Exam"), parseId(candidateId, "Candidate")));
+  },
+);

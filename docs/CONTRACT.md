@@ -74,10 +74,10 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/candidates?q=` | examiner | – → `User[]` (role candidate, max 20) | – | ⏳ |
-| GET | `/api/exams/[id]/enrollments` | owner | – → `Enrollment[]` | 403 | ⏳ |
-| POST | `/api/exams/[id]/enrollments` | owner | `EnrollInput` → `EnrollResult` | 400, 409 exam completed | ⏳ |
-| DELETE | `/api/exams/[id]/enrollments/[candidateId]` | owner | – → `OkResult` | 409 if candidate has an attempt | ⏳ |
+| GET | `/api/candidates?q=` | examiner | – → `User[]` (role candidate, max 20) | – | ✅ |
+| GET | `/api/exams/[id]/enrollments` | owner | – → `Enrollment[]` | 403 | ✅ |
+| POST | `/api/exams/[id]/enrollments` | owner | `EnrollInput` → `EnrollResult` | 400, 409 exam completed | ✅ |
+| DELETE | `/api/exams/[id]/enrollments/[candidateId]` | owner | – → `OkResult` | 409 if candidate has an attempt | ✅ |
 | POST | `/api/import/candidates` | examiner | `ImportInput` → `ImportResult` | 400 bad header / > 500 rows / > 1 MB | ⏳ |
 | POST | `/api/import/questions` | examiner | `ImportInput` → `ImportResult` | 400 same | ⏳ |
 

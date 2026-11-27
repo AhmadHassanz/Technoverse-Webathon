@@ -1,11 +1,16 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET /api/candidates?q=: see docs/CONTRACT.md
 import { connection } from "next/server";
+import { z } from "zod";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockCandidate } from "@/backend/lib/mock";
-import type { User } from "@/shared/types";
+import { parseQuery } from "@/backend/lib/http";
+import { searchCandidates } from "@/backend/services/enrollment.service";
+import { optionalText } from "@/shared/validation";
 
-export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<User[]>([mockCandidate]);
+export const GET = withErrors(async (req: Request) => {
+  await connection();
+  const user = await requireRole("examiner", "admin");
+  const { q } = parseQuery(req, z.object({ q: optionalText }));
+  return ok(await searchCandidates(user, q));
 });

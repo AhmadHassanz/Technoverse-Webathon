@@ -1,15 +1,23 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET, POST /api/exams/[id]/enrollments: see docs/CONTRACT.md
 import { connection } from "next/server";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockEnrollResult, mockEnrollments } from "@/backend/lib/mock";
-import type { EnrollResult, Enrollment } from "@/shared/types";
+import { parseBody, parseId } from "@/backend/lib/http";
+import { enrollByEmail, getEnrollments } from "@/backend/services/enrollment.service";
+import { enrollSchema } from "@/shared/validation";
 
-export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<Enrollment[]>(mockEnrollments);
+type Ctx = { params: Promise<{ id: string }> };
+
+export const GET = withErrors(async (_req: Request, { params }: Ctx) => {
+  await connection();
+  const user = await requireRole("examiner", "admin");
+  return ok(await getEnrollments(user, parseId((await params).id, "Exam")));
 });
 
-export const POST = withErrors(async () => {
-  return ok<EnrollResult>(mockEnrollResult, 201);
+export const POST = withErrors(async (req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  const id = parseId((await params).id, "Exam");
+  const { emails } = await parseBody(req, enrollSchema);
+  return ok(await enrollByEmail(user, id, emails), 201);
 });
