@@ -14,6 +14,19 @@ export async function parseBody<S extends z.ZodType>(req: Request, schema: S): P
   return schema.parse(raw);
 }
 
+/** Like parseBody, but an EMPTY body counts as {} (e.g. "Start exam" sends no body). */
+export async function parseOptionalBody<S extends z.ZodType>(req: Request, schema: S): Promise<z.output<S>> {
+  const text = await req.text();
+  if (!text.trim()) return schema.parse({});
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    throw new HttpError(400, "Request body must be valid JSON");
+  }
+  return schema.parse(raw);
+}
+
 /** Read ?a=1&b=2 as a plain object and validate it. */
 export function parseQuery<S extends z.ZodType>(req: Request, schema: S): z.output<S> {
   const params = Object.fromEntries(new URL(req.url).searchParams);

@@ -40,6 +40,16 @@ export async function enrolledIds(examId: string): Promise<Set<string>> {
   return new Set(data.map((r) => r.candidate_id as string));
 }
 
+export async function isEnrolled(examId: string, candidateId: string): Promise<boolean> {
+  const { count, error } = await adminClient()
+    .from("enrollments")
+    .select("candidate_id", { count: "exact", head: true })
+    .eq("exam_id", examId)
+    .eq("candidate_id", candidateId);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
 export async function insertEnrollments(examId: string, candidateIds: string[]): Promise<void> {
   if (candidateIds.length === 0) return;
   const rows = candidateIds.map((id) => ({ exam_id: examId, candidate_id: id }));
