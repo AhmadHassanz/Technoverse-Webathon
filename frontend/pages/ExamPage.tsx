@@ -123,7 +123,7 @@ function ExamPageInner() {
       </div>
 
       <Tabs
-        className="mt-7 overflow-x-auto"
+        className="mt-7 overflow-x-auto overflow-y-hidden scrollbar-thin"
         items={TABS.map((t) => ({
           value: t,
           label: LABELS[t],

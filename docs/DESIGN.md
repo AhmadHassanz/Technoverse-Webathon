@@ -41,6 +41,18 @@
 22. **When is a verification code created?** -> the first time a PUBLISHED result is downloaded as PDF, then it never changes (a unique row per attempt, so simultaneous downloads share one code). Before publishing the owner can still download a PROVISIONAL report without a code.
 23. **Non-Latin text in PDFs** -> the built-in PDF fonts only draw Latin-1, so Urdu/Arabic/emoji in answers appear as "?" in the PDF (the app itself stores and shows them fine). Chosen over embedding a large font file to keep the deploy small and the report reliable; every string is cleaned first so one odd character can never break the whole report.
 
+### Frontend ambiguities and assumptions
+24. **Heartbeat in a background tab** -> browsers slow down `setInterval` in hidden tabs (often to once a minute), which would look like an outage. The workspace runs its 15 s heartbeat from a tiny Web Worker timer (not throttled the same way) and also beats immediately when the tab becomes visible again or the network comes back. Code: `frontend/lib/useHeartbeat.ts`.
+25. **Which clock does the timer trust?** -> never the device clock alone. Every attempt view, heartbeat and sync returns `serverNow`; the page keeps `offset = serverNow - Date.now()` and shows `endsAt - (now + offset)`. Changing the computer's clock does not change the timer. Code: `frontend/pages/AttemptPage.tsx`.
+26. **What happens at 00:00?** -> the page sends the last unsaved answers, then calls submit, and shows "submitted automatically when time ran out". If the device is offline at that moment it says the saved answers will be submitted by the server (the server closes expired attempts by itself). The server stores a timer-triggered submit as `submitted` (it arrives inside the 5 s grace); a never-reconnected attempt becomes `auto_submitted`.
+27. **Submit while answers are still only on the device** -> blocked with a clear message ("reconnect, then submit"), so a candidate can never submit an attempt that is missing answers they can see on screen.
+28. **Dark and high-contrast themes** -> the Figma only shows the light parchment palette. Dark and contrast are derived from the same tokens (same names, different values), so every component supports all three themes without extra code. Contrast mode also uses thicker borders. Text size (small / medium / large) scales the root font size.
+29. **Theme flash on load** -> preferences live in the database, but the first paint happens before the API answers. The last preferences are cached in `localStorage` (`examcore:prefs`) and a tiny inline script in `app/layout.tsx` applies them before the page draws; the server value wins once `/api/auth/me` returns.
+30. **Admin "create user" needs a password** -> the Figma form has no password field, but the API requires one (no email service). The form has a password field with the same rules as signup; the admin tells the user their first password.
+31. **Indicators wording** -> monitoring items are always called "Indicators", never "cheating", and the monitor says "Indicators are not proof of misconduct. They never change scores".
+32. **Results rows** -> the results table lists real attempts only (as the API returns them); candidates who never started are visible in the Candidates tab ("not started"), see ambiguity 21.
+33. **Colour is never the only signal** -> every status has text or an icon too (Online/Offline text next to the dot, "Pass"/"Not passed", "! Mismatch" badge, timer label "Under 5 minutes" / "Under 1 minute").
+
 ## 3. Assumptions & constraints
 - 10-hour build, team of 2, free-tier services only (no paid APIs, per brief §06).
 - Server clock is the only source of truth for time; device clocks are used only with a server offset.
@@ -79,6 +91,10 @@ Browser (frontend/)  →  /api/... (app/api connectors)
 shared/types.ts + shared/validation.ts are used by both sides, so the contract can't drift.
 ```
 
+**Frontend layers.** `app/**/page.tsx` are 1-line connectors -> `frontend/pages/*Page.tsx` (one file per screen, reads URL params, owns page state) -> `frontend/components/**` (presentational pieces: `ui/` design system, `shell/` app shell + role guard, `exam/` exam and workspace pieces) -> `frontend/lib/**` (the only place that talks to the API: `api-client.ts`, plus hooks `useApi`, `useOutbox`, `useHeartbeat`, `useIncidents`, `auth.tsx`). Pages never call `fetch` directly, so errors (401 -> login, network -> "No connection", 5xx -> friendly message, 400 -> field errors) are handled the same way everywhere.
+
+**Design system.** Colours are CSS variables in `app/globals.css` (parchment, surface, ink, mute, cobalt, line, tint, sand, danger, warning, success, plus on-cobalt, on-danger, overlay...) mapped into Tailwind with `@theme inline`. Three themes (`data-theme = light | dark | contrast`) and three text sizes (`data-font = sm | md | lg`) on `<html>` redefine the same variables, so components never hard-code colours. Typography: a condensed serif for display headings, a sans for UI text, a monospace for numbers and timers (`.num`).
+
 ## 6. Technology choices
 | Choice | Why |
 |---|---|
@@ -88,6 +104,9 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | pdf-lib + qrcode | pure JS, works on Vercel serverless, no paid service |
 | Polling over Realtime | fewer moving parts, works through any network |
 | Vercel | free, one-command deploys |
+| shadcn (Base UI) + Tailwind v4 tokens | accessible primitives (focus, keyboard, ARIA) we style ourselves; themes are just variable swaps |
+| No chart library | the histogram and fairness bars are plain divs (10 bars, a few rows): smaller bundle, themeable, accessible labels |
+| localStorage outbox + Web Worker timer | browser built-ins only: work offline and in background tabs without a service worker or extra packages |
 
 ## 7. Innovation challenges
 - **5.3 Failure-resilient exams:** (1) every answer is autosaved with a `clientSeq`; the database function `save_answer()` keeps only the newest, so retries and out-of-order requests are harmless. (2) While offline, the browser keeps changes in an outbox and replays them through `POST /sync` when it reconnects; answers that arrive after the deadline + 5 s are refused (`late`) because device clocks are not trusted. (3) The workspace sends a heartbeat every 15 s. If the server sees a gap of more than 45 s between two heartbeats (server timestamps only), it records an `offline` incident and a **pending** compensation request with the measured gap. (4) The examiner approves or rejects it in the monitor (Stage 4); approved time is added to `compensation_sec`, capped at 10 minutes. Refreshing or changing device never loses time: the deadline is stored on the server. **Trade-offs:** no automatic extra time (prevents abuse by unplugging on purpose), at most 45 s of an outage goes unnoticed, and a human must approve.
@@ -138,4 +157,30 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Verifiable result report: code + public check (secondary feature) | `lib/verification.ts` (alphabet without look-alikes, initials) -> `services/report.service.ts` (`verifyCode`, `getOrCreateCode`) -> `data/reports.ts`; handler `handlers/verify/[code].ts` |
 | PDF reports with QR (secondary feature) | `lib/pdf.ts` (pdf-lib wrapper: wrapping, tables, Latin-1 safe text) -> `services/report.service.ts` (`buildAttemptReport`, `buildExamReport`) -> `handlers/reports/*` |
 | Demo data | `scripts/seed.ts` (accounts, question bank, 5 exams, simulated attempts graded with the same rules) |
-| _remaining rows: fill in as features land_ | |
+| **Frontend: screen -> page file -> components -> API** | |
+| Login / signup, role redirect (3.1) | `pages/LoginPage.tsx`, `pages/SignupPage.tsx` -> `lib/auth.tsx` (`login`, `signup`, `roleHome`) -> `POST /api/auth/login`, `/signup`; forms validated with `loginSchema` / `signupSchema` |
+| Role guard on every area | `layouts/RoleLayout.tsx` + `layouts/{Admin,Examiner,Candidate}Layout.tsx` (`app/*/layout.tsx`) -> `GET /api/auth/me`; wrong role -> own home, logged out -> `/login` |
+| Admin users + candidate CSV import (3.1, 4.4) | `pages/AdminUsersPage.tsx`, `components/ImportModal.tsx` (dry run -> error table -> import) -> `/api/admin/users*`, `/api/import/candidates` |
+| Examiner overview | `pages/ExaminerDashboardPage.tsx` -> `GET /api/exams` |
+| Question bank, 3 types, topics (3.3) | `pages/QuestionBankPage.tsx`, `components/exam/QuestionEditor.tsx` -> `/api/questions*`, `/api/topics`, `/api/import/questions`; `questionSchema` |
+| Create / edit exam (3.2) | `pages/ExamCreatePage.tsx`, `components/exam/tabs/DetailsTab.tsx`, `components/exam/ExamForm.tsx` -> `POST/PATCH /api/exams`; `examSchema` |
+| Exam page with tabs | `pages/ExamPage.tsx` (tab in `?tab=`) -> `GET /api/exams/[id]` |
+| Pool + blueprint meter (3.3, 5.2) | `components/exam/tabs/QuestionsTab.tsx` -> `PUT /api/exams/[id]/questions` |
+| Enrollment (3.4) | `components/exam/tabs/CandidatesTab.tsx` -> `/api/exams/[id]/enrollments*`, `/api/candidates` |
+| Publish review checklist | `components/exam/PublishReviewModal.tsx` -> `GET publish-check`, `POST publish` |
+| Sandbox preview (4.3) | Preview button in `pages/ExamPage.tsx` -> `POST /api/exams/[id]/attempts {sandbox:true}`; `components/exam/SandboxBar.tsx` (Reset = DELETE + new attempt) |
+| Live monitor every 5 s, paused in hidden tab (3.6, 5.3) | `components/exam/tabs/MonitorTab.tsx` -> `GET monitor`, `PATCH /api/incidents/[id]`, `PATCH /api/compensations/[id]`, `POST announcements` |
+| Grading one answer at a time (3.7) | `components/exam/tabs/GradingTab.tsx` -> `GET grading`, `PATCH /api/attempt-questions/[aqId]/grade`; `gradeSchema` + max-marks check |
+| Results + controlled publishing + PDFs (3.8) | `components/exam/tabs/ResultsTab.tsx` -> `GET results`, `POST results/publish` (409 reason shown as is), `/api/reports/*` |
+| Analytics + paper fairness (3.8, 5.2) | `components/exam/tabs/AnalyticsTab.tsx` (histogram, fairness bars, question table) -> `GET analytics` |
+| Candidate dashboard (3.4) | `pages/CandidateDashboardPage.tsx` -> `GET /api/me/exams` (live "opens in" countdown) |
+| Instructions + start / resume (3.5) | `pages/ExamInstructionsPage.tsx` -> `POST /api/exams/[id]/attempts` |
+| Exam workspace (3.5) | `pages/AttemptPage.tsx` + `components/exam/{TimerPill,SaveStatusPill,Navigator,QuestionView,SubmitDialog,SubmittedScreen,AnnouncementBanner}.tsx` -> `GET /api/attempts/[id]`, `POST submit` |
+| Offline outbox + sync (5.3) | `lib/useOutbox.ts` (localStorage `outbox:<attemptId>`, `clientSeq` counter, debounce, flush) -> `PUT answers/[aqId]`, `POST sync`; red offline bar + blue "Reconnected — syncing" bar in `AttemptPage.tsx` |
+| Heartbeat + announcements + compensation time (5.3, 3.6) | `lib/useHeartbeat.ts` (Web Worker timer, visibility/online triggers) -> `POST heartbeat` (new `endsAt`, announcements) |
+| Monitoring indicators from the browser (3.6) | `lib/useIncidents.ts` (tab hidden, window blur, copy/paste, full-screen exit; not in sandbox) -> `POST incidents` |
+| Scratchpad, text + drawing (4.8) | `components/exam/Scratchpad.tsx` (autosave every 5 s, "Not graded") -> `GET/PUT scratchpad` |
+| Customizable workspace (4.7) | `components/exam/SettingsPopover.tsx` -> `lib/auth.tsx` `updatePreferences` -> `PATCH /api/me/preferences`; applied instantly via `data-theme` / `data-font` |
+| Candidate result (3.8) | `pages/CandidateResultPage.tsx` (table on desktop, cards on phones) -> `GET /api/me/results/[examId]`, `/api/reports/attempts/[id]` |
+| Public verification (secondary) | `pages/VerifyPage.tsx` -> `GET /api/verify/[code]` (code normalised, initials only) |
+| One API client, same error handling everywhere | `lib/api-client.ts` (`ApiClientError`, 401 -> login, offline -> status 0), `lib/useApi.ts`, `lib/forms.ts` (`zodFields`) |

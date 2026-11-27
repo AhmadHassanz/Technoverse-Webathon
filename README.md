@@ -18,6 +18,15 @@ Technoverse 5.0 Web-e-Thon (COMSATS Lahore, 27–28 Nov 2026). A full-stack web 
 
 Details and trade-offs: [`docs/DESIGN.md`](docs/DESIGN.md).
 
+## Screenshots
+| | |
+|---|---|
+| ![Exam workspace](docs/screenshots/workspace-preview.png) Exam workspace (examiner preview) | ![Live monitor](docs/screenshots/examiner-monitor.png) Live monitor: indicators, compensation, announcements |
+| ![Grading](docs/screenshots/examiner-grading.png) Grading written answers | ![Analytics](docs/screenshots/examiner-analytics.png) Analytics and paper fairness |
+| ![Candidate result](docs/screenshots/candidate-result.png) Candidate result | ![Verify a report](docs/screenshots/verify.png) Public report verification |
+
+Phone view of a result: [`docs/screenshots/candidate-result-mobile.png`](docs/screenshots/candidate-result-mobile.png). Login: [`docs/screenshots/login.png`](docs/screenshots/login.png).
+
 ## Test credentials
 _All passwords: `Demo@1234` (created by `npm run seed`)._
 

@@ -366,6 +366,14 @@ export function Td({
 /* Tabs                                                                */
 /* ------------------------------------------------------------------ */
 
+/** Keeps the active tab visible inside a sideways-scrolling tab bar (moves only the bar, never the page). */
+function revealTab(el: HTMLButtonElement | null) {
+  const bar = el?.parentElement;
+  if (!el || !bar || bar.scrollWidth <= bar.clientWidth) return;
+  const left = el.getBoundingClientRect().left - bar.getBoundingClientRect().left;
+  if (left < 0 || left + el.offsetWidth > bar.clientWidth) bar.scrollLeft += left - 16;
+}
+
 export function Tabs<T extends string>({
   items,
   value,
@@ -378,7 +386,7 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-1 border-b border-line", className)} role="tablist">
+    <div className={cn("flex items-center gap-1 border-b border-line", className)} role="tablist">
       {items.map((item) => {
         const active = item.value === value;
         return (
@@ -387,9 +395,10 @@ export function Tabs<T extends string>({
             type="button"
             role="tab"
             aria-selected={active}
+            ref={active ? revealTab : undefined}
             onClick={() => onChange(item.value)}
             className={cn(
-              "relative -mb-px inline-flex items-center gap-2 border-b-2 px-4 py-3 text-[0.875rem] transition-colors",
+              "relative -mb-px inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-[0.875rem] transition-colors",
               active
                 ? "border-cobalt font-medium text-cobalt"
                 : "border-transparent text-mute hover:text-ink",

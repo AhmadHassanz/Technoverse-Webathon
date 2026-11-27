@@ -6,6 +6,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - Project: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
 - Repo: https://github.com/AhmadHassanz/Technoverse-Webathon. Branches: `main` (merged, deployable), `backend` (user), `frontend` (friend).
 - Stage: **Stage 0** of BACKEND_PLAN almost done (code finished 27 Nov; first deploy still to do). **Stages 1-5 finished and tested locally (27 Nov)**; ONLY the first deploy + Stage 6 freeze remain; nothing deployed yet. Supabase project created and `schema.sql` run (user). `.env.local` now has REAL keys (verified 27 Nov: all 15 tables reachable with the secret key; auth works).
+- **Frontend: all screens built and wired to the real API (27 Nov, 13:30-15:10)**, following `docs/FRONTEND_BUILD_PROMPT.md` Phases 0-6 on the `backend` branch. Tested in real headless Chrome (see "Frontend test results" below). Not merged into `main`, not deployed.
 - **Commit/push ONLY on the `backend` branch** (user merges into `main` later).
 - **Not following the plan's clock times** (only stage order and the 8:00 PM deadline matter).
 
@@ -26,7 +27,21 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - 2026-11-27: Installed shadcn (`npx shadcn@latest init --defaults`). Packages: `@base-ui/react`, `class-variance-authority`, `cn`, `lucide-react`, `shadcn`, `tw-animate-css`. Components go in `frontend/components/ui/`. Geist is wired to `--font-sans`.
 - 27 Nov 13:25: **Merged `main` into `backend`** (frontend screens from the teammate: design system, app shell, login/signup/verify/admin-users pages, Figma PNGs in `Pngs/`). Conflicts only in package.json (union of dependencies), package-lock.json (regenerated with npm install), docs/PROGRESS.md; `docs/FRONTEND.md` kept (the teammate's quick reference). `main` itself was NOT changed.
 
+- 27 Nov 13:30-15:10: **Frontend Phases 0-6** (commits c670b1c, 2280736, eeeb170, e624884, d4efb04 + polish): real API client (401 -> login, offline -> "No connection", field errors), auth + role guards, light/dark/contrast themes + 3 text sizes (no flash on load), login/signup/verify/admin users + CSV import; examiner overview, question bank + editor, create/edit exam, exam page tabs (details, questions + blueprint meter, candidates, monitor, grading, results + publish, analytics), publish review, sandbox preview; candidate dashboard, instructions, **exam workspace** (server-clock timer, offline outbox + sync, Web Worker heartbeat, save status pill, navigator, flag, submit dialog, auto-submit, announcements, scratchpad text + draw, settings, incident indicators, keyboard shortcuts, 375 px layout), candidate result page. Docs: DESIGN.md frontend ambiguities 24-33, frontend layers + design system, tech rows, frontend design->code map; README screenshots (`docs/screenshots/`).
+
+## Frontend test results (27 Nov, headless Chrome driven by a script, against the built app)
+- Workspace end to end, 29/31 then the 2 timing re-tests passed: start from instructions, answer, "Saved" status, **go offline** (red bar, answer kept in `localStorage` outbox), back online (outbox flushed, server has all 5 answers incl. the offline one), refresh keeps answers, submit dialog -> submitted screen, 375 px start with no sideways scroll, **auto-submit at 00:00** on a 1-minute exam, announcement reaches the candidate within one heartbeat, monitor shows the live candidate as Online.
+- Examiner: publish blocked while the window is open (server reason shown in the modal), sandbox preview opens with the preview bar, grading rejects marks above the maximum, grade + feedback saves and empties the queue, results published from the UI, analytics renders, candidate then sees score + feedback.
+- Pages: all role pages render with no console errors; candidate opening `/examiner` -> `/candidate`; logged out `/candidate` -> `/login`; login empty-field errors + "Email or password is incorrect."; signup and new-exam field errors; verify page (good code, unknown code, lower-case code); dark + contrast themes; settings saves the theme on the server; 375 px checks on candidate dashboard, result, verify, login, examiner overview, exam page, question bank.
+- **Not verified:** real phones and Safari/Firefox (only Chrome), touch drawing on the scratchpad canvas, the PDF files' look (only that the links download), a full 15-minute demo run by a person, and a pixel-by-pixel match with every Figma PNG (checked by eye from screenshots).
+
+## Known issues / notes for the demo
+- **Lots of `ZZ Test` exams now show on the examiner overview and on `zz.*` accounts** (from the automated tests). Before the demo, run the cleanup SQL in "Next steps" below so the judges only see the 5 demo exams.
+- A timer-triggered submit is stored as `submitted` (it reaches the server inside the 5 s grace); only attempts that never come back become `auto_submitted`. The screen still says "submitted automatically when time ran out". Optional backend tweak: treat a submit within the grace after `endsAt` as `auto_submitted`.
+- The `Operating Systems - Final` grading queue and pending compensation were left untouched for the demo; Quiz 2 demo attempts were not used (tests used `zz.test1-3@demo.com` and examiner previews only).
+
 ## Next steps
+0. **User (before 7:45 PM): merge + deploy.** `git switch main && git pull && git merge backend && git push && npx vercel --prod && git switch backend`. Then on the live URL: log in as each role, open Quiz 2 as an examiner preview, download a PDF, open `/verify/C97L57LLPJ`, try one page on a phone.
 1. Add the same 3 env vars in Vercel (Production) before the first deploy. Schema may need changes later; keep file + Supabase + docs in sync.
    - Supabase "Confirm email" is still ON (autoconfirm=false). Harmless because signup/admin-create use `email_confirm: true`, but turn it off if login ever says "email not confirmed".
    - Check once after seeding that the publishable key cannot read data (RLS with no policies): `GET {SUPABASE_URL}/rest/v1/profiles` with the publishable key must return `[]`.
@@ -63,6 +78,8 @@ Claude updates this file at the end of every task, so a new session can pick up 
 - Heartbeat outage: gap > 45 s between server timestamps → `offline` incident + pending compensation request; optimistic update on `last_heartbeat_at` makes it race-safe.
 - Monitor/results/grading/analytics read exam-wide data through `fetchAll` (1000-row pages) and embed `attempts!attempt_questions_attempt_id_fkey!inner(...)` on `attempt_questions` (the short form is ambiguous because `answers` also links the two tables).
 - Publishing results needs the exam to have ended, no attempt in progress and nothing ungraded; it stores `paper_difficulty` and locks grading (DESIGN ambiguity 18).
+- Frontend: no new npm packages; charts are plain divs; the heartbeat timer runs in a Web Worker; the offline outbox is `localStorage` (`outbox:<attemptId>`, `seq:<attemptId>`); preferences are cached in `localStorage` (`examcore:prefs`) only to avoid a theme flash.
+- Browser tests: headless Chrome is driven through the DevTools protocol by small Node scripts (no packages). Start the test server as a detached process (`Start-Process node ...`); as a background bash task it stopped twice by itself.
 - Tests run against the built app on port 3111 (`node node_modules/next/dist/bin/next start -p 3111`); stop it by its PID (find it with `Get-NetTCPConnection -LocalPort 3111`), never `taskkill /IM node.exe`.
 
 ## Useful commands
