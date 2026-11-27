@@ -7,7 +7,7 @@ export const buttonStyles = cva(
     variants: {
       variant: {
         primary:
-          "border-cobalt bg-cobalt text-white hover:border-cobalt-deep hover:bg-cobalt-deep",
+          "border-cobalt bg-cobalt text-on-cobalt hover:border-cobalt-deep hover:bg-cobalt-deep",
         secondary:
           "border-line bg-surface text-cobalt hover:border-cobalt/60 hover:bg-tint",
         outline:
@@ -17,8 +17,8 @@ export const buttonStyles = cva(
         quiet:
           "border-transparent bg-transparent text-ink hover:bg-sand",
         danger:
-          "border-danger bg-danger text-white hover:bg-[#8a2323] hover:border-[#8a2323]",
-        soft: "border-transparent bg-tint text-cobalt hover:bg-[#dbe5ff]",
+          "border-danger bg-danger text-on-danger hover:bg-danger-deep hover:border-danger-deep",
+        soft: "border-transparent bg-tint text-cobalt hover:bg-tint-strong",
       },
       size: {
         md: "h-11 px-5 text-[0.9rem]",

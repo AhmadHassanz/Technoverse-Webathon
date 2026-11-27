@@ -2,27 +2,34 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Check, TriangleAlert } from "lucide-react";
 import { fmtDate } from "@/frontend/lib/format";
-import { MOCK_VERIFY } from "@/frontend/lib/mock";
+import { apiGet } from "@/frontend/lib/api-client";
 import type { VerifyResult } from "@/shared/types";
 
 function VerifyInner() {
   const params = useParams<{ code: string }>();
-  const code = decodeURIComponent(params.code ?? "");
-  const [result, setResult] = useState<VerifyResult | null>(null);
+  const router = useRouter();
+  // Accept lower case and spaces ("c97l 57ll pj" -> "C97L57LLPJ").
+  const code = decodeURIComponent(params.code ?? "").replace(/\s+/g, "").toUpperCase();
+  const [loaded, setLoaded] = useState<{ code: string; result: VerifyResult | null; failed: boolean } | null>(null);
+  const [typed, setTyped] = useState("");
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (!code || /invalid|unknown|missing/i.test(code)) {
-        setResult({ valid: false });
-      } else {
-        setResult(MOCK_VERIFY);
-      }
-    }, 450);
-    return () => window.clearTimeout(timer);
-  }, [code]);
+    let alive = true;
+    apiGet<VerifyResult>(`/api/verify/${encodeURIComponent(code || "-")}`).then(
+      (r) => alive && setLoaded({ code, result: r, failed: false }),
+      () => alive && setLoaded({ code, result: null, failed: true }),
+    );
+    return () => {
+      alive = false;
+    };
+  }, [code, retry]);
+
+  const current = loaded?.code === code ? loaded : null;
+  const result = current?.result ?? null;
 
   return (
     <div className="min-h-screen bg-parchment">
@@ -53,7 +60,23 @@ function VerifyInner() {
         </p>
 
         <div className="surface-card mt-9 p-5 sm:p-7">
-          {!result ? (
+          {current?.failed ? (
+            <div className="py-8 text-center">
+              <TriangleAlert className="mx-auto size-6 text-danger" />
+              <p className="display display-sm mt-3">We could not check this code</p>
+              <p className="mt-2 text-sm text-mute">No connection to the server. Try again in a moment.</p>
+              <button
+                type="button"
+                className="mt-4 text-sm font-medium text-cobalt hover:underline"
+                onClick={() => {
+                  setLoaded(null);
+                  setRetry((r) => r + 1);
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          ) : !result ? (
             <div className="space-y-4" aria-busy="true" aria-label="Verifying report">
               <div className="h-16 animate-pulse rounded-md bg-sand" />
               <div className="h-4 w-1/3 animate-pulse rounded bg-sand" />
@@ -90,6 +113,12 @@ function VerifyInner() {
                   </dd>
                 </div>
                 <div className="grid gap-1 py-5 sm:grid-cols-[180px_1fr] sm:items-baseline">
+                  <dt className="meta-label">Outcome</dt>
+                  <dd className={result.passed ? "text-[1.0625rem] text-success" : "text-[1.0625rem] text-danger"}>
+                    {result.passed ? "Passed" : "Not passed"}
+                  </dd>
+                </div>
+                <div className="grid gap-1 py-5 sm:grid-cols-[180px_1fr] sm:items-baseline">
                   <dt className="meta-label">Issued</dt>
                   <dd className="text-[1.0625rem] text-ink">{fmtDate(result.issuedAt)}</dd>
                 </div>
@@ -118,6 +147,35 @@ function VerifyInner() {
             </>
           )}
         </div>
+
+        <form
+          className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-end"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const next = typed.replace(/\s+/g, "").toUpperCase();
+            if (next) router.push(`/verify/${encodeURIComponent(next)}`);
+          }}
+        >
+          <div className="flex flex-1 flex-col gap-2">
+            <label htmlFor="verify-code" className="text-[0.8125rem] font-medium text-ink">
+              Check another code
+            </label>
+            <input
+              id="verify-code"
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder="e.g. C97L57LLPJ"
+              maxLength={40}
+              className="num h-11 w-full rounded-md border border-line bg-surface px-3.5 uppercase text-ink focus:border-cobalt"
+            />
+          </div>
+          <button
+            type="submit"
+            className="h-11 rounded-md border border-cobalt bg-cobalt px-6 text-[0.9rem] font-medium text-on-cobalt hover:bg-cobalt-deep"
+          >
+            Verify
+          </button>
+        </form>
 
         <p className="mt-6 text-[0.8125rem] text-mute">
           Privacy first: only initials and the minimum report details are shown.

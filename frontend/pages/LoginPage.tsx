@@ -8,7 +8,16 @@ import { Button } from "@/frontend/components/ui/button";
 import { Field, Input } from "@/frontend/components/ui";
 import { AuthSplit } from "@/frontend/components/shell/AuthSplit";
 import { roleHome, useAuth } from "@/frontend/lib/auth";
-import { DEMO_ACCOUNTS } from "@/frontend/lib/mock";
+import { errorMessage, toApiError } from "@/frontend/lib/api-client";
+import { zodFields } from "@/frontend/lib/forms";
+import { loginSchema } from "@/shared/validation";
+
+// Real seeded demo accounts (password Demo@1234), so judges can try each role.
+const DEMO_ACCOUNTS = [
+  { role: "admin", label: "Administrator", email: "admin@demo.com" },
+  { role: "examiner", label: "Examiner", email: "examiner@demo.com" },
+  { role: "candidate", label: "Candidate", email: "ali@demo.com" },
+];
 
 export default function LoginPage() {
   const { me, loading, login } = useAuth();
@@ -16,6 +25,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fields, setFields] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -23,13 +33,21 @@ export default function LoginPage() {
   }, [loading, me, router]);
 
   async function submit(nextEmail = email, nextPassword = password) {
-    setBusy(true);
     setError(null);
+    const parsed = loginSchema.safeParse({ email: nextEmail, password: nextPassword });
+    if (!parsed.success) {
+      setFields(zodFields(parsed.error));
+      return;
+    }
+    setFields({});
+    setBusy(true);
     try {
-      const account = await login(nextEmail, nextPassword);
+      const account = await login(parsed.data);
       router.replace(roleHome(account.role));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not sign in.");
+      const e = toApiError(err);
+      if (e.fields) setFields(e.fields);
+      setError(e.status === 401 ? "Email or password is incorrect." : errorMessage(e));
       setBusy(false);
     }
   }
@@ -56,7 +74,7 @@ export default function LoginPage() {
         }}
         noValidate
       >
-        <Field label="Institutional email" htmlFor="email">
+        <Field label="Institutional email" htmlFor="email" error={fields.email}>
           <Input
             id="email"
             name="email"
@@ -65,12 +83,12 @@ export default function LoginPage() {
             placeholder="name@institution.edu.pk"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            invalid={Boolean(error)}
+            invalid={Boolean(fields.email)}
             required
           />
         </Field>
 
-        <Field label="Password" htmlFor="password" error={error}>
+        <Field label="Password" htmlFor="password" error={fields.password ?? error}>
           <Input
             id="password"
             name="password"
@@ -79,7 +97,7 @@ export default function LoginPage() {
             placeholder="••••••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            invalid={Boolean(error)}
+            invalid={Boolean(error || fields.password)}
             required
           />
         </Field>

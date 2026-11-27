@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ImportModal } from "@/frontend/components/ImportModal";
 import {
   ChevronDown,
   ChevronLeft,
@@ -15,10 +16,13 @@ import {
   Button,
   Card,
   ConfirmModal,
+  EmptyState,
+  ErrorState,
   Field,
   Input,
   Modal,
   Select,
+  Skeleton,
   Table,
   Td,
   Th,
@@ -28,8 +32,11 @@ import {
 import { useAuth } from "@/frontend/lib/auth";
 import { useToast } from "@/frontend/lib/toast";
 import { fmtDate } from "@/frontend/lib/format";
-import { MOCK_USERS } from "@/frontend/lib/mock";
-import type { Role, User } from "@/shared/types";
+import { apiPatch, apiPost, errorMessage, toApiError } from "@/frontend/lib/api-client";
+import { useApi } from "@/frontend/lib/useApi";
+import { zodFields } from "@/frontend/lib/forms";
+import { createUserSchema } from "@/shared/validation";
+import type { Role, UpdateUserInput, User } from "@/shared/types";
 
 const roleOptions: { value: Role; label: string }[] = [
   { value: "candidate", label: "Candidate" },
@@ -40,19 +47,24 @@ const roleOptions: { value: Role; label: string }[] = [
 const roleTitle = (role: Role) =>
   role === "admin" ? "Administrator" : role === "examiner" ? "Examiner" : "Candidate";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
+const EMPTY_FORM = { fullName: "", email: "", password: "", role: "candidate" as Role };
 
 export default function AdminUsersPage() {
   const { me } = useAuth();
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const { data, error, loading, reload, setData } = useApi<User[]>("/api/admin/users");
+  const users = useMemo(() => data ?? [], [data]);
+  const setUsers = (fn: (all: User[]) => User[]) => setData((all) => fn(all ?? []));
+  const [importOpen, setImportOpen] = useState(false);
+  const [toggleBusy, setToggleBusy] = useState(false);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role | "all">("all");
   const [page, setPage] = useState(0);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createBusy, setCreateBusy] = useState(false);
-  const [form, setForm] = useState({ fullName: "", email: "", role: "candidate" as Role });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [fields, setFields] = useState<Record<string, string>>({});
 
   const [pendingToggle, setPendingToggle] = useState<User | null>(null);
@@ -81,53 +93,60 @@ export default function AdminUsersPage() {
     candidate: users.filter((u) => u.role === "candidate").length,
   };
 
-  function updateRole(id: string, role: Role) {
-    if (id === me?.id) {
+  async function patchUser(user: User, patch: UpdateUserInput): Promise<User | null> {
+    try {
+      const updated = await apiPatch<User>(`/api/admin/users/${user.id}`, patch);
+      setUsers((all) => all.map((u) => (u.id === updated.id ? updated : u)));
+      return updated;
+    } catch (err) {
+      const e = toApiError(err);
+      toast(e.fields ? Object.values(e.fields)[0] : errorMessage(e), "danger");
+      return null;
+    }
+  }
+
+  async function updateRole(user: User, role: Role) {
+    if (user.id === me?.id) {
       toast("You cannot change your own role.", "danger");
       return;
     }
-    setUsers((all) => all.map((u) => (u.id === id ? { ...u, role } : u)));
-    toast(`Role updated to ${roleTitle(role)}.`);
+    const updated = await patchUser(user, { role });
+    if (updated) toast(`${updated.fullName} is now ${roleTitle(role).toLowerCase()}.`);
   }
 
-  function submitCreate(e: React.FormEvent) {
+  async function submitCreate(e: React.FormEvent) {
     e.preventDefault();
-    const next: Record<string, string> = {};
-    if (form.fullName.trim().length < 2) next.fullName = "Enter the full name.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      next.email = "Enter a valid email address.";
+    const parsed = createUserSchema.safeParse(form);
+    if (!parsed.success) {
+      setFields(zodFields(parsed.error));
+      return;
     }
-    if (users.some((u) => u.email.toLowerCase() === form.email.trim().toLowerCase())) {
-      next.email = "Already registered";
-    }
-    setFields(next);
-    if (Object.keys(next).length > 0) return;
-
+    setFields({});
     setCreateBusy(true);
-    window.setTimeout(() => {
-      const created: User = {
-        id: `u-${Date.now()}`,
-        fullName: form.fullName.trim(),
-        email: form.email.trim().toLowerCase(),
-        role: form.role,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      };
+    try {
+      const created = await apiPost<User>("/api/admin/users", parsed.data);
       setUsers((all) => [created, ...all]);
-      setCreateBusy(false);
       setCreateOpen(false);
-      setForm({ fullName: "", email: "", role: "candidate" });
-      setFields({});
+      setForm(EMPTY_FORM);
       toast(`${created.fullName} was added to the register.`);
-    }, 500);
+    } catch (err) {
+      const apiErr = toApiError(err);
+      if (apiErr.fields) setFields(apiErr.fields);
+      else toast(errorMessage(apiErr), "danger");
+    } finally {
+      setCreateBusy(false);
+    }
   }
 
-  function confirmToggle() {
+  async function confirmToggle() {
     if (!pendingToggle) return;
-    const next = { ...pendingToggle, isActive: !pendingToggle.isActive };
-    setUsers((all) => all.map((u) => (u.id === next.id ? next : u)));
+    setToggleBusy(true);
+    const updated = await patchUser(pendingToggle, { isActive: !pendingToggle.isActive });
+    setToggleBusy(false);
     setPendingToggle(null);
-    toast(next.isActive ? `${next.fullName} can sign in again.` : `${next.fullName} was deactivated.`);
+    if (updated) {
+      toast(updated.isActive ? `${updated.fullName} can sign in again.` : `${updated.fullName} was deactivated.`);
+    }
   }
 
   return (
@@ -135,7 +154,7 @@ export default function AdminUsersPage() {
       <PageHeader
         eyebrow="People & access"
         title="The right access, for everyone."
-        description="Manage institutional accounts, roles and access. Changes are recorded in the audit trail."
+        description="Manage institutional accounts, roles and access. Deactivated accounts keep their history."
         action={
           <Button onClick={() => setCreateOpen(true)}>
             <UserPlus className="size-4" />
@@ -195,9 +214,7 @@ export default function AdminUsersPage() {
         <Button
           variant="secondary"
           className="w-full"
-          onClick={() =>
-            toast("Choose a CSV file to import accounts (bulk import is coming with the API).", "info")
-          }
+          onClick={() => setImportOpen(true)}
         >
           <FileUp className="size-4" />
           Import CSV
@@ -205,6 +222,18 @@ export default function AdminUsersPage() {
       </div>
 
       <div className="mt-6">
+        {loading && !data ? (
+          <div className="space-y-2" aria-busy="true" aria-label="Loading users">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-12" />
+            ))}
+          </div>
+        ) : error && !data ? (
+          <ErrorState onRetry={reload} description={errorMessage(error)} />
+        ) : users.length === 0 ? (
+          <EmptyState title="No accounts yet" description="Create the first user or import a CSV." />
+        ) : (
+        <>
         <Table className="rounded-[10px]">
           <THead>
             <tr>
@@ -229,7 +258,7 @@ export default function AdminUsersPage() {
                         aria-label={`Role for ${user.fullName}`}
                         value={user.role}
                         disabled={isSelf}
-                        onChange={(e) => updateRole(user.id, e.target.value as Role)}
+                        onChange={(e) => void updateRole(user, e.target.value as Role)}
                         className="cursor-pointer appearance-none bg-transparent py-1 pr-5 text-[0.875rem] text-ink disabled:cursor-default"
                       >
                         <option value="candidate">Candidate</option>
@@ -276,7 +305,7 @@ export default function AdminUsersPage() {
             })}
             {rows.length === 0 && (
               <Tr>
-                <Td className="py-12 text-center text-mute" >
+                <Td className="py-12 text-center text-mute" colSpan={6}>
                   <span className="block">No accounts match this search.</span>
                 </Td>
               </Tr>
@@ -310,14 +339,23 @@ export default function AdminUsersPage() {
             </Button>
           </div>
         </div>
+        </>
+        )}
       </div>
+
+      <ImportModal
+        kind="candidates"
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => reload()}
+      />
 
       <Modal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         eyebrow="Administration / new account"
         title="Create user"
-        description="The account is activated after the first secure sign-in."
+        description="The person can sign in straight away with this email and password."
         footer={
           <>
             <Button variant="secondary" onClick={() => setCreateOpen(false)} disabled={createBusy}>
@@ -352,7 +390,24 @@ export default function AdminUsersPage() {
               required
             />
           </Field>
-          <Field label="Role" htmlFor="cu-role">
+          <Field
+            label="Temporary password"
+            htmlFor="cu-password"
+            hint="At least 8 characters, with a letter and a number. Share it securely."
+            error={fields.password}
+          >
+            <Input
+              id="cu-password"
+              type="text"
+              autoComplete="new-password"
+              placeholder="e.g. Welcome@2026"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              invalid={Boolean(fields.password)}
+              required
+            />
+          </Field>
+          <Field label="Role" htmlFor="cu-role" error={fields.role}>
             <Select
               id="cu-role"
               value={form.role}
@@ -369,7 +424,7 @@ export default function AdminUsersPage() {
           <div className="rounded-md border border-cobalt/20 bg-tint px-4 py-3.5">
             <p className="text-[0.8125rem] font-medium text-cobalt">Secure activation</p>
             <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink/80">
-              A one-time sign-in link will be sent to this address.
+              Passwords are kept by the auth service, never in our own tables. The role can be changed later.
             </p>
           </div>
         </form>
@@ -382,9 +437,10 @@ export default function AdminUsersPage() {
         title={`Deactivate ${pendingToggle?.fullName ?? "this user"}?`}
         description={`${pendingToggle?.fullName.split(" ")[0] ?? "This user"} will no longer be able to sign in. Existing answers and results are preserved.`}
         warning="Active attempts are not deleted"
-        warningDetail="This change is recorded in the access audit trail."
+        warningDetail="Their account and history stay; they just cannot sign in until reactivated."
         confirmLabel="Deactivate user"
-        onConfirm={confirmToggle}
+        onConfirm={() => void confirmToggle()}
+        busy={toggleBusy}
       />
 
       <Modal
@@ -398,7 +454,10 @@ export default function AdminUsersPage() {
             <Button variant="secondary" onClick={() => setPendingToggle(null)}>
               Cancel
             </Button>
-            <Button onClick={confirmToggle}>Activate user</Button>
+            <Button onClick={() => void confirmToggle()} disabled={toggleBusy}>
+              {toggleBusy && <Loader2 className="size-4 animate-spin" />}
+              Activate user
+            </Button>
           </>
         }
       >
@@ -407,7 +466,7 @@ export default function AdminUsersPage() {
             Existing role: {pendingToggle ? roleTitle(pendingToggle.role) : "—"}
           </p>
           <p className="mt-1 text-xs leading-relaxed text-ink/75">
-            This change is recorded in the access audit trail.
+            They keep the same role and can sign in again immediately.
           </p>
         </div>
       </Modal>

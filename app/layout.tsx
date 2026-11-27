@@ -23,6 +23,8 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+const THEME_SCRIPT = `try{var p=JSON.parse(localStorage.getItem("examcore:prefs")||"null");if(p){var d=document.documentElement;if(p.theme)d.dataset.theme=p.theme;if(p.fontScale)d.dataset.font=p.fontScale;}}catch(e){}`;
+
 export const metadata: Metadata = {
   title: "ExamCore — Secure Examinations",
   description:
@@ -40,7 +42,12 @@ export default function RootLayout({
       data-theme="light"
       data-font="md"
       className={`${dmSans.variable} ${instrumentSerif.variable} ${plexMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Apply the last-used theme before the first paint (avoids a flash of the wrong theme). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full bg-parchment text-ink">
         <Providers>{children}</Providers>
       </body>

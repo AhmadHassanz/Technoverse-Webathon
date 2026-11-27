@@ -2,6 +2,8 @@
 
 import { RoleLayout } from "./RoleLayout";
 
+const ROLES = ["candidate" as const];
+
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
-  return <RoleLayout role="candidate">{children}</RoleLayout>;
+  return <RoleLayout roles={ROLES}>{children}</RoleLayout>;
 }

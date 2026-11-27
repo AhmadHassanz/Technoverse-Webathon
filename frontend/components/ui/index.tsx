@@ -61,7 +61,7 @@ export function Field({
 }
 
 const fieldBase =
-  "w-full rounded-md border border-line bg-surface px-3.5 text-[0.9375rem] text-ink transition-colors placeholder:text-mute/70 hover:border-[#b9b0a0] focus:border-cobalt focus:outline-2 focus:outline-offset-2 focus:outline-cobalt/45 disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
+  "w-full rounded-md border border-line bg-surface px-3.5 text-[0.9375rem] text-ink transition-colors placeholder:text-mute/70 hover:border-line-strong focus:border-cobalt focus:outline-2 focus:outline-offset-2 focus:outline-cobalt/45 disabled:cursor-not-allowed disabled:bg-sand/40 disabled:text-mute aria-[invalid=true]:border-danger aria-[invalid=true]:focus:outline-danger/40";
 
 export function Input({
   className,
@@ -211,9 +211,9 @@ export function Badge({
     success: "bg-success-soft text-success border-transparent",
     warning: "bg-warning-soft text-warning border-transparent",
     danger: "bg-danger-soft text-danger border-transparent",
-    solid: "bg-cobalt text-white border-transparent",
-    lavender: "bg-[#E9E3F6] text-[#4B3C7A] border-transparent",
-    sky: "bg-[#E1F0F4] text-[#235A66] border-transparent",
+    solid: "bg-cobalt text-on-cobalt border-transparent",
+    lavender: "bg-lavender text-lavender-ink border-transparent",
+    sky: "bg-sky text-sky-ink border-transparent",
   };
   return (
     <span
@@ -245,7 +245,7 @@ export function StatusBadge({ status }: { status: string }) {
     rejected: { tone: "danger" },
   };
   const entry = map[status] ?? { tone: "neutral" as const };
-  const label = entry.label ?? status.replace(/_/g, "_");
+  const label = entry.label ?? status.replace(/_/g, " ");
   return <Badge tone={entry.tone}>{label}</Badge>;
 }
 
@@ -485,7 +485,7 @@ export function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-ink/35 px-4 py-[6vh] backdrop-blur-[1px]">
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-overlay px-4 py-[6vh] backdrop-blur-[1px]">
       <button
         type="button"
         aria-label="Close dialog"
@@ -551,7 +551,7 @@ export function Drawer({
         : "inset-y-0 right-0 h-full w-full max-w-lg border-l";
 
   return (
-    <div className="fixed inset-0 z-[75] flex bg-ink/30">
+    <div className="fixed inset-0 z-[75] flex bg-overlay">
       <button
         type="button"
         aria-label="Close panel"

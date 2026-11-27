@@ -13,19 +13,32 @@ type NavItem = { href: string; label: string; match: (path: string) => boolean }
 const navFor: Record<Role, NavItem[]> = {
   admin: [
     { href: "/admin", label: "Users", match: (p) => p === "/admin" },
-    { href: "/admin?view=access", label: "Access & roles", match: () => false },
+    {
+      href: "/examiner",
+      label: "Examinations",
+      match: (p) => p === "/examiner" || p.startsWith("/examiner/exams"),
+    },
+    {
+      href: "/examiner/questions",
+      label: "Question bank",
+      match: (p) => p.startsWith("/examiner/questions"),
+    },
   ],
   examiner: [
-    { href: "/examiner", label: "Overview", match: (p) => p === "/examiner" },
+    {
+      href: "/examiner",
+      label: "Overview",
+      match: (p) => p === "/examiner" || (p.startsWith("/examiner/exams") && p !== "/examiner/exams/new"),
+    },
     {
       href: "/examiner/questions",
       label: "Question bank",
       match: (p) => p.startsWith("/examiner/questions"),
     },
     {
-      href: "/examiner",
-      label: "Examinations",
-      match: (p) => p.startsWith("/examiner/exams"),
+      href: "/examiner/exams/new",
+      label: "New examination",
+      match: (p) => p === "/examiner/exams/new",
     },
   ],
   candidate: [
@@ -90,7 +103,7 @@ function SidebarContent({
               className={cn(
                 "flex h-11 items-center rounded-md px-4 text-[0.9rem] transition-colors",
                 active
-                  ? "bg-cobalt font-medium text-white"
+                  ? "bg-cobalt font-medium text-on-cobalt"
                   : "text-ink hover:bg-surface/70",
               )}
               aria-current={active ? "page" : undefined}
@@ -138,7 +151,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
           <button
             type="button"
             aria-label="Close navigation"
-            className="absolute inset-0 bg-ink/35"
+            className="absolute inset-0 bg-overlay"
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative h-full w-[260px] border-r border-line bg-parchment">

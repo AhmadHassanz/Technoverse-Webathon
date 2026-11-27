@@ -8,6 +8,9 @@ import { Button } from "@/frontend/components/ui/button";
 import { Field, Input } from "@/frontend/components/ui";
 import { AuthSplit } from "@/frontend/components/shell/AuthSplit";
 import { roleHome, useAuth } from "@/frontend/lib/auth";
+import { errorMessage, toApiError } from "@/frontend/lib/api-client";
+import { zodFields } from "@/frontend/lib/forms";
+import { signupSchema } from "@/shared/validation";
 
 export default function SignupPage() {
   const { me, loading, signup } = useAuth();
@@ -22,36 +25,21 @@ export default function SignupPage() {
     if (!loading && me) router.replace(roleHome(me.role));
   }, [loading, me, router]);
 
-  function validate() {
-    const next: Record<string, string> = {};
-    if (fullName.trim().length < 2) next.fullName = "Enter your full name (at least 2 characters).";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      next.email = "Enter a valid institutional email.";
-    }
-    if (password.length < 8) {
-      next.password = "Use at least 8 characters.";
-    } else if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-      next.password = "Include at least one letter and one number.";
-    }
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  }
-
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validate()) return;
+    const parsed = signupSchema.safeParse({ fullName, email, password });
+    if (!parsed.success) {
+      setErrors(zodFields(parsed.error));
+      return;
+    }
+    setErrors({});
     setBusy(true);
     try {
-      const account = await signup({
-        fullName: fullName.trim(),
-        email: email.trim(),
-        password,
-      });
+      const account = await signup(parsed.data);
       router.replace(roleHome(account.role));
     } catch (err) {
-      setErrors({
-        email: err instanceof Error ? err.message : "Could not create your account.",
-      });
+      const apiErr = toApiError(err);
+      setErrors(apiErr.fields ?? { email: errorMessage(apiErr) });
       setBusy(false);
     }
   }
@@ -95,7 +83,7 @@ export default function SignupPage() {
         <Field
           label="Password"
           htmlFor="password"
-          hint="Use at least 8 characters."
+          hint="At least 8 characters, with a letter and a number."
           error={errors.password}
         >
           <Input

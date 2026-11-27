@@ -1,167 +1,102 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import type { Me, Role, SignupInput } from "@/shared/types";
-import { MOCK_USERS } from "@/frontend/lib/mock";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import type { LoginInput, Me, Preferences, Role, SignupInput } from "@/shared/types";
+import { apiGet, apiPatch, apiPost } from "./api-client";
 
-const SESSION_KEY = "examcore:session";
-const DEFAULT_PREFS: Me["preferences"] = {
+export const DEFAULT_PREFS: Preferences = {
   theme: "light",
   fontScale: "md",
   navigatorSide: "left",
   layout: "single",
 };
 
+/** localStorage key read by the inline script in app/layout.tsx (prevents a theme flash). */
+export const PREFS_CACHE_KEY = "examcore:prefs";
+
+/** Put the theme and font size on <html> so the CSS variables switch instantly. */
+export function applyPreferences(p: Pick<Preferences, "theme" | "fontScale">) {
+  if (typeof document === "undefined") return;
+  document.documentElement.dataset.theme = p.theme;
+  document.documentElement.dataset.font = p.fontScale;
+  try {
+    window.localStorage.setItem(PREFS_CACHE_KEY, JSON.stringify({ theme: p.theme, fontScale: p.fontScale }));
+  } catch {
+    // storage may be blocked; the theme still applies for this page
+  }
+}
+
 type AuthContextValue = {
   me: Me | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<Me>;
+  login: (input: LoginInput) => Promise<Me>;
   signup: (input: SignupInput) => Promise<Me>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-  updatePreferences: (patch: Partial<Me["preferences"]>) => void;
+  /** Applies instantly, then saves with PATCH /api/me/preferences. */
+  updatePreferences: (patch: Partial<Preferences>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function toMe(email: string): Me | null {
-  const user = MOCK_USERS.find(
-    (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
-  );
-  if (!user) return null;
-  return { ...user, preferences: DEFAULT_PREFS };
-}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load the session once (cookie auth: GET /api/auth/me).
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(SESSION_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { email: string; preferences?: Me["preferences"] };
-        const found = toMe(parsed.email);
-        if (found) {
-          setMe({ ...found, preferences: parsed.preferences ?? DEFAULT_PREFS });
-        }
-      }
-    } catch {
-      // ignore corrupt storage
-    }
-    setLoading(false);
+    let alive = true;
+    apiGet<Me>("/api/auth/me")
+      .then((m) => alive && setMe(m))
+      .catch(() => alive && setMe(null))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const persist = useCallback((next: Me | null) => {
-    setMe(next);
-    try {
-      if (next) {
-        window.localStorage.setItem(
-          SESSION_KEY,
-          JSON.stringify({ email: next.email, preferences: next.preferences }),
-        );
-      } else {
-        window.localStorage.removeItem(SESSION_KEY);
-      }
-    } catch {
-      // storage may be unavailable
-    }
+  // Keep <html data-theme/data-font> in sync with the logged-in user's preferences.
+  useEffect(() => {
+    if (loading) return;
+    applyPreferences(me?.preferences ?? DEFAULT_PREFS);
+  }, [me, loading]);
+
+  const login = useCallback(async (input: LoginInput) => {
+    const m = await apiPost<Me>("/api/auth/login", input);
+    setMe(m);
+    return m;
   }, []);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      if (!email.trim()) throw new Error("Enter your institutional email.");
-      if (password.length < 1) throw new Error("Enter your password.");
-      const found = toMe(email);
-      if (!found) {
-        throw new Error("No account matches that email. Try a demo account.");
-      }
-      if (!found.isActive) {
-        throw new Error("This account has been deactivated.");
-      }
-      persist(found);
-      return found;
-    },
-    [persist],
-  );
-
-  const signup = useCallback(
-    async (input: SignupInput) => {
-      const email = input.email.trim().toLowerCase();
-      const existing = toMe(email);
-      if (existing) {
-        throw new Error("An account with this email already exists.");
-      }
-      const next: Me = {
-        id: `u-${Date.now()}`,
-        email,
-        fullName: input.fullName.trim(),
-        role: "candidate",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        preferences: DEFAULT_PREFS,
-      };
-      persist(next);
-      return next;
-    },
-    [persist],
-  );
+  const signup = useCallback(async (input: SignupInput) => {
+    const m = await apiPost<Me>("/api/auth/signup", input);
+    setMe(m);
+    return m;
+  }, []);
 
   const logout = useCallback(async () => {
-    persist(null);
-  }, [persist]);
-
-  const refresh = useCallback(async () => {
-    const raw = window.localStorage.getItem(SESSION_KEY);
-    if (!raw) return;
     try {
-      const parsed = JSON.parse(raw) as { email: string };
-      const found = toMe(parsed.email);
-      if (found) setMe(found);
-    } catch {
-      // ignore
+      await apiPost("/api/auth/logout", {});
+    } finally {
+      setMe(null);
     }
   }, []);
 
-  const updatePreferences = useCallback(
-    (patch: Partial<Me["preferences"]>) => {
-      setMe((current) => {
-        if (!current) return current;
-        const next = {
-          ...current,
-          preferences: { ...current.preferences, ...patch },
-        };
-        try {
-          window.localStorage.setItem(
-            SESSION_KEY,
-            JSON.stringify({ email: next.email, preferences: next.preferences }),
-          );
-        } catch {
-          // ignore
-        }
-        return next;
-      });
-    },
-    [],
-  );
+  const refresh = useCallback(async () => {
+    try {
+      setMe(await apiGet<Me>("/api/auth/me"));
+    } catch {
+      setMe(null);
+    }
+  }, []);
+
+  const updatePreferences = useCallback(async (patch: Partial<Preferences>) => {
+    setMe((current) => (current ? { ...current, preferences: { ...current.preferences, ...patch } } : current));
+    const saved = await apiPatch<Preferences>("/api/me/preferences", patch);
+    setMe((current) => (current ? { ...current, preferences: saved } : current));
+  }, []);
 
   const value = useMemo(
-    () => ({
-      me,
-      loading,
-      login,
-      signup,
-      logout,
-      refresh,
-      updatePreferences,
-    }),
+    () => ({ me, loading, login, signup, logout, refresh, updatePreferences }),
     [me, loading, login, signup, logout, refresh, updatePreferences],
   );
 
