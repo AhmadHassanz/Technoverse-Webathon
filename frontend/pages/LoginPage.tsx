@@ -45,6 +45,10 @@ export default function LoginPage() {
     try {
       const account = await login(parsed.data);
       router.replace(roleHome(account.role));
+      // Next.js keeps this page alive in memory after we leave it, so reset the form here.
+      // Otherwise, after logging out, it would still say "Signing in...".
+      setBusy(false);
+      setPassword("");
     } catch (err) {
       const e = toApiError(err);
       if (e.fields) setFields(e.fields);
