@@ -110,8 +110,8 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 | GET | `/api/attempts/[id]` | attempt owner | – → `AttemptView` (no correctness ever) | 403, 404 | ✅ |
 | PUT | `/api/attempts/[id]/answers/[aqId]` | attempt owner | `AnswerInput` → `SaveResult` | 400, 403, 410 time over | ✅ |
 | POST | `/api/attempts/[id]/sync` | attempt owner | `SyncInput` → `SyncResult` (offline outbox replay) | 400, 403 | ✅ |
-| POST | `/api/attempts/[id]/heartbeat` | attempt owner | `{}` → `HeartbeatResult` (call every 15 s) | 403 | ⏳ |
-| POST | `/api/attempts/[id]/incidents` | attempt owner | `IncidentInput` → `OkResult` | 400 | ⏳ |
+| POST | `/api/attempts/[id]/heartbeat` | attempt owner | `{}` → `HeartbeatResult` (call every 15 s) | 403 | ✅ |
+| POST | `/api/attempts/[id]/incidents` | attempt owner | `IncidentInput` → `OkResult` | 400 | ✅ |
 | PUT | `/api/attempts/[id]/scratchpad` | attempt owner | `ScratchpadInput` → `{ savedAt: string }` | 400 drawing > 500 KB, 410 | ✅ |
 | POST | `/api/attempts/[id]/submit` | attempt owner | – → `SubmitResult` (safe to call twice) | 403 | ✅ |
 | DELETE | `/api/attempts/[id]` | exam owner | – → `OkResult` (reset a sandbox attempt only) | 409 not sandbox | ✅ |

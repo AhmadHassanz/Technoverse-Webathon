@@ -1,9 +1,14 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// POST /api/attempts/[id]/heartbeat: every 15 s from the workspace. See docs/CONTRACT.md section 7.
+// The body is ignored on purpose: nothing the client sends is used to measure time.
 import { ok } from "@/backend/lib/api-response";
+import { requireUser } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockHeartbeat } from "@/backend/lib/mock";
-import type { HeartbeatResult } from "@/shared/types";
+import { parseId } from "@/backend/lib/http";
+import { heartbeat } from "@/backend/services/heartbeat.service";
 
-export const POST = withErrors(async () => {
-  return ok<HeartbeatResult>(mockHeartbeat);
+type Ctx = { params: Promise<{ id: string }> };
+
+export const POST = withErrors(async (_req: Request, { params }: Ctx) => {
+  const user = await requireUser();
+  return ok(await heartbeat(user, parseId((await params).id, "Attempt")));
 });
