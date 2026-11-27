@@ -1,44 +1,20 @@
 // Who is calling? Every service starts with one of these.
 //   getCurrentUser()  -> user or null
-//   requireUser()     -> user, or throws 401 (403 if deactivated)
+//   requireUser()     -> user, or throws 401 (no session or deactivated account)
 //   requireRole(...)  -> user with one of the roles, or throws 403
-import { adminClient, authClient } from "@/backend/lib/supabase";
+import { authClient } from "@/backend/lib/supabase";
+import { findProfile, toMe } from "@/backend/data/users";
 import { HttpError } from "@/backend/lib/errors";
-import type { Me, Preferences, Role } from "@/shared/types";
-
-type ProfileRow = {
-  id: string;
-  email: string;
-  full_name: string;
-  role: Role;
-  is_active: boolean;
-  preferences: Preferences;
-  created_at: string;
-};
-
-/** Load the profile row for an auth user id and convert it to the camelCase `Me` shape. */
-export async function loadProfile(userId: string): Promise<(Me) | null> {
-  const { data } = await adminClient().from("profiles").select("*").eq("id", userId).maybeSingle<ProfileRow>();
-  if (!data) return null;
-  return {
-    id: data.id,
-    email: data.email,
-    fullName: data.full_name,
-    role: data.role,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    preferences: data.preferences,
-  };
-}
+import type { Me, Role } from "@/shared/types";
 
 /** The logged-in user from the session cookie, or null (no session / unknown / deactivated). */
 export async function getCurrentUser(): Promise<Me | null> {
   const supabase = await authClient();
   const { data } = await supabase.auth.getUser(); // verifies the token with Supabase
   if (!data.user) return null;
-  const profile = await loadProfile(data.user.id);
-  if (!profile || !profile.isActive) return null;
-  return profile;
+  const row = await findProfile(data.user.id);
+  if (!row || !row.is_active) return null;
+  return toMe(row);
 }
 
 export async function requireUser(): Promise<Me> {
@@ -51,4 +27,9 @@ export async function requireRole(...roles: Role[]): Promise<Me> {
   const user = await requireUser();
   if (!roles.includes(user.role)) throw new HttpError(403, "You don't have access to this");
   return user;
+}
+
+/** Admins may manage anything; everyone else only what they created. Throws 403 otherwise. */
+export function assertOwner(user: Me, createdBy: string) {
+  if (user.role !== "admin" && user.id !== createdBy) throw new HttpError(403, "You don't have access to this");
 }

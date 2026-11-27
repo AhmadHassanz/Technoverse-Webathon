@@ -1,9 +1,11 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// POST /api/auth/signup: see docs/CONTRACT.md
 import { ok } from "@/backend/lib/api-response";
 import { withErrors } from "@/backend/lib/errors";
-import { mockMe } from "@/backend/lib/mock";
-import type { Me } from "@/shared/types";
+import { parseBody } from "@/backend/lib/http";
+import { signup } from "@/backend/services/auth.service";
+import { signupSchema } from "@/shared/validation";
 
-export const POST = withErrors(async () => {
-  return ok<Me>(mockMe, 201);
+export const POST = withErrors(async (req: Request) => {
+  const input = await parseBody(req, signupSchema);
+  return ok(await signup(input), 201);
 });

@@ -1,11 +1,10 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET /api/auth/me: see docs/CONTRACT.md
 import { connection } from "next/server";
 import { ok } from "@/backend/lib/api-response";
+import { requireUser } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockMe } from "@/backend/lib/mock";
-import type { Me } from "@/shared/types";
 
 export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<Me>(mockMe);
+  await connection(); // depends on the cookie, never cached
+  return ok(await requireUser());
 });
