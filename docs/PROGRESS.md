@@ -5,9 +5,11 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Current status
 - Next.js 16 + TypeScript + Tailwind app created in `D:\TECHNOVERSE_WEBATHON\webathon` (= git repo root). Starter page only; `npm run build` passes.
 - Git: repo initialized 27 Nov 10:25 AM, pushed to https://github.com/AhmadHassanz/Technoverse-Webathon (branch `main`).
-- Problem statement: **not decided yet**.
+- Problem statement: **Secure Examination Management System** (`docs/PROBLEM_STATEMENT.md`). Plans: `docs/BACKEND_PLAN.md`, `docs/FRONTEND_PLAN.md`. Contract: `docs/CONTRACT.md`, `shared/types.ts`, `backend/db/schema.sql`.
+- Stage: about to start **Stage 0** of BACKEND_PLAN (Supabase project, packages, backend/lib helpers, stubs, first deploy).
 
 ## Done
+- 2026-11-27: Added docs/PROBLEM_STATEMENT.md, BACKEND_PLAN.md, FRONTEND_PLAN.md, new CONTRACT.md, shared/types.ts, backend/db/schema.sql; updated CLAUDE.md + quick-reference guides.
 - 2026-11-26: Set up CLAUDE.md + PROGRESS.md for memory between sessions.
 - 2026-11-26: Created Next.js app (`webathon/`), moved CLAUDE.md + PROGRESS.md into it so they're shared via git. Build OK.
 - 2026-11-26: Frontend/backend split: BACKEND.md, FRONTEND.md, CONTRACT.md (template + GET /api/health), lib/types.ts, lib/api-response.ts (ok/fail), lib/api-client.ts (apiGet/apiPost), app/api/health/route.ts, empty components/ + lib/data/. Build + lint pass. Not committed yet.
@@ -17,10 +19,11 @@ Claude updates this file at the end of every task, so a new session can pick up 
 ## Next steps
 1. ✅ Git name/email set, GitHub CLI logged in as AhmadHassanz (26 Nov).
 2. ✅ 27 Nov: `git init`, first commit, pushed to GitHub. TODO: add friend as collaborator.
-3. Get the problem statement, write it into CLAUDE.md, then add the real endpoints to CONTRACT.md + shared/types.ts.
-4. First deploy to Vercel and put the live link in the README.
+3. ✅ 27 Nov: problem statement + plans + contract + schema + types added to repo.
+4. Stage 0 (BACKEND_PLAN): create Supabase project, run schema.sql, `.env.local` + Vercel env vars, install packages (one commit), backend/lib helpers, Stage 1+2 stubs, first deploy.
 
 ## Decisions
+- 27 Nov: DB = Supabase Postgres, auth via Supabase behind our API (httpOnly cookie), polling not Realtime, pdf-lib + qrcode for PDFs, zod in shared/validation.ts. Innovation 5.3 + 5.2.
 - Team of 2: user = backend, friend = frontend. One GitHub repo, user owns it, friend added as collaborator.
 - Stack: Next.js 16 (App Router) + Tailwind v4 + TypeScript, repo root = `webathon/`, no `src/`. ONE app, one deploy.
 - Folders: `frontend/` (friend), `backend/` (user), `shared/` + `CONTRACT.md` (both). `app/` = connector files only. (User rejected two separate apps.)

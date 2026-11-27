@@ -1,46 +1,23 @@
-# Frontend Guide (owner: friend)
+# Frontend Quick Reference (owner: friend)
 
-**Your folder: `frontend/`.** Don't edit `backend/`.
+**Full plan: `docs/FRONTEND_PLAN.md`** (routes, design tokens, workspace spec, stages, prompts). Contract: `docs/CONTRACT.md` + `shared/types.ts` (read-only for you — ask the backend owner for changes).
 
 ## Your files
-- `frontend/pages/<Name>Page.tsx`: one component per screen.
-- `frontend/components/`: reusable UI pieces (cards, buttons, navbar…).
-- `frontend/lib/api-client.ts`: `apiGet` / `apiPost` to call the backend.
-- `app/layout.tsx` + `app/globals.css`: shared layout and global styles (also yours).
-- Shared with backend (read-only for you; ask before changing): `docs/CONTRACT.md` + `shared/types.ts`.
+- `frontend/pages/<Name>Page.tsx` — one component per screen.
+- `frontend/layouts/` — role layouts with guards (Admin / Examiner / Candidate).
+- `frontend/components/` — `ui/`, `shell/`, `exam/`, `charts/`.
+- `frontend/lib/` — `api-client.ts`, `auth.tsx`, `format.ts`, `mock.ts`, workspace hooks.
+- `app/layout.tsx`, `app/globals.css`, and page/layout connector files in `app/` (not `app/api`).
 
 ## How a URL shows your page
-Next.js only looks inside `app/` for URLs, so each page needs one tiny **connector** file:
 ```tsx
-// app/dashboard/page.tsx  → URL /dashboard
-export { default } from "@/frontend/pages/DashboardPage";
+// app/examiner/exams/[examId]/page.tsx  → URL /examiner/exams/:examId
+export { default } from "@/frontend/pages/ExamPage";
 ```
-All UI stays in `frontend/pages/DashboardPage.tsx`. The home page (`/`) is `frontend/pages/HomePage.tsx`.
 
 ## Rules
-- Call the backend only through `apiGet` / `apiPost`, typed with `@/shared/types`.
-- Read `docs/CONTRACT.md` for what each endpoint returns. If the backend isn't ready, use fake data with the same types, then swap in the real call.
-- Components using `useState`, `useEffect` or `onClick` need `"use client";` at the very top.
-- Every data screen needs a **loading**, **error** and **empty** state.
-- Tailwind for styling. Mobile-first, consistent colors.
-
-## Example
-```tsx
-"use client";
-import { useEffect, useState } from "react";
-import { apiGet } from "@/frontend/lib/api-client";
-import type { HealthStatus } from "@/shared/types";
-
-export default function StatusBadge() {
-  const [health, setHealth] = useState<HealthStatus | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    apiGet<HealthStatus>("/api/health").then(setHealth).catch((e) => setError(e.message));
-  }, []);
-
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!health) return <p>Loading…</p>;
-  return <p>Backend is {health.status}</p>;
-}
-```
+- Call the backend only through `api-client.ts`, typed with `@/shared/types`. Build against mock data first, swap when the endpoint is ✅ in CONTRACT.md.
+- `"use client";` on line 1 for components with state/effects/handlers. `useParams`/`useSearchParams` inside `<Suspense>`.
+- Every data screen: loading (skeleton), empty, error (+ Retry), data.
+- Only the design tokens from FRONTEND_PLAN section 5. No new colours, no emoji, no gradients.
+- Don't install packages yourself — ask the backend owner (avoids package-lock conflicts).

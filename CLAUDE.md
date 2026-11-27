@@ -34,10 +34,10 @@
 - **Stack: Next.js 16 (App Router) + Tailwind v4 + TypeScript.** One app does both frontend and backend. The git repo root is the `webathon/` folder (this file's folder); no `src/` dir.
 - **Folder split so nobody touches the other's code:**
   - `frontend/` = friend only (`pages/`, `components/`, `lib/api-client.ts`). Also `app/layout.tsx` + `app/globals.css`.
-  - `backend/` = user only (`handlers/`, `lib/api-response.ts`, `data/`).
-  - `shared/types.ts` + `docs/CONTRACT.md` = shared; change together and tell the teammate.
+  - `backend/` = user only (`handlers/` → `services/` → `data/`, plus `lib/`, `db/`, `scripts/`). Also `package.json`, `.env.local`, Vercel deploys.
+  - `shared/types.ts`, `shared/validation.ts`, `docs/CONTRACT.md` = owned by the user, read-only for the friend; change together and tell the teammate.
   - `app/` holds only 1-line **connector** files (Next.js needs URLs there): `app/x/page.tsx` → `export { default } from "@/frontend/pages/XPage"`; `app/api/x/route.ts` → `export { GET } from "@/backend/handlers/x"`. No logic in `app/`.
-- Role guides: `docs/BACKEND.md` (user) and `docs/FRONTEND.md` (friend). Read the matching one before working on that side.
+- Role guides: `docs/BACKEND_PLAN.md` (user) and `docs/FRONTEND_PLAN.md` (friend) are the full plans; `docs/BACKEND.md` / `docs/FRONTEND.md` are short quick-reference cards. Read the matching plan before working on that side.
 - Next.js 16 has breaking changes: follow AGENTS.md and check `node_modules/next/dist/docs/` before writing Next-specific code.
 
 @AGENTS.md
@@ -48,11 +48,15 @@
 - Agree on the API shape early and write it in `docs/CONTRACT.md`, so frontend can use fake data until backend is ready.
 
 ## Problem statement
-<!-- Paste the theme here on 27 Nov (~9:30 AM) -->
+**Secure Examination Management System** (roles: admin, examiner, candidate). Full brief: `docs/PROBLEM_STATEMENT.md`.
+- Final plans (these win over older docs): `docs/BACKEND_PLAN.md` (user) and `docs/FRONTEND_PLAN.md` (friend).
+- Contract (treat as law; change only together, in one commit): `docs/CONTRACT.md` + `shared/types.ts` + `backend/db/schema.sql`.
+- Innovation challenges chosen: **5.3 failure-resilient exams** + **5.2 fairness of randomized papers**.
 
 ## Stack
 - Next.js 16 + Tailwind v4 + TypeScript (decided).
-- Database: needed (DB design is scored). Choose once the theme is known; keep it free and simple to set up.
+- Database: **Supabase Postgres** (free tier). Only the backend talks to Supabase (secret key, server-only); schema in `backend/db/schema.sql`.
+- Libraries: `@supabase/supabase-js`, `@supabase/ssr`, `zod`, `pdf-lib`, `qrcode`, `papaparse`, `lucide-react`. The user installs all packages (avoids package-lock conflicts).
 - Prefer few dependencies, no complex setup, no paid APIs unless the user gives a key.
 
 ## Session memory

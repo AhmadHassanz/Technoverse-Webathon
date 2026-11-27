@@ -1,33 +1,27 @@
-# Backend Guide (owner: user)
+# Backend Quick Reference (owner: user / Zoro)
 
-**Your folder: `backend/`.** Don't edit `frontend/`.
+**Full plan: `docs/BACKEND_PLAN.md`** (stages, business rules, prompts). Contract: `docs/CONTRACT.md` + `shared/types.ts` + `backend/db/schema.sql`.
 
 ## Your files
-- `backend/handlers/<name>.ts`: the real code for each endpoint (export `GET`, `POST`, …).
-- `backend/lib/`: helpers, database code. `api-response.ts` has `ok()` / `fail()`.
-- `backend/data/`: sample data (e.g. `events.ts` exporting an array).
-- Shared with frontend (change together, tell your teammate): `docs/CONTRACT.md` + `shared/types.ts`.
+- `backend/handlers/...` — one file per URL (mirror the URL), exports `GET`/`POST`/…, wrapped in `withErrors`.
+- `backend/services/*.service.ts` — business rules + role/ownership checks. No HTTP stuff.
+- `backend/data/*.ts` — the ONLY place that queries Supabase; maps snake_case ↔ camelCase.
+- `backend/lib/` — `api-response.ts` (`ok`, `fail`), `errors.ts`, `supabase.ts`, `auth.ts`, `time.ts`, `shuffle.ts`, `csv.ts`, `pdf.ts`.
+- `backend/db/schema.sql` — run once in the Supabase SQL editor.
+- `backend/scripts/seed.ts` — demo data (`npm run seed`).
+- `shared/types.ts`, `shared/validation.ts`, `docs/CONTRACT.md` — yours; change together, tell your teammate.
 
 ## How a URL reaches your code
-Next.js only looks inside `app/` for URLs, so each endpoint needs one tiny **connector** file:
 ```ts
-// app/api/events/route.ts  → URL /api/events
-export { GET, POST } from "@/backend/handlers/events";
+// app/api/exams/[id]/publish/route.ts  → URL /api/exams/:id/publish
+export { POST } from "@/backend/handlers/exams/[id]/publish";
 ```
-All logic stays in `backend/handlers/events.ts`.
 
 ## Rules
-- Always respond with `ok(data)` or `fail("message", status)` from `@/backend/lib/api-response`.
-- Validate input; return `fail("...", 400)` for bad input, `404` when not found.
-- Secrets (API keys, DB URLs) go in `.env.local`, read with `process.env.NAME`. Never in code.
-- **Cache Components is ON** (`next.config.ts`): never use `export const dynamic = ...` (build fails). For live GET data (dates, random, DB reads), start the handler with `await connection()` from `next/server`.
-- Dynamic URL (`app/api/events/[id]/route.ts`): in Next.js 16, `params` is a Promise. In the handler:
-  `export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) { const { id } = await params; ... }`
-
-## Adding an endpoint (checklist)
-1. Write it in `docs/CONTRACT.md` (copy the template).
-2. Add its types to `shared/types.ts`.
-3. Write `backend/handlers/<name>.ts`.
-4. Add the 1-line connector `app/api/<name>/route.ts`.
-5. Test: open `http://localhost:3000/api/<name>` (GET) or `curl` for POST.
-6. Commit + push, tell frontend it's ready.
+- Respond only with `ok(data)` or `fail(message, status, fields?)`; status codes exactly as CONTRACT.md.
+- Check role + ownership in the service before every query. Never send `isCorrect`/snapshots to candidates.
+- Validate every input with zod from `shared/validation.ts`.
+- Secrets in `.env.local` (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`), never `NEXT_PUBLIC_`.
+- **Cache Components is ON:** never `export const dynamic = ...`; start GET handlers with `await connection()`.
+- Dynamic routes: `params` is a Promise → `const { id } = await params`. `cookies()` is async.
+- After an endpoint works: test it, mark ✅ in CONTRACT.md, commit, tell your teammate.
