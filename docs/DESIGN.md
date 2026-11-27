@@ -38,6 +38,8 @@
 19. **Compensation approval edge cases** → approving adds the measured gap to the attempt (total capped at 10 minutes) and is only possible while the attempt is running; rejecting is always possible. The request is claimed first, so a double click can never add time twice.
 20. **"Not enough data" for difficulty statistics** → with fewer than 3 scored answers a question's observed difficulty is `null` and paper fairness uses the question's own label (easy 25, medium 50, hard 75). One or two answers would only show noise.
 21. **Candidates who never started in results** → the results table lists attempts only; never-started candidates appear in the enrollment list as "not started" (the result row type has no such status).
+22. **When is a verification code created?** -> the first time a PUBLISHED result is downloaded as PDF, then it never changes (a unique row per attempt, so simultaneous downloads share one code). Before publishing the owner can still download a PROVISIONAL report without a code.
+23. **Non-Latin text in PDFs** -> the built-in PDF fonts only draw Latin-1, so Urdu/Arabic/emoji in answers appear as "?" in the PDF (the app itself stores and shows them fine). Chosen over embedding a large font file to keep the deploy small and the report reliable; every string is cleaned first so one odd character can never break the whole report.
 
 ## 3. Assumptions & constraints
 - 10-hour build, team of 2, free-tier services only (no paid APIs, per brief §06).
@@ -133,5 +135,7 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Statistics, distribution, question stats (3.8) | pure maths `lib/analytics.ts` (`buildStats`, `buildDistribution`, `buildQuestionStats`) used by `services/results.service.ts` (`getAnalytics`) |
 | Paper fairness (5.2) | `lib/analytics.ts` (`paperDifficulties`, `buildFairness`); stored at publish in `attempts.paper_difficulty` |
 | Exam-wide reads beyond 1000 rows | `data/paging.ts` (`fetchAll`) |
-| Stage 5 stub (verify) | `handlers/verify/[code].ts` with `lib/mock.ts` |
+| Verifiable result report: code + public check (secondary feature) | `lib/verification.ts` (alphabet without look-alikes, initials) -> `services/report.service.ts` (`verifyCode`, `getOrCreateCode`) -> `data/reports.ts`; handler `handlers/verify/[code].ts` |
+| PDF reports with QR (secondary feature) | `lib/pdf.ts` (pdf-lib wrapper: wrapping, tables, Latin-1 safe text) -> `services/report.service.ts` (`buildAttemptReport`, `buildExamReport`) -> `handlers/reports/*` |
+| Demo data | `scripts/seed.ts` (accounts, question bank, 5 exams, simulated attempts graded with the same rules) |
 | _remaining rows: fill in as features land_ | |
