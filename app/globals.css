@@ -1,5 +1,6 @@
 /* Hallmark · redesign: full (app scope + landing) · theme: custom, after hume.ai by request · genre: editorial · signature: the real exam workspace, shown on the landing in a charcoal stage */
 /* critique: calm warm paper, one charcoal stage per page, a light serif voice and pill controls; colour is reserved for state (peach, sky, lavender, sage). */
+/* Hallmark · waive 26b · the landing page has no form controls to disable · disabled exam buttons are styled in the shared button component */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -93,7 +94,7 @@
   --ink: #1b1918;
   --mute: #6b6560;
   --cobalt: #1b1918;
-  --cobalt-deep: #000000;
+  --cobalt-deep: #060606;
   --on-cobalt: #fdfdfc;
   --accent-ink: #6a58c9;
   --line: #e7e3dc;
@@ -137,7 +138,7 @@
   --ink: #f1eee9;
   --mute: #a7a19a;
   --cobalt: #f1eee9;
-  --cobalt-deep: #ffffff;
+  --cobalt-deep: #fafafa;
   --on-cobalt: #1b1918;
   --accent-ink: #b9acf5;
   --line: #34322f;
@@ -174,24 +175,24 @@
 
 /* High contrast: black background, white text, yellow accent, 2 px borders. */
 [data-theme="contrast"] {
-  --parchment: #000000;
-  --surface: #000000;
-  --paper: #000000;
-  --ink: #ffffff;
+  --parchment: #060606;
+  --surface: #060606;
+  --paper: #060606;
+  --ink: #fafafa;
   --mute: #e6e6e6;
   --cobalt: #ffd400;
   --cobalt-deep: #ffe45c;
-  --on-cobalt: #000000;
+  --on-cobalt: #060606;
   --accent-ink: #ffd400;
-  --line: #ffffff;
+  --line: #fafafa;
   --line-soft: #9a9a9a;
-  --line-strong: #ffffff;
+  --line-strong: #fafafa;
   --tint: #262000;
   --tint-strong: #3a3000;
   --sand: #1c1c1c;
   --danger: #ff7b7b;
   --danger-deep: #ffa0a0;
-  --on-danger: #000000;
+  --on-danger: #060606;
   --danger-soft: #330000;
   --warning: #ffb547;
   --warning-soft: #2e1f00;
@@ -202,13 +203,13 @@
   --sky: #002a33;
   --sky-ink: #9ff0ff;
   --overlay: rgba(0, 0, 0, 0.75);
-  --night: #000000;
+  --night: #060606;
   --night-2: #111111;
-  --night-line: #ffffff;
+  --night-line: #fafafa;
   --night-mute: #e6e6e6;
   --lime: #ffd400;
-  --on-lime: #000000;
-  --pixel: #ffffff;
+  --on-lime: #060606;
+  --pixel: #fafafa;
   --shadow-card-v: none;
   --shadow-pop-v: none;
   --shadow-glow-v: none;
@@ -288,12 +289,15 @@
     color: var(--ink);
     overflow-wrap: break-word;
     min-width: 0;
+    text-wrap: balance;
   }
   .display-xl {
+    text-wrap: balance;
     font-size: clamp(2.6rem, 5.4vw, 4.4rem);
     line-height: 1.04;
   }
   .display-lg {
+    text-wrap: balance;
     font-size: clamp(2rem, 3.4vw, 2.85rem);
   }
   .display-md {
@@ -324,6 +328,7 @@
   }
   .surface-card {
     background: var(--surface);
+    color: var(--ink);
     border: var(--border-w, 1px) solid var(--line);
     border-radius: 16px;
     box-shadow: var(--shadow-card);
