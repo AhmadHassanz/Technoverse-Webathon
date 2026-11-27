@@ -121,6 +121,18 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 - `clientSeq` must increase with every change in this browser. Older saves are ignored (`accepted: false`) — not an error.
 - Opening the workspace = GET. Only the dashboard "Start/Continue" button calls `POST .../attempts`.
 
+**How the Stage 3 endpoints behave (details, no shape changes):**
+- **Order of errors** on every attempt endpoint: 401 not logged in → 404 unknown or non-UUID attempt → 403 not your attempt (admins and examiners too) → then the time rules.
+- **Start:** the body may be empty (= real attempt). Real attempts: candidates only (examiners/admins 403), must be enrolled (403). An open attempt is always resumed (200, `resumed: true`), even near the end; a finished one gives 409. Then: draft or before `startAt` → 410 "not open yet", after `endAt` → 410 "ended". The attempt's `endsAt` = min(start + durationMin, exam endAt). Two "Start" clicks at once return the same attempt.
+- **Sandbox (`{ "sandbox": true }`):** exam owner or admin only (candidates and other examiners 403). Works in any exam state (also draft), no enrollment needed, lasts `durationMin` from now (not capped by the exam window), and resumes the owner's open preview. Sandbox attempts never appear in counts, enrollments, results, statistics or the monitor, and never create incidents or compensation requests. `DELETE /api/attempts/[id]` removes a sandbox attempt (exam owner only; a real attempt gives 409).
+- **Save:** `accepted: false` (200) means the server already has this or a newer `clientSeq`; just ignore it. Options must belong to that question (`fields.selectedOptionIds`), `mcq_single` max 1, written questions take no options, objective questions store no text. After submit or after `endsAt + 5 s` → 410: go to the submitted screen.
+- **Sync never returns 410:** if the attempt has ended, it answers 200 with every item `reason: "late"` and the current `status` (one `late_sync` incident is logged). Per item: `"stale"` = a newer save exists, `"invalid"` = unknown question or wrong options, `null` = saved. Max 200 items.
+- **Heartbeat** body is ignored. A gap of more than 45 s since the previous heartbeat (server clock) logs an `offline` incident and a **pending** compensation request; extra time is only added after the examiner approves it (Stage 4).
+- **Incidents:** only the 4 browser types are accepted (400 otherwise). Same type within 5 s, finished attempts and sandbox attempts are ignored (still `{ ok: true }`).
+- **Submit** returns the state AFTER auto-grading: an all-objective paper comes back `graded`, a paper with written questions stays `submitted` (score shown after the examiner grades). Calling it again (or after an auto-submit) returns the same `{ status, submittedAt }` with 200.
+- **Auto-submit:** any attempt request (and `/api/me/exams`) closes an attempt whose `endsAt + 5 s` has passed: status `auto_submitted`, `submittedAt` = the deadline.
+- **`AttemptView.totalMarks`** = the marks of THIS candidate's paper (sum of its questions).
+
 ## 8. Monitoring
 
 | Method | URL | Who | Body → data | Errors | Status |

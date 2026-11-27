@@ -9,7 +9,7 @@
 | 3.2 Exam management | Exam CRUD (draft only), derived state, publish-check before publishing | ⏳ |
 | 3.3 Question management | Question bank with topics/difficulty, 3 types, marking schemes, shuffling, frozen snapshots | ⏳ |
 | 3.4 Candidate management | Enrollment by email/search/CSV, dashboard buckets, availability window enforced on the server | ⏳ |
-| 3.5 Exam interface | Server timer, autosave with `clientSeq`, resume, navigator states, auto-submit | ⏳ |
+| 3.5 Exam interface | Server timer, autosave with `clientSeq`, resume, navigator states, auto-submit | ✅ backend |
 | 3.6 Monitoring | Monitor view (5 s polling), incidents as indicators, announcements | ⏳ |
 | 3.7 Grading | Auto-grading from snapshot, manual written grading with validation, score recompute | ⏳ |
 | 3.8 Results & analytics | Controlled publish, own results only, stats/distribution/question stats | ⏳ |
@@ -29,6 +29,11 @@
 10. **Verification privacy** → the public page shows initials, exam, score and date only.
 11. **Showing correct answers** → candidates see correct options only after results are published.
 12. **Candidates who never started** → results can still be published; they appear as "not started".
+13. **Partial multi-select: "selecting everything scores 0" vs the formula** → the plan gives both `marks × max(0, (right − wrong) ÷ totalCorrect)` and "selecting everything scores 0". They disagree when most options are correct (3 of 4 correct, tick all 4 → formula gives 2/3 of the marks). We apply both literally: ticking every option scores 0, otherwise the formula. This stops "tick everything" from ever earning marks. Code: `backend/lib/grading.ts`.
+14. **When is an attempt "graded"?** → an all-objective paper is graded automatically at submit, so it becomes `graded` immediately. A paper with written questions stays `submitted` / `auto_submitted` with no score until the examiner grades every written answer.
+15. **Offline answers that arrive after the deadline** → the client's own timestamps are never trusted, so we cannot prove an answer was written in time. Sync after the deadline + 5 s marks every item `late` (not saved) and logs one `late_sync` incident for the examiner to see.
+16. **Sandbox attempts** → stored in the same tables (flag `is_sandbox`), so preview uses exactly the real exam code, but they are filtered out of every count, enrollment status, result, statistic and the monitor, never create incidents, and can be deleted (reset) by the exam owner. A preview lasts `durationMin` and is not limited by the exam window, so examiners can try a draft or future exam.
+17. **Auto-submit time** → an expired attempt is stored with `submitted_at` = its deadline (not the moment someone noticed), so the record shows when time really ran out.
 
 ## 3. Assumptions & constraints
 - 10-hour build, team of 2, free-tier services only (no paid APIs, per brief §06).
@@ -37,6 +42,8 @@
 - CSV import imports the valid rows and reports the bad ones (no all-or-nothing), so one typo does not block 200 good rows.
 - A draft exam may be incomplete (marks not adding up); the publish-check checklist is what blocks publishing, so examiners can build step by step.
 - Publishing needs the end time in the future, so a finished exam can only come from real time passing (the demo seed in Stage 5 handles this).
+- Auto-submit is "lazy": there is no background job. Any request that touches an expired attempt (workspace, dashboard; later the monitor and results) closes it first. The result is the same as a timer job, with nothing extra to run on Vercel.
+- One real attempt per candidate per exam is guaranteed by the database (partial unique index), not only by code, so double clicks can never create two attempts.
 - _Add more as we build._
 
 ## 4. Database design
@@ -77,7 +84,7 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Vercel | free, one-command deploys |
 
 ## 7. Innovation challenges
-- **5.3 Failure-resilient exams:** _describe outbox + heartbeat + compensation flow and trade-offs._
+- **5.3 Failure-resilient exams:** (1) every answer is autosaved with a `clientSeq`; the database function `save_answer()` keeps only the newest, so retries and out-of-order requests are harmless. (2) While offline, the browser keeps changes in an outbox and replays them through `POST /sync` when it reconnects; answers that arrive after the deadline + 5 s are refused (`late`) because device clocks are not trusted. (3) The workspace sends a heartbeat every 15 s. If the server sees a gap of more than 45 s between two heartbeats (server timestamps only), it records an `offline` incident and a **pending** compensation request with the measured gap. (4) The examiner approves or rejects it in the monitor (Stage 4); approved time is added to `compensation_sec`, capped at 10 minutes. Refreshing or changing device never loses time: the deadline is stored on the server. **Trade-offs:** no automatic extra time (prevents abuse by unplugging on purpose), at most 45 s of an outage goes unnoticed, and a human must approve.
 - **5.2 Fairness of randomized exams:** _describe blueprint + paper difficulty + deviation and trade-offs._
 
 ## 8. Design → code map
@@ -101,4 +108,17 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Enrollment + candidate search (3.4) | `handlers/candidates.ts`, `handlers/exams/[id]/enrollments*` -> `services/enrollment.service.ts` -> `data/enrollments.ts` |
 | Candidate dashboard buckets, availability window (3.4) | `handlers/me/exams.ts` -> `services/my-exams.service.ts` -> `data/enrollments.ts`, `data/attempts.ts` |
 | Bulk CSV import with validation and row errors (4.4) | `handlers/import/*` -> `services/import.service.ts`; CSV limits + header check in `lib/csv.ts` |
+| Start attempt: enrollment, window, resume, one real attempt per candidate (3.4, 3.5) | `handlers/exams/[id]/attempts.ts` -> `services/attempt.service.ts` (`startAttempt`) -> `data/attempts.ts`; unique index `attempts_one_real_per_candidate` in `db/schema.sql` |
+| Paper building: blueprint sampling, shuffling, frozen snapshot (3.3, 5.2, data integrity) | `lib/paper.ts` (`buildPaper`), `lib/shuffle.ts`; stored in `attempt_questions.snapshot` via `data/attempts.ts` (`insertPaper`) |
+| Workspace view, never exposes correctness (3.5) | `handlers/attempts/[id].ts` -> `services/attempt.service.ts` (`getAttemptView`, dedicated mapper) |
+| Server timer, 5 s grace, lazy auto-submit (3.5, data integrity) | `lib/time.ts` (`effectiveEnd`, `isExpired`), `services/attempt.service.ts` (`finalizeIfExpired`, `assertOpen`); also called by `services/my-exams.service.ts` |
+| Autosave, newest-wins, offline outbox sync (3.5, 5.3) | `handlers/attempts/[id]/answers/[aqId].ts`, `handlers/attempts/[id]/sync.ts` -> `services/answer.service.ts` -> `data/answers.ts` (`save_answer()` SQL function) |
+| Idempotent submit (no duplicate submissions) | `handlers/attempts/[id]/submit.ts` -> `services/attempt.service.ts` (`submitAttempt`, conditional update in `data/attempts.ts` `finishAttempt`) |
+| Auto-grading incl. multi-select schemes (3.7) | pure rules `lib/grading.ts` (`gradeQuestion`, `attemptScore`) applied by `services/grading.service.ts` (reads snapshots only) |
+| Heartbeat outage detection + compensation requests (5.3) | `handlers/attempts/[id]/heartbeat.ts` -> `services/heartbeat.service.ts` -> `data/attempts.ts` (`touchHeartbeat`, race-safe) + `data/monitoring.ts` |
+| Incidents as indicators only (3.6) | `handlers/attempts/[id]/incidents.ts` -> `services/heartbeat.service.ts` (`reportIncident`, 5 s duplicate filter) -> `data/monitoring.ts` |
+| Digital scratchpad (4.8) | `handlers/attempts/[id]/scratchpad.ts` -> `services/answer.service.ts` -> `data/answers.ts`; size rules in `shared/validation.ts` |
+| Examination sandbox (4.3) | `startAttempt(..., sandbox)` + `deleteSandboxAttempt` in `services/attempt.service.ts`; `is_sandbox` filters in `data/exams.ts`, `data/enrollments.ts`, `data/attempts.ts` |
+| Customizable workspace preferences (4.7) | `handlers/me/preferences.ts` -> `services/users.service.ts` (`updateMyPreferences`) -> `data/users.ts` |
+| Stage 4 stubs (frontend can build now) | `handlers/exams/[id]/{monitor,announcements,grading,results,analytics}.ts`, `handlers/{incidents,compensations,attempt-questions,me/results,verify}/*` with `lib/mock.ts` |
 | _remaining rows: fill in as features land_ | |
