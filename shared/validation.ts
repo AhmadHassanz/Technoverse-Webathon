@@ -230,7 +230,7 @@ export const scratchpadSchema = z.object({
 /** PATCH /api/me/preferences: any subset; unknown keys are dropped; at least one key is required. */
 export const preferencesSchema = z
   .object({
-    theme: z.enum(["light", "dark", "contrast"], "Theme must be light, dark or contrast").optional(),
+    theme: z.enum(["light", "dark", "contrast", "sepia", "ocean", "forest", "midnight"], "Pick one of the available themes").optional(),
     fontScale: z.enum(["sm", "md", "lg"], "Font size must be sm, md or lg").optional(),
     navigatorSide: z.enum(["left", "right"], "Navigator side must be left or right").optional(),
     layout: z.enum(["single", "scroll"], "Layout must be single or scroll").optional(),

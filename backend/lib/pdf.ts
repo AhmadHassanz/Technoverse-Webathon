@@ -16,14 +16,21 @@ export function latin1(input: string): string {
     .replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
 }
 
+// Same warm charcoal and paper tones as the website ("Quiet Signal" design).
 export const colors = {
-  text: rgb(0.1, 0.12, 0.16),
-  muted: rgb(0.4, 0.43, 0.5),
-  line: rgb(0.82, 0.84, 0.88),
-  head: rgb(0.93, 0.94, 0.97),
-  good: rgb(0.1, 0.5, 0.25),
-  bad: rgb(0.75, 0.15, 0.15),
-  accent: rgb(0.15, 0.3, 0.75),
+  text: rgb(0.106, 0.098, 0.094), // ink #1b1918
+  muted: rgb(0.42, 0.4, 0.38),
+  line: rgb(0.89, 0.87, 0.84),
+  head: rgb(0.945, 0.933, 0.91), // table header fill
+  zebra: rgb(0.978, 0.973, 0.962), // every second table row
+  good: rgb(0.1, 0.45, 0.25),
+  goodSoft: rgb(0.89, 0.95, 0.91),
+  bad: rgb(0.7, 0.16, 0.14),
+  badSoft: rgb(0.98, 0.9, 0.88),
+  accent: rgb(0.106, 0.098, 0.094),
+  night: rgb(0.122, 0.118, 0.11), // charcoal header bar
+  onNight: rgb(0.99, 0.99, 0.98),
+  nightMute: rgb(0.65, 0.63, 0.6),
 };
 
 type TextOptions = { size?: number; bold?: boolean; color?: RGB; x?: number; width?: number };
@@ -33,6 +40,7 @@ const PAGE_W = 595.28;
 const PAGE_H = 841.89;
 const MARGIN = 48;
 const LINE = 1.3; // line height = size * LINE
+const BAR_H = 34; // charcoal header bar at the top of every page
 
 /** Split text into lines no wider than maxWidth (long words are broken by characters). */
 function wrapLines(font: PDFFont, size: number, text: string, maxWidth: number): string[] {
@@ -70,20 +78,49 @@ export class PdfWriter {
     private doc: PDFDocument,
     private font: PDFFont,
     private bold: PDFFont,
+    private label: string,
   ) {
     this.newPage();
   }
 
-  static async create(title: string): Promise<PdfWriter> {
+  /** `label` is shown at the right of the header bar (for example "Result report"). */
+  static async create(title: string, label = ""): Promise<PdfWriter> {
     const doc = await PDFDocument.create();
     doc.setTitle(latin1(title));
     doc.setCreator("ExamCore");
-    return new PdfWriter(doc, await doc.embedFont(StandardFonts.Helvetica), await doc.embedFont(StandardFonts.HelveticaBold));
+    return new PdfWriter(doc, await doc.embedFont(StandardFonts.Helvetica), await doc.embedFont(StandardFonts.HelveticaBold), latin1(label));
   }
 
   private newPage() {
     this.page = this.doc.addPage([PAGE_W, PAGE_H]);
-    this.y = PAGE_H - MARGIN;
+    // Charcoal bar with the ExamCore mark (four squares, the last one faded) and the report type.
+    this.page.drawRectangle({ x: 0, y: PAGE_H - BAR_H, width: PAGE_W, height: BAR_H, color: colors.night });
+    const sq = 6;
+    const top = PAGE_H - BAR_H / 2 + sq + 1;
+    const squares: [number, number, number][] = [[0, 0, 1], [sq + 2, 0, 1], [0, sq + 2, 1], [sq + 2, sq + 2, 0.35]];
+    for (const [dx, dy, op] of squares) {
+      this.page.drawRectangle({ x: MARGIN + dx, y: top - sq - dy, width: sq, height: sq, color: colors.onNight, opacity: op });
+    }
+    this.page.drawText("examcore", { x: MARGIN + 22, y: PAGE_H - BAR_H / 2 - 4, size: 13, font: this.bold, color: colors.onNight });
+    if (this.label) {
+      const w = this.font.widthOfTextAtSize(this.label, 9);
+      this.page.drawText(this.label, { x: PAGE_W - MARGIN - w, y: PAGE_H - BAR_H / 2 - 3, size: 9, font: this.font, color: colors.nightMute });
+    }
+    this.y = PAGE_H - BAR_H - 34;
+  }
+
+  /** A tinted box with a coloured edge, for the score and pass / fail result. */
+  callout(lines: { text: string; size: number; bold?: boolean; color?: RGB }[], tint: RGB, bar: RGB) {
+    const height = lines.reduce((sum, l) => sum + l.size * LINE, 0) + 18;
+    this.ensure(height + 4);
+    this.page.drawRectangle({ x: MARGIN, y: this.y - height, width: this.contentWidth, height, color: tint });
+    this.page.drawRectangle({ x: MARGIN, y: this.y - height, width: 4, height, color: bar });
+    let y = this.y - 9;
+    for (const l of lines) {
+      y -= l.size * LINE;
+      this.page.drawText(latin1(l.text), { x: MARGIN + 16, y: y + 3, size: l.size, font: l.bold ? this.bold : this.font, color: l.color ?? colors.text });
+    }
+    this.y -= height + 4;
   }
 
   /** Start a new page when fewer than `height` points are left. */
@@ -152,10 +189,12 @@ export class PdfWriter {
   /** Adds "Page x of y" to every page and returns the file. */
   async save(): Promise<Uint8Array> {
     const pages = this.doc.getPages();
+    const generatedOn = new Date().toISOString().slice(0, 16).replace("T", " ") + " UTC";
     pages.forEach((p, i) => {
       const label = `Page ${i + 1} of ${pages.length}`;
       p.drawText(label, { x: PAGE_W - MARGIN - this.font.widthOfTextAtSize(label, 8), y: 24, size: 8, font: this.font, color: colors.muted });
-      p.drawText("ExamCore - Secure Examination Management System", { x: MARGIN, y: 24, size: 8, font: this.font, color: colors.muted });
+      p.drawLine({ start: { x: MARGIN, y: 38 }, end: { x: PAGE_W - MARGIN, y: 38 }, thickness: 0.5, color: colors.line });
+      p.drawText(`ExamCore - Secure Examination Management System   |   Generated ${generatedOn}`, { x: MARGIN, y: 24, size: 8, font: this.font, color: colors.muted });
     });
     return this.doc.save();
   }

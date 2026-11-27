@@ -44,7 +44,7 @@ export type CompensationStatus = "pending" | "approved" | "rejected";
 // ============================================================
 
 export type Preferences = {
-  theme: "light" | "dark" | "contrast";
+  theme: "light" | "dark" | "contrast" | "sepia" | "ocean" | "forest" | "midnight";
   fontScale: "sm" | "md" | "lg";
   navigatorSide: "left" | "right";
   layout: "single" | "scroll"; // one question at a time, or all questions in one scroll

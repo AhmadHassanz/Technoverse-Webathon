@@ -18,7 +18,14 @@ import { getResults } from "@/backend/services/results.service";
 import type { Me, VerifyResult } from "@/shared/types";
 
 const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
-const when = (iso: string) => `${new Date(iso).toISOString().slice(0, 16).replace("T", " ")} UTC`;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "27 Nov 2026, 08:05 UTC" */
+const when = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${d.toISOString().slice(11, 16)} UTC`;
+};
+const capital = (s: string) => s.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+const clip = (s: string, max: number) => (s.length > max ? `${s.slice(0, max).trimEnd()}...` : s);
 
 /** The attempt's code; creates it if missing. Two requests at once end up with the same code. */
 async function getOrCreateCode(attemptId: string): Promise<string> {
@@ -89,23 +96,31 @@ export async function buildAttemptReport(user: Me, attemptId: string, origin: st
   const passed = attempt.score >= exam.passMarks;
   const code = published ? await getOrCreateCode(attempt.id) : null; // no code before publishing
 
-  const pdf = await PdfWriter.create(`Result report - ${exam.title}`);
-  pdf.paragraph("Result report", { size: 20, bold: true, color: colors.accent });
-  pdf.paragraph(exam.title, { size: 13, bold: true });
-  pdf.space(6);
+  const pdf = await PdfWriter.create(`Result report - ${exam.title}`, "Result report");
+  pdf.paragraph(exam.title, { size: 20, bold: true, color: colors.accent });
+  pdf.paragraph("Candidate result report", { size: 11, color: colors.muted });
+  pdf.space(8);
   pdf.rule();
   const info: [string, string][] = [
     ["Candidate", `${profile?.full_name ?? ""} (${profile?.email ?? ""})`],
     ["Submitted", attempt.submittedAt ? when(attempt.submittedAt) : "-"],
-    ["Attempt status", attempt.status],
+    ["Attempt status", capital(attempt.status)],
   ];
   for (const [label, value] of info) {
     pdf.row([{ text: label, x: pdf.left, width: 110, bold: true, color: colors.muted }, { text: value, x: pdf.left + 110, width: pdf.contentWidth - 110 }], { size: 10 });
   }
-  pdf.space(10);
-  pdf.paragraph(`Score: ${attempt.score} / ${total}   (${percentage}%)`, { size: 16, bold: true });
-  pdf.paragraph(passed ? `PASSED (pass marks: ${exam.passMarks})` : `NOT PASSED (pass marks: ${exam.passMarks})`, { size: 12, bold: true, color: passed ? colors.good : colors.bad });
   pdf.space(12);
+  pdf.callout(
+    [
+      { text: `Score: ${attempt.score} / ${total}   (${percentage}%)`, size: 18, bold: true },
+      { text: passed ? `PASSED (pass marks: ${exam.passMarks})` : `NOT PASSED (pass marks: ${exam.passMarks})`, size: 11, bold: true, color: passed ? colors.good : colors.bad },
+    ],
+    passed ? colors.goodSoft : colors.badSoft,
+    passed ? colors.good : colors.bad,
+  );
+  pdf.space(14);
+  pdf.paragraph("Answers by question", { size: 12, bold: true });
+  pdf.space(3);
 
   // per-question table
   const cols = { n: 24, q: 175, mine: 120, right: 120, marks: 60 };
@@ -120,7 +135,9 @@ export async function buildAttemptReport(user: Me, attemptId: string, origin: st
     ],
     { fill: colors.head },
   );
+  let n = 0;
   for (const q of paper) {
+    const zebra = n++ % 2 === 1 ? { fill: colors.zebra } : {};
     const a = answerOf.get(q.aqId);
     const written = q.snapshot.type === "written";
     const labels = (ids: string[]) => q.snapshot.options.filter((o) => ids.includes(o.id)).map((o) => o.label).join(", ");
@@ -129,12 +146,12 @@ export async function buildAttemptReport(user: Me, attemptId: string, origin: st
     const awarded = q.marksAwarded ?? 0;
     pdf.row([
       { text: String(q.position), x: x.n, width: cols.n },
-      { text: q.snapshot.stem, x: x.q, width: cols.q },
-      { text: mine.length > 300 ? `${mine.slice(0, 300)}...` : mine, x: x.mine, width: cols.mine },
-      { text: right, x: x.right, width: cols.right },
-      { text: `${awarded} / ${q.snapshot.marks}`, x: x.marks, width: cols.marks, color: awarded > 0 ? colors.good : awarded < 0 ? colors.bad : colors.text },
-    ]);
-    if (written && q.feedback) pdf.row([{ text: "", x: x.n, width: cols.n }, { text: `Feedback: ${q.feedback}`, x: x.q, width: pdf.contentWidth - cols.n, color: colors.muted }], { size: 8 });
+      { text: clip(q.snapshot.stem, 220), x: x.q, width: cols.q }, // very long questions are shortened so no page is left half empty
+      { text: clip(mine, 220), x: x.mine, width: cols.mine },
+      { text: clip(right, 220), x: x.right, width: cols.right },
+      { text: `${awarded} / ${q.snapshot.marks}`, x: x.marks, width: cols.marks, bold: true, color: awarded > 0 ? colors.good : awarded < 0 ? colors.bad : colors.text },
+    ], zebra);
+    if (written && q.feedback) pdf.row([{ text: "", x: x.n, width: cols.n }, { text: `Feedback: ${clip(q.feedback, 300)}`, x: x.q, width: pdf.contentWidth - cols.n, color: colors.muted }], { size: 8, ...zebra });
   }
 
   // verification block
@@ -143,6 +160,7 @@ export async function buildAttemptReport(user: Me, attemptId: string, origin: st
   if (code) {
     const url = `${origin}/verify/${code}`;
     const png = await QRCode.toBuffer(url, { type: "png", margin: 1, width: 240 });
+    pdf.rule();
     pdf.paragraph("Verify this report", { size: 12, bold: true });
     pdf.paragraph("Scan the QR code or open the link and enter the code. The page shows the exam, initials, score and date.", { size: 9, color: colors.muted });
     pdf.space(4);
@@ -162,9 +180,10 @@ export async function buildAttemptReport(user: Me, attemptId: string, origin: st
 export async function buildExamReport(user: Me, examId: string): Promise<{ bytes: Uint8Array; filename: string }> {
   const { exam, stats, rows } = await getResults(user, examId); // owner check + 404/403 inside
 
-  const pdf = await PdfWriter.create(`Exam report - ${exam.title}`);
-  pdf.paragraph("Exam report", { size: 20, bold: true, color: colors.accent });
-  pdf.paragraph(exam.title, { size: 13, bold: true });
+  const pdf = await PdfWriter.create(`Exam report - ${exam.title}`, "Exam report");
+  pdf.paragraph(exam.title, { size: 20, bold: true, color: colors.accent });
+  pdf.paragraph("Exam report for the examiner", { size: 11, color: colors.muted });
+  pdf.space(2);
   pdf.paragraph(`${when(exam.startAt)}  to  ${when(exam.endAt)}   |   ${exam.durationMin} min   |   total ${exam.totalMarks}, pass ${exam.passMarks}`, { size: 9, color: colors.muted });
   pdf.paragraph(exam.resultsPublishedAt ? `Results published ${when(exam.resultsPublishedAt)}` : "Results not published yet", { size: 9, color: colors.muted });
   pdf.space(6);
@@ -201,15 +220,17 @@ export async function buildExamReport(user: Me, examId: string): Promise<{ bytes
     { fill: colors.head },
   );
   if (rows.length === 0) pdf.paragraph("No attempts yet.", { size: 10, color: colors.muted });
+  let n = 0;
   for (const r of rows) {
+    const zebra = n++ % 2 === 1 ? { fill: colors.zebra } : {};
     pdf.row([
       { text: r.candidateName, x: x.name, width: c.name },
       { text: r.email, x: x.email, width: c.email },
-      { text: r.status.replace("_", " "), x: x.status, width: c.status },
+      { text: capital(r.status), x: x.status, width: c.status },
       { text: r.score === null ? "-" : String(r.score), x: x.score, width: c.score },
       { text: r.percentage === null ? "-" : `${r.percentage}%`, x: x.pct, width: c.pct },
       { text: r.passed === null ? "-" : r.passed ? "Pass" : "Fail", x: x.res, width: c.res, color: r.passed === null ? colors.muted : r.passed ? colors.good : colors.bad, bold: true },
-    ]);
+    ], zebra);
   }
 
   return { bytes: await pdf.save(), filename: `exam-report-${exam.title.replace(/\s+/g, "-").replace(/[^A-Za-z0-9._-]/g, "").slice(0, 60) || "exam"}.pdf` };

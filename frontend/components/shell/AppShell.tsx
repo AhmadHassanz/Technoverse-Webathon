@@ -10,18 +10,16 @@ import {
   Library,
   LogOut,
   Menu,
-  Moon,
   PlusCircle,
   ShieldCheck,
-  Sun,
   Trophy,
   Users,
   X,
   type LucideIcon,
-  Contrast,
 } from "lucide-react";
 import { cn } from "@/frontend/lib/utils";
 import { useAuth } from "@/frontend/lib/auth";
+import { ThemePicker } from "@/frontend/components/shell/ThemePicker";
 import type { Role } from "@/shared/types";
 
 type NavItem = {
@@ -209,36 +207,6 @@ function SidebarContent({
   );
 }
 
-const THEMES = [
-  { value: "light", label: "Light theme", Icon: Sun },
-  { value: "dark", label: "Dark theme", Icon: Moon },
-  { value: "contrast", label: "High contrast theme", Icon: Contrast },
-] as const;
-
-/** Light / dark / high contrast for every role. Applies at once, then saves to the account. */
-function ThemeToggle() {
-  const { me, updatePreferences } = useAuth();
-  const current = me?.preferences.theme ?? "light";
-  return (
-    <div role="radiogroup" aria-label="Theme" className="flex items-center gap-0.5 rounded-full border border-line bg-surface p-0.5">
-      {THEMES.map(({ value, label, Icon }) => (
-        <button
-          key={value}
-          type="button"
-          role="radio"
-          aria-checked={current === value}
-          aria-label={label}
-          title={label}
-          onClick={() => void updatePreferences({ theme: value }).catch(() => undefined)}
-          className={`flex size-8 items-center justify-center rounded-full transition-colors ${current === value ? "bg-ink text-parchment" : "text-mute hover:text-ink"}`}
-        >
-          <Icon className="size-4" />
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function AppShell({ role, children }: { role: Role; children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -292,7 +260,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             </div>
           </div>
           <div className="flex items-center gap-2.5">
-            <ThemeToggle />
+            <ThemePicker />
             <span
               className="flex size-9 items-center justify-center rounded-full bg-night text-[0.6875rem] font-medium text-lime md:hidden"
               aria-hidden

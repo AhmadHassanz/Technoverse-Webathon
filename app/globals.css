@@ -173,6 +173,164 @@
   color-scheme: dark;
 }
 
+/* ---------- More themes (picked from the theme menu). Anything not set here falls back to the light tokens. ---------- */
+
+/* Sepia: warm paper and brown ink, easy on the eyes for long reading. */
+[data-theme="sepia"] {
+  --parchment: #f4ecd8;
+  --surface: #fbf6e9;
+  --paper: #efe5cc;
+  --ink: #3b2f22;
+  --mute: #6f5f4b;
+  --cobalt: #9a4a22;
+  --cobalt-deep: #7c3a19;
+  --on-cobalt: #fffaf0;
+  --accent-ink: #9a4a22;
+  --line: #e0d3b6;
+  --line-soft: #e9dfc6;
+  --line-strong: #cdbd99;
+  --tint: #f2e0c8;
+  --tint-strong: #ead0ac;
+  --sand: #ede3c8;
+  --lavender: #efe0d0;
+  --lavender-ink: #8a4a2b;
+  --sky: #dfe9e2;
+  --sky-ink: #2f6354;
+  --overlay: rgba(59, 47, 34, 0.45);
+  --night: #2e251b;
+  --night-2: #3a2f23;
+  --night-line: #4a3d2e;
+  --night-mute: #b5a58c;
+  --lime: #fbf6e9;
+  --on-lime: #3b2f22;
+  --pixel: #a08f72;
+  --shadow-card-v: 0 1px 2px rgb(59 47 34 / 0.06), 0 8px 24px -16px rgb(59 47 34 / 0.18);
+  --shadow-pop-v: 0 2px 6px rgb(59 47 34 / 0.08), 0 28px 64px -28px rgb(59 47 34 / 0.38);
+  --shadow-glow-v: 0 10px 30px -12px rgb(59 47 34 / 0.4);
+  color-scheme: light;
+}
+
+/* Ocean: cool white and a confident blue. */
+[data-theme="ocean"] {
+  --parchment: #f1f6fb;
+  --surface: #ffffff;
+  --paper: #e8f0f8;
+  --ink: #10263b;
+  --mute: #546a82;
+  --cobalt: #1f5fbf;
+  --cobalt-deep: #174a96;
+  --on-cobalt: #ffffff;
+  --accent-ink: #1f5fbf;
+  --line: #d9e4ef;
+  --line-soft: #e5edf5;
+  --line-strong: #bccbdb;
+  --tint: #e1ecfb;
+  --tint-strong: #cfdff6;
+  --sand: #e8eff7;
+  --lavender: #e4e9fb;
+  --lavender-ink: #3b4fb0;
+  --sky: #d7ecf8;
+  --sky-ink: #17608a;
+  --overlay: rgba(16, 38, 59, 0.45);
+  --night: #10263b;
+  --night-2: #17334d;
+  --night-line: #2a4a68;
+  --night-mute: #9fb6cc;
+  --lime: #ffffff;
+  --on-lime: #10263b;
+  --pixel: #7f97b0;
+  --shadow-card-v: 0 1px 2px rgb(16 38 59 / 0.05), 0 8px 24px -16px rgb(16 38 59 / 0.16);
+  --shadow-pop-v: 0 2px 6px rgb(16 38 59 / 0.07), 0 28px 64px -28px rgb(16 38 59 / 0.34);
+  --shadow-glow-v: 0 10px 30px -12px rgb(31 95 191 / 0.4);
+  color-scheme: light;
+}
+
+/* Forest: deep green dark theme with a fresh mint accent. */
+[data-theme="forest"] {
+  --parchment: #0f1a14;
+  --surface: #15231b;
+  --paper: #1a2b21;
+  --ink: #e6f1e9;
+  --mute: #9db5a5;
+  --cobalt: #6fcf97;
+  --cobalt-deep: #8fe0ae;
+  --on-cobalt: #08150e;
+  --accent-ink: #8fe0ae;
+  --line: #26382d;
+  --line-soft: #1e2f25;
+  --line-strong: #365042;
+  --tint: #1d3a2a;
+  --tint-strong: #26503a;
+  --sand: #1a2b21;
+  --danger: #f09a90;
+  --danger-deep: #f6b6ae;
+  --on-danger: #2a0f0c;
+  --danger-soft: #3b201c;
+  --warning: #f2c08a;
+  --warning-soft: #3a2a17;
+  --success: #94d3ae;
+  --success-soft: #1d3326;
+  --lavender: #232f3d;
+  --lavender-ink: #b9cdf0;
+  --sky: #16323a;
+  --sky-ink: #a5d6f2;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --night: #0a120d;
+  --night-2: #101b14;
+  --night-line: #22352a;
+  --night-mute: #9db5a5;
+  --lime: #6fcf97;
+  --on-lime: #08150e;
+  --pixel: #5f7a69;
+  --shadow-card-v: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-pop-v: 0 24px 60px -24px rgb(0 0 0 / 0.7);
+  --shadow-glow-v: 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* Midnight: navy dark theme with a soft blue accent. */
+[data-theme="midnight"] {
+  --parchment: #0c1222;
+  --surface: #121a30;
+  --paper: #172038;
+  --ink: #e8ecf8;
+  --mute: #9aa6c4;
+  --cobalt: #7aa2ff;
+  --cobalt-deep: #9db9ff;
+  --on-cobalt: #091024;
+  --accent-ink: #9db9ff;
+  --line: #263250;
+  --line-soft: #1c2640;
+  --line-strong: #36456b;
+  --tint: #1b2850;
+  --tint-strong: #243569;
+  --sand: #162038;
+  --danger: #f09a90;
+  --danger-deep: #f6b6ae;
+  --on-danger: #2a0f0c;
+  --danger-soft: #3b201c;
+  --warning: #f2c08a;
+  --warning-soft: #3a2a17;
+  --success: #94d3ae;
+  --success-soft: #1d3326;
+  --lavender: #241f4a;
+  --lavender-ink: #cfc6ff;
+  --sky: #12304a;
+  --sky-ink: #a5d6f2;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --night: #080d1a;
+  --night-2: #0e1527;
+  --night-line: #232e4b;
+  --night-mute: #9aa6c4;
+  --lime: #7aa2ff;
+  --on-lime: #091024;
+  --pixel: #5a6a94;
+  --shadow-card-v: 0 1px 2px rgb(0 0 0 / 0.35);
+  --shadow-pop-v: 0 24px 60px -24px rgb(0 0 0 / 0.75);
+  --shadow-glow-v: 0 10px 30px -12px rgb(122 162 255 / 0.35);
+  color-scheme: dark;
+}
+
 /* High contrast: black background, white text, yellow accent, 2 px borders. */
 [data-theme="contrast"] {
   --parchment: #060606;

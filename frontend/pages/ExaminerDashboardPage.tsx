@@ -88,7 +88,7 @@ export default function ExaminerDashboardPage() {
           <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <h2 className="display text-[1.25rem] tracking-[-0.025em]">Your examinations</h2>
-              <span className="num rounded-full bg-sand px-2 py-0.5 text-[0.6875rem] text-mute">{shown.length}</span>
+              <span className="num rounded-full bg-sand px-2 py-0.5 text-[0.6875rem] text-mute">{matching.length}</span>
             </div>
             <div className="w-full sm:w-48">
               <label htmlFor="state-filter" className="sr-only">

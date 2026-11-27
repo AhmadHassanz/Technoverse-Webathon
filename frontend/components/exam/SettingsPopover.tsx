@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/frontend/lib/utils";
+import { THEME_OPTIONS } from "@/frontend/lib/themes";
+import { ThemeSwatch } from "@/frontend/components/shell/ThemePicker";
 import type { Preferences } from "@/shared/types";
 
 const SHORTCUTS: [string, string][] = [
@@ -87,16 +89,27 @@ export function SettingsPopover({
         </button>
       </div>
       <div className="mt-4 space-y-4">
-        <Segmented
-          label="Theme"
-          value={prefs.theme}
-          onChange={(v) => onChange({ theme: v })}
-          options={[
-            { value: "light", label: "Light" },
-            { value: "dark", label: "Dark" },
-            { value: "contrast", label: "Contrast" },
-          ]}
-        />
+        <div>
+          <p className="meta-label">Theme</p>
+          <div role="radiogroup" aria-label="Theme" className="mt-2 grid grid-cols-2 gap-2">
+            {THEME_OPTIONS.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                role="radio"
+                aria-checked={prefs.theme === t.value}
+                onClick={() => onChange({ theme: t.value })}
+                className={cn(
+                  "flex items-center gap-2 rounded-md border p-1.5 pr-2 text-left text-[0.8125rem]",
+                  prefs.theme === t.value ? "border-ink bg-sand font-medium text-ink" : "border-line text-mute hover:text-ink",
+                )}
+              >
+                <ThemeSwatch swatch={t.swatch} className="size-7 rounded-[7px]" />
+                <span className="min-w-0 truncate">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <Segmented
           label="Text size"
           value={prefs.fontScale}
