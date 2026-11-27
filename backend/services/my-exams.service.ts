@@ -2,6 +2,7 @@
 import { listEnrolledExams, type EnrolledExam } from "@/backend/data/enrollments";
 import { realAttemptsByExam, type AttemptSummary } from "@/backend/data/attempts";
 import { effectiveEnd } from "@/backend/lib/time";
+import { finalizeIfExpired } from "@/backend/services/attempt.service";
 import type { CandidateExam, Me, MyExams } from "@/shared/types";
 
 const FINISHED = ["submitted", "auto_submitted", "graded"];
@@ -38,6 +39,11 @@ function toCandidateExam(e: EnrolledExam, a: AttemptSummary | undefined, canStar
 export async function getMyExams(user: Me): Promise<MyExams> {
   const exams = await listEnrolledExams(user.id);
   const attempts = await realAttemptsByExam(user.id, exams.map((e) => e.examId));
+  // Close any attempt whose time ran out, so "completed" and attempt.status are right.
+  const now = new Date();
+  await Promise.all(
+    [...attempts.values()].map(async (a) => attempts.set(a.examId, await finalizeIfExpired(a, now))),
+  );
   const result: MyExams = { available: [], upcoming: [], completed: [] };
 
   for (const e of exams) {
