@@ -8,7 +8,8 @@ export function ok<T>(data: T, status = 200) {
   return Response.json({ data } satisfies ApiSuccess<T>, { status });
 }
 
-/** Send an error response: { error: "message" } */
-export function fail(message: string, status = 400) {
-  return Response.json({ error: message } satisfies ApiError, { status });
+/** Send an error response: { error: "message", fields?: { input: "message" } } */
+export function fail(message: string, status = 400, fields?: Record<string, string>) {
+  const body: ApiError = fields ? { error: message, fields } : { error: message };
+  return Response.json(body, { status });
 }
