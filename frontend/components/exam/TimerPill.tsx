@@ -13,22 +13,23 @@ export function TimerPill({ remainingMs, compact }: { remainingMs: number; compa
   return (
     <div
       className={cn(
-        "rounded-[8px] border",
-        compact ? "px-3 py-1.5" : "px-4 py-2.5",
-        state === "normal" && "border-cobalt bg-cobalt text-on-cobalt",
-        state === "low" && "border-warning bg-warning-soft text-warning",
-        state === "critical" && "border-danger bg-danger text-on-danger",
+        "rounded-[12px] border transition-colors",
+        compact ? "flex items-center gap-2 px-3 py-1.5" : "px-4 py-2",
+        state === "normal" && "border-white/10 bg-white/[0.06] text-white",
+        state === "low" && "border-[#f6c25c]/50 bg-[#f6c25c]/15 text-[#f6c25c]",
+        state === "critical" && "animate-pulse border-[#ff8593] bg-[#ff8593] text-[#2a0a10]",
       )}
       role="timer"
       aria-label={`Time remaining ${mmss(s)}`}
     >
+      {compact && <Icon className={cn("size-4", state === "normal" && "text-lime")} aria-hidden />}
       {!compact && (
-        <p className="flex items-center gap-1.5 text-[0.625rem] uppercase tracking-[0.08em] opacity-85">
-          <Icon className="size-3" aria-hidden />
+        <p className="flex items-center gap-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.1em] opacity-80">
+          <Icon className={cn("size-3", state === "normal" && "text-lime")} aria-hidden />
           {state === "normal" ? "Time remaining" : state === "low" ? "Under 5 minutes" : "Under 1 minute"}
         </p>
       )}
-      <p className={cn("num leading-none", compact ? "text-[1.5rem]" : "mt-1 text-[2rem]")}>{mmss(s)}</p>
+      <p className={cn("num font-medium leading-none tracking-[-0.04em]", compact ? "text-[1.35rem]" : "mt-1 text-[1.75rem]")}>{mmss(s)}</p>
     </div>
   );
 }

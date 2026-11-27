@@ -7,9 +7,8 @@
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Flag, NotebookPen, Settings2, WifiOff, RefreshCw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Flag, GraduationCap, LayoutGrid, NotebookPen, RefreshCw, Send, Settings2, WifiOff } from "lucide-react";
 import { Button, Drawer, EmptyState, ErrorState, Skeleton } from "@/frontend/components/ui";
-import { buttonStyles } from "@/frontend/components/ui/button";
 import { TimerPill } from "@/frontend/components/exam/TimerPill";
 import { SaveStatusPill, type SaveState } from "@/frontend/components/exam/SaveStatusPill";
 import { Navigator, type QState } from "@/frontend/components/exam/Navigator";
@@ -324,7 +323,8 @@ function Workspace({ attemptId }: { attemptId: string }) {
   const navRight = prefs.navigatorSide === "right";
   const phase = remaining < 60000 ? "1 minute left" : remaining < 300000 ? "5 minutes left" : "";
 
-  const toolButton = "inline-flex h-10 items-center gap-1.5 rounded-md bg-sand px-4 text-[0.875rem] font-medium text-cobalt hover:bg-tint";
+  const toolButton = "inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-white/10 bg-white/[0.06] px-3 text-[0.8125rem] font-medium text-white transition-colors hover:bg-white/[0.12]";
+  const progressPct = questions.length ? Math.round((answeredCount / questions.length) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-parchment pb-44 lg:pb-10">
@@ -339,18 +339,28 @@ function Workspace({ attemptId }: { attemptId: string }) {
         />
       )}
 
-      <header className="sticky top-0 z-40 border-b border-line bg-surface">
+      <header className="sticky top-0 z-40 border-b border-night-line bg-night text-white shadow-[0_10px_30px_-20px_rgb(0_0_0/0.6)]">
         {/* desktop */}
-        <div className="mx-auto hidden max-w-[1440px] items-center gap-6 px-8 py-3.5 lg:flex">
+        <div className="mx-auto hidden max-w-[1440px] items-center gap-5 px-8 py-3 lg:flex">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-lime text-on-lime">
+            <GraduationCap className="size-5" strokeWidth={2.2} />
+          </span>
           <div className="min-w-0 flex-1">
-            <p className="display text-[1.5rem] leading-none text-cobalt">ExamCore</p>
-            <p className="mt-2 truncate text-[1.125rem] text-ink" title={view.examTitle}>
+            <p className="truncate text-[1.0625rem] font-semibold tracking-[-0.01em]" title={view.examTitle}>
               {view.examTitle}
             </p>
+            <div className="mt-1.5 flex items-center gap-3">
+              <div className="h-1.5 w-40 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${progressPct}%` }} />
+              </div>
+              <span className="num text-[0.75rem] text-night-mute">
+                {answeredCount}/{questions.length} answered
+              </span>
+            </div>
           </div>
+          <SaveStatusPill state={saveState} pending={outbox.count} />
           <TimerPill remainingMs={remaining} />
-          <div className="flex flex-col items-start gap-2">
-            <SaveStatusPill state={saveState} pending={outbox.count} />
+          <div className="flex items-center gap-2">
             <div className="relative flex gap-2">
               <button type="button" className={toolButton} onClick={() => setSettingsAt((o) => (o ? null : "desktop"))} aria-expanded={settingsAt === "desktop"}>
                 <Settings2 className="size-4" /> Settings
@@ -361,20 +371,31 @@ function Workspace({ attemptId }: { attemptId: string }) {
               <SettingsPopover open={settingsAt === "desktop"} onClose={() => setSettingsAt(null)} prefs={prefs} onChange={changePrefs} />
             </div>
           </div>
-          <Button className="ml-4" onClick={() => setSubmitOpen(true)}>
-            Submit exam
-          </Button>
+          <button
+            type="button"
+            onClick={() => setSubmitOpen(true)}
+            className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-lime px-4 text-[0.875rem] font-semibold text-on-lime transition-transform hover:-translate-y-0.5"
+          >
+            Submit exam <Send className="size-4" />
+          </button>
         </div>
         {/* mobile */}
-        <div className="px-4 py-3 lg:hidden">
+        <div className="px-4 pb-3 pt-3 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <TimerPill remainingMs={remaining} compact />
-            <Button size="sm" onClick={() => setSubmitOpen(true)}>
+            <SaveStatusPill compact state={saveState} pending={outbox.count} />
+            <button
+              type="button"
+              onClick={() => setSubmitOpen(true)}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-[10px] bg-lime px-3 text-[0.8125rem] font-semibold text-on-lime"
+            >
               Submit
-            </Button>
+            </button>
           </div>
-          <p className="mt-2 truncate text-[1rem] text-ink">{view.examTitle}</p>
-          <SaveStatusPill className="mt-2" state={saveState} pending={outbox.count} />
+          <p className="mt-2.5 truncate text-[0.9375rem] font-semibold">{view.examTitle}</p>
+          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-lime transition-all" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
       </header>
 
@@ -410,7 +431,7 @@ function Workspace({ attemptId }: { attemptId: string }) {
                 <div
                   key={item.aqId}
                   id={`qcard-${i}`}
-                  className={cn("surface-card scroll-mt-40 p-5 sm:p-9", i === current && "border-cobalt")}
+                  className={cn("surface-card scroll-mt-40 p-5 sm:p-8", i === current && "border-cobalt ring-4 ring-tint")}
                   onFocusCapture={() => setCurrent(i)}
                 >
                   <QuestionView question={item} index={i} total={questions.length} answer={answers[item.aqId] ?? EMPTY} onChange={(p) => change(item, p)} />
@@ -420,7 +441,7 @@ function Workspace({ attemptId }: { attemptId: string }) {
           ) : (
             q && (
               <>
-                <div className="surface-card p-5 sm:p-9">
+                <div key={`card-${q.aqId}`} className="surface-card animate-rise p-5 sm:p-8">
                   <QuestionView
                     key={q.aqId}
                     question={q}
@@ -453,23 +474,23 @@ function Workspace({ attemptId }: { attemptId: string }) {
       </div>
 
       {/* mobile bottom bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-parchment px-4 pb-4 pt-2 lg:hidden">
+      <div className="pad-safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 px-3 pt-2.5 shadow-[0_-12px_30px_-20px_rgb(13_19_36/0.35)] backdrop-blur-xl lg:hidden">
         <div className="grid grid-cols-3 gap-2">
           {q && (
             <button
               type="button"
               aria-pressed={Boolean(answers[q.aqId]?.flagged)}
               onClick={() => change(q, { flagged: !answers[q.aqId]?.flagged })}
-              className={cn("inline-flex h-10 items-center justify-center gap-1.5 rounded-md text-[0.875rem]", answers[q.aqId]?.flagged ? "bg-warning-soft text-warning" : "bg-sand text-cobalt")}
+              className={cn("inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] text-[0.8125rem] font-medium", answers[q.aqId]?.flagged ? "bg-warning-soft text-warning" : "bg-sand text-ink")}
             >
               <Flag className="size-4" /> {answers[q.aqId]?.flagged ? "Flagged" : "Flag"}
             </button>
           )}
-          <button type="button" className="h-10 rounded-md bg-sand text-[0.875rem] text-cobalt" onClick={() => setScratchOpen(true)}>
-            Scratchpad
+          <button type="button" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] bg-sand text-[0.8125rem] font-medium text-ink" onClick={() => setScratchOpen(true)}>
+            <NotebookPen className="size-4" /> Notes
           </button>
-          <button type="button" className="h-10 rounded-md bg-sand text-[0.875rem] text-cobalt" onClick={() => setSettingsAt("mobile")}>
-            Settings
+          <button type="button" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[10px] bg-sand text-[0.8125rem] font-medium text-ink" onClick={() => setSettingsAt("mobile")}>
+            <Settings2 className="size-4" /> Settings
           </button>
         </div>
         {prefs.layout === "single" && (
@@ -486,8 +507,12 @@ function Workspace({ attemptId }: { attemptId: string }) {
             )}
           </div>
         )}
-        <button type="button" onClick={() => setNavOpen(true)} className={cn(buttonStyles({ variant: "secondary" }), "mt-2 w-full")}>
-          Questions · {answeredCount} / {questions.length} answered
+        <button
+          type="button"
+          onClick={() => setNavOpen(true)}
+          className="mt-2 flex h-9 w-full items-center justify-center gap-2 rounded-[10px] text-[0.8125rem] font-medium text-cobalt"
+        >
+          <LayoutGrid className="size-4" /> All questions · {answeredCount}/{questions.length} answered
         </button>
       </div>
 

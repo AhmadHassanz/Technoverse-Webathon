@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag } from "lucide-react";
+import { Check, Flag } from "lucide-react";
 import { cn } from "@/frontend/lib/utils";
 import type { AttemptQuestion } from "@/shared/types";
 
@@ -39,14 +39,17 @@ export function QuestionView({
   return (
     <section aria-labelledby={headingId}>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="eyebrow">
-          Question {index + 1} of {total}
+        <p className="flex items-center gap-2.5">
+          <span className="num flex h-8 min-w-8 items-center justify-center rounded-[10px] bg-night px-2 text-[0.8125rem] font-medium text-lime">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="text-[0.8125rem] font-medium text-mute">of {total}</span>
         </p>
-        <span className="rounded-full bg-tint px-3 py-1 text-[0.6875rem] text-cobalt">
+        <span className="rounded-full bg-tint px-3 py-1 text-[0.6875rem] font-semibold text-cobalt">
           {question.marks} mark{question.marks === 1 ? "" : "s"} · {TYPE_TEXT[question.type]}
         </span>
       </div>
-      <h2 id={headingId} className="mt-5 whitespace-pre-line text-[1.25rem] leading-relaxed text-ink sm:text-[1.35rem]">
+      <h2 id={headingId} className="mt-5 whitespace-pre-line text-[1.2rem] font-medium leading-[1.55] tracking-[-0.01em] text-ink sm:text-[1.35rem]">
         {question.stem}
       </h2>
 
@@ -60,7 +63,7 @@ export function QuestionView({
             value={answer.textAnswer}
             maxLength={MAX_TEXT}
             onChange={(e) => onChange({ textAnswer: e.target.value })}
-            className="mt-2 min-h-56 w-full resize-y rounded-md border border-line bg-paper px-4 py-3 text-[1rem] leading-relaxed text-ink focus:border-cobalt"
+            className="mt-2 min-h-56 w-full resize-y rounded-[14px] border border-line bg-paper px-4 py-3.5 text-[1rem] leading-relaxed text-ink transition-[border-color,box-shadow] focus:border-cobalt focus:shadow-[0_0_0_4px_var(--tint)] focus:outline-none"
           />
           <p className="mt-1 text-right text-xs text-mute">
             <span className="num">{answer.textAnswer.length}</span> / {MAX_TEXT} characters
@@ -69,7 +72,7 @@ export function QuestionView({
       ) : (
         <fieldset className="mt-6">
           <legend className="text-[0.8125rem] text-mute">{multi ? "Select all that apply." : "Select one answer."}</legend>
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-2.5">
             {question.options.map((o, i) => {
               const checked = answer.selectedOptionIds.includes(o.id);
               const inputId = `${idPrefix}-${question.aqId}-${o.id}`;
@@ -78,8 +81,10 @@ export function QuestionView({
                   key={o.id}
                   htmlFor={inputId}
                   className={cn(
-                    "flex cursor-pointer items-center gap-4 rounded-[8px] border px-4 py-4 transition-colors sm:px-5",
-                    checked ? "border-cobalt bg-tint" : "border-line bg-surface hover:border-cobalt/50",
+                    "group flex cursor-pointer items-center gap-4 rounded-[14px] border px-3.5 py-3.5 transition-all has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-tint sm:px-4",
+                    checked
+                      ? "border-cobalt bg-tint shadow-[0_8px_20px_-14px_var(--cobalt)]"
+                      : "border-line bg-surface hover:-translate-y-px hover:border-cobalt/50 hover:shadow-card",
                   )}
                 >
                   <input
@@ -88,12 +93,19 @@ export function QuestionView({
                     name={`${idPrefix}-${question.aqId}`}
                     checked={checked}
                     onChange={() => toggle(o.id)}
-                    className="size-5 shrink-0 cursor-pointer accent-cobalt"
+                    className="sr-only"
                   />
-                  <span className="flex-1 text-[1rem] text-ink">{o.label}</span>
-                  <span className="num text-xs text-mute" aria-hidden>
-                    {String.fromCharCode(65 + i)}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "num flex size-9 shrink-0 items-center justify-center text-[0.875rem] font-semibold transition-colors",
+                      multi ? "rounded-[10px]" : "rounded-full",
+                      checked ? "bg-cobalt text-on-cobalt" : "bg-sand text-mute group-hover:bg-tint group-hover:text-cobalt",
+                    )}
+                  >
+                    {checked ? <Check className="size-4" strokeWidth={3} /> : String.fromCharCode(65 + i)}
                   </span>
+                  <span className="flex-1 text-[1rem] leading-snug text-ink">{o.label}</span>
                 </label>
               );
             })}
@@ -117,8 +129,8 @@ export function QuestionView({
           aria-pressed={answer.flagged}
           onClick={() => onChange({ flagged: !answer.flagged })}
           className={cn(
-            "inline-flex h-11 items-center gap-2 rounded-md border px-5 text-[0.875rem] font-medium transition-colors",
-            answer.flagged ? "border-warning bg-warning-soft text-warning" : "border-transparent bg-sand text-cobalt hover:bg-tint",
+            "inline-flex h-10 items-center gap-2 rounded-[10px] border px-4 text-[0.8125rem] font-semibold transition-colors",
+            answer.flagged ? "border-warning/40 bg-warning-soft text-warning" : "border-line bg-surface text-ink hover:bg-sand",
           )}
         >
           <Flag className="size-4" aria-hidden />
