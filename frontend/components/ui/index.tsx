@@ -162,7 +162,7 @@ export function Card({
   as?: "div" | "section" | "article" | "form";
 }) {
   return (
-    <Tag className={cn("surface-card", className)}>{children}</Tag>
+    <Tag className={cn("surface-card min-w-0", className)}>{children}</Tag>
   );
 }
 

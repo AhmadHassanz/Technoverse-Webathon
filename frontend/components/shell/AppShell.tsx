@@ -288,9 +288,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
               <Logo tone="dark" />
             </span>
             <div className="hidden min-w-0 items-center gap-2 text-[0.8125rem] md:flex">
-              <span className="truncate font-medium text-ink">COMSATS University Lahore</span>
-              <span className="text-line-strong">/</span>
-              <span className="truncate text-mute">{roleLabel[role]}</span>
+              <span className="truncate font-medium text-ink">{roleLabel[role]}</span>
             </div>
           </div>
           <div className="flex items-center gap-2.5">

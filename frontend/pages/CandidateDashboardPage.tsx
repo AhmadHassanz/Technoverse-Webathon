@@ -171,15 +171,15 @@ export default function CandidateDashboardPage() {
         <ErrorState onRetry={reload} description={errorMessage(error)} />
       ) : data ? (
         <div className="animate-rise">
-          <div className="mb-8 grid grid-cols-3 gap-3 sm:gap-4">
+          <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-4">
             {[
               { label: "Open now", value: data.available.length },
               { label: "Upcoming", value: data.upcoming.length },
               { label: "Results ready", value: published },
             ].map((s) => (
-              <div key={s.label} className="rounded-[16px] border border-line bg-surface px-4 py-3.5 sm:px-5">
+              <div key={s.label} className="min-w-0 rounded-[16px] border border-line bg-surface px-2.5 py-3.5 sm:px-5">
                 <p className="display text-[1.75rem] leading-none tracking-[-0.04em]">{String(s.value).padStart(2, "0")}</p>
-                <p className="mt-1.5 text-[0.8125rem] text-mute">{s.label}</p>
+                <p className="mt-1.5 text-[0.75rem] leading-tight text-mute sm:text-[0.8125rem]">{s.label}</p>
               </div>
             ))}
           </div>

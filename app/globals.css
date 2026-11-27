@@ -423,3 +423,8 @@ select optgroup {
   background-color: var(--surface);
   color: var(--ink);
 }
+
+/* Fieldsets default to min-width:auto, which stops forms shrinking on narrow phones. */
+fieldset {
+  min-width: 0;
+}
