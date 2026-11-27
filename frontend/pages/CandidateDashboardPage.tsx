@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight, CalendarClock, CircleCheck, Clock3, ClipboardList, FileCheck2, Hourglass } from "lucide-react";
 import { PageHeader } from "@/frontend/components/shell/PageHeader";
 import { Card, EmptyState, ErrorState, PageSkeleton, StatusBadge } from "@/frontend/components/ui";
@@ -159,6 +159,10 @@ export default function CandidateDashboardPage() {
   const now = useNow(1000);
   const [doneLimit, setDoneLimit] = useState(10); // completed list: 10 at first, then 10 more per click
   const first = me?.fullName.split(" ")[0] ?? "";
+  // Arriving with #results in the address (the sidebar "Results" link): scroll there once the list has rendered.
+  useEffect(() => {
+    if (data && window.location.hash === "#results") document.getElementById("results")?.scrollIntoView({ block: "start" });
+  }, [data]);
   const published = data?.completed.filter((e) => e.resultPublished && e.attempt).length ?? 0;
 
   return (

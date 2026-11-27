@@ -89,6 +89,15 @@ const navFor: Record<Role, NavItem[]> = {
   ],
 };
 
+/** A link like "/candidate#results" on the page we are already on: Next.js does nothing, so scroll to the section ourselves. */
+function scrollToHash(e: React.MouseEvent, href: string, pathname: string) {
+  const [path, hash] = href.split("#");
+  if (!hash || path !== pathname) return; // other pages: normal navigation (the page scrolls itself once loaded)
+  e.preventDefault();
+  document.getElementById(hash)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  window.history.replaceState(null, "", href);
+}
+
 const roleLabel: Record<Role, string> = {
   admin: "Administrator",
   examiner: "Examiner",
@@ -155,7 +164,10 @@ function SidebarContent({
             <Link
               key={`${item.href}-${item.label}`}
               href={item.href}
-              onClick={onNavigate}
+              onClick={(e) => {
+                scrollToHash(e, item.href, pathname);
+                onNavigate?.();
+              }}
               className={cn(
                 "group relative flex h-11 items-center gap-3 rounded-full border px-4 text-[0.9375rem] transition-colors duration-200",
                 active
@@ -287,6 +299,7 @@ export function AppShell({ role, children }: { role: Role; children: React.React
             <Link
               key={`m-${item.href}-${item.label}`}
               href={item.href}
+              onClick={(e) => scrollToHash(e, item.href, pathname)}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-[14px] px-2 py-1.5 text-[0.6875rem] font-medium transition-colors",
