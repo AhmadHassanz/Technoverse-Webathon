@@ -10,9 +10,9 @@
 | 3.3 Question management | Question bank with topics/difficulty, 3 types, marking schemes, shuffling, frozen snapshots | ⏳ |
 | 3.4 Candidate management | Enrollment by email/search/CSV, dashboard buckets, availability window enforced on the server | ⏳ |
 | 3.5 Exam interface | Server timer, autosave with `clientSeq`, resume, navigator states, auto-submit | ✅ backend |
-| 3.6 Monitoring | Monitor view (5 s polling), incidents as indicators, announcements | ⏳ |
-| 3.7 Grading | Auto-grading from snapshot, manual written grading with validation, score recompute | ⏳ |
-| 3.8 Results & analytics | Controlled publish, own results only, stats/distribution/question stats | ⏳ |
+| 3.6 Monitoring | Monitor view (5 s polling), incidents as indicators, announcements | ✅ backend |
+| 3.7 Grading | Auto-grading from snapshot, manual written grading with validation, score recompute | ✅ backend |
+| 3.8 Results & analytics | Controlled publish, own results only, stats/distribution/question stats | ✅ backend |
 | 4.1–4.8 Secondary features | See README feature list | ⏳ |
 | 5.3 + 5.2 Innovation | Heartbeat outage compensation; difficulty blueprint + paper fairness | ⏳ |
 
@@ -34,6 +34,10 @@
 15. **Offline answers that arrive after the deadline** → the client's own timestamps are never trusted, so we cannot prove an answer was written in time. Sync after the deadline + 5 s marks every item `late` (not saved) and logs one `late_sync` incident for the examiner to see.
 16. **Sandbox attempts** → stored in the same tables (flag `is_sandbox`), so preview uses exactly the real exam code, but they are filtered out of every count, enrollment status, result, statistic and the monitor, never create incidents, and can be deleted (reset) by the exam owner. A preview lasts `durationMin` and is not limited by the exam window, so examiners can try a draft or future exam.
 17. **Auto-submit time** → an expired attempt is stored with `submitted_at` = its deadline (not the moment someone noticed), so the record shows when time really ran out.
+18. **When can results be published?** → the brief only says "controlled publication". We allow it only after the exam window has ended (otherwise a candidate who has not started yet could read the questions and correct answers), when no attempt is still in progress, and when every written answer is graded. Publishing locks grading.
+19. **Compensation approval edge cases** → approving adds the measured gap to the attempt (total capped at 10 minutes) and is only possible while the attempt is running; rejecting is always possible. The request is claimed first, so a double click can never add time twice.
+20. **"Not enough data" for difficulty statistics** → with fewer than 3 scored answers a question's observed difficulty is `null` and paper fairness uses the question's own label (easy 25, medium 50, hard 75). One or two answers would only show noise.
+21. **Candidates who never started in results** → the results table lists attempts only; never-started candidates appear in the enrollment list as "not started" (the result row type has no such status).
 
 ## 3. Assumptions & constraints
 - 10-hour build, team of 2, free-tier services only (no paid APIs, per brief §06).
@@ -85,7 +89,7 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 
 ## 7. Innovation challenges
 - **5.3 Failure-resilient exams:** (1) every answer is autosaved with a `clientSeq`; the database function `save_answer()` keeps only the newest, so retries and out-of-order requests are harmless. (2) While offline, the browser keeps changes in an outbox and replays them through `POST /sync` when it reconnects; answers that arrive after the deadline + 5 s are refused (`late`) because device clocks are not trusted. (3) The workspace sends a heartbeat every 15 s. If the server sees a gap of more than 45 s between two heartbeats (server timestamps only), it records an `offline` incident and a **pending** compensation request with the measured gap. (4) The examiner approves or rejects it in the monitor (Stage 4); approved time is added to `compensation_sec`, capped at 10 minutes. Refreshing or changing device never loses time: the deadline is stored on the server. **Trade-offs:** no automatic extra time (prevents abuse by unplugging on purpose), at most 45 s of an outage goes unnoticed, and a human must approve.
-- **5.2 Fairness of randomized exams:** _describe blueprint + paper difficulty + deviation and trade-offs._
+- **5.2 Fairness of randomized exams:** (1) the examiner sets a blueprint (e.g. 4 easy, 4 medium, 2 hard) and every paper takes a random sample per difficulty with a crypto shuffle; because marks are equal inside a difficulty, every paper has the same total marks. (2) After the exam, each question's real difficulty is measured from the answers (`100 - correct %`). (3) A paper's difficulty is the marks-weighted average of its questions, and `deviationPct` says how much harder or easier it was than the exam average, so the examiner can see whether random papers stayed fair. Questions labelled easy that candidates found hard are flagged as mismatches. **Trade-offs:** equal marks per difficulty limits how questions can be mixed; with few candidates the numbers are noisy, so below 3 scored answers we fall back to the label; fairness is shown, not corrected automatically (no re-grading or scaling).
 
 ## 8. Design → code map
 | Design item | Files |
@@ -120,5 +124,14 @@ shared/types.ts + shared/validation.ts are used by both sides, so the contract c
 | Digital scratchpad (4.8) | `handlers/attempts/[id]/scratchpad.ts` -> `services/answer.service.ts` -> `data/answers.ts`; size rules in `shared/validation.ts` |
 | Examination sandbox (4.3) | `startAttempt(..., sandbox)` + `deleteSandboxAttempt` in `services/attempt.service.ts`; `is_sandbox` filters in `data/exams.ts`, `data/enrollments.ts`, `data/attempts.ts` |
 | Customizable workspace preferences (4.7) | `handlers/me/preferences.ts` -> `services/users.service.ts` (`updateMyPreferences`) -> `data/users.ts` |
-| Stage 4 stubs (frontend can build now) | `handlers/exams/[id]/{monitor,announcements,grading,results,analytics}.ts`, `handlers/{incidents,compensations,attempt-questions,me/results,verify}/*` with `lib/mock.ts` |
+| Live monitor, polled every 5 s (3.6) | `handlers/exams/[id]/monitor.ts` -> `services/monitor.service.ts` (`getMonitor`) -> `data/monitoring.ts` (`attemptProgress`, `listIncidents`) + `data/attempts.ts` |
+| Announcements to candidates (3.6) | `handlers/exams/[id]/announcements.ts` -> `services/monitor.service.ts`; delivered through heartbeat + attempt view |
+| Incident review, indicators not proof (3.6) | `handlers/incidents/[id].ts` -> `services/monitor.service.ts` (`reviewIncident`) -> `data/monitoring.ts` |
+| Outage compensation approve/reject, cap 600 s (5.3) | `handlers/compensations/[id].ts` -> `services/monitor.service.ts` (`decideCompensation`: claim first, optimistic time update) -> `data/monitoring.ts`, `data/attempts.ts` (`setCompensationSec`) |
+| Manual grading of written answers (3.7) | `handlers/attempt-questions/[aqId]/grade.ts`, `handlers/exams/[id]/grading.ts` -> `services/results.service.ts` (`gradeAnswer` then `gradeAttempt` recomputes score/status) |
+| Results, controlled publishing, own result only (3.8) | `handlers/exams/[id]/results*.ts`, `handlers/me/results/[examId].ts` -> `services/results.service.ts` (`getResults`, `publishResults`, `getMyResult`) -> `data/exam-papers.ts` |
+| Statistics, distribution, question stats (3.8) | pure maths `lib/analytics.ts` (`buildStats`, `buildDistribution`, `buildQuestionStats`) used by `services/results.service.ts` (`getAnalytics`) |
+| Paper fairness (5.2) | `lib/analytics.ts` (`paperDifficulties`, `buildFairness`); stored at publish in `attempts.paper_difficulty` |
+| Exam-wide reads beyond 1000 rows | `data/paging.ts` (`fetchAll`) |
+| Stage 5 stub (verify) | `handlers/verify/[code].ts` with `lib/mock.ts` |
 | _remaining rows: fill in as features land_ | |

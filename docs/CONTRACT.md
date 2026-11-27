@@ -100,7 +100,7 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
 | GET | `/api/me/exams` | candidate | – → `MyExams` | – | ✅ |
-| GET | `/api/me/results/[examId]` | candidate | – → `CandidateResult` | 403 not published / not yours, 404 | ⏳ |
+| GET | `/api/me/results/[examId]` | candidate | – → `CandidateResult` | 403 not published / not yours, 404 | ✅ |
 
 ## 7. Attempts (exam workspace)
 
@@ -137,21 +137,33 @@ Frontend reads the file with `await file.text()` and sends it as `csv`. Always c
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/exams/[id]/monitor` | owner | – → `MonitorView` (frontend polls every 5 s) | 403 | ⏳ |
-| GET | `/api/exams/[id]/announcements` | owner or enrolled candidate | – → `Announcement[]` | 403 | ⏳ |
-| POST | `/api/exams/[id]/announcements` | owner | `AnnouncementInput` → `Announcement` (201) | 400 | ⏳ |
-| PATCH | `/api/incidents/[id]` | exam owner | `IncidentReviewInput` → `Incident` | 400, 403 | ⏳ |
-| PATCH | `/api/compensations/[id]` | exam owner | `CompensationDecisionInput` → `CompensationRequest` | 409 already decided / attempt finished | ⏳ |
+| GET | `/api/exams/[id]/monitor` | owner | – → `MonitorView` (frontend polls every 5 s) | 403 | ✅ |
+| GET | `/api/exams/[id]/announcements` | owner or enrolled candidate | – → `Announcement[]` | 403 | ✅ |
+| POST | `/api/exams/[id]/announcements` | owner | `AnnouncementInput` → `Announcement` (201) | 400 | ✅ |
+| PATCH | `/api/incidents/[id]` | exam owner | `IncidentReviewInput` → `Incident` | 400, 403 | ✅ |
+| PATCH | `/api/compensations/[id]` | exam owner | `CompensationDecisionInput` → `CompensationRequest` | 409 already decided / attempt finished | ✅ |
 
 ## 9. Grading, results, analytics
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/exams/[id]/grading?status=pending` | owner | – → `GradingItem[]` (`status=all` for everything) | 403 | ⏳ |
-| PATCH | `/api/attempt-questions/[aqId]/grade` | exam owner | `GradeInput` → `GradingItem` | 400 marks < 0 or > question marks, 409 attempt in progress / results published | ⏳ |
-| GET | `/api/exams/[id]/results` | owner | – → `ExamResults` | 403 | ⏳ |
-| POST | `/api/exams/[id]/results/publish` | owner | – → `Exam` | 409 attempts in progress or ungraded written answers | ⏳ |
-| GET | `/api/exams/[id]/analytics` | owner | – → `ExamAnalytics` | 403 | ⏳ |
+| GET | `/api/exams/[id]/grading?status=pending` | owner | – → `GradingItem[]` (`status=all` for everything) | 403 | ✅ |
+| PATCH | `/api/attempt-questions/[aqId]/grade` | exam owner | `GradeInput` → `GradingItem` | 400 marks < 0 or > question marks, 409 attempt in progress / results published | ✅ |
+| GET | `/api/exams/[id]/results` | owner | – → `ExamResults` | 403 | ✅ |
+| POST | `/api/exams/[id]/results/publish` | owner | – → `Exam` | 409 attempts in progress or ungraded written answers | ✅ |
+| GET | `/api/exams/[id]/analytics` | owner | – → `ExamAnalytics` | 403 | ✅ |
+
+**How the Stage 4 endpoints behave (details, no shape changes):**
+- **Everything here covers REAL attempts only.** Sandbox previews never appear in the monitor, incidents, compensations, grading, results, analytics or counts. The monitor, grading, results, analytics and publish all close expired attempts first, so you never see a stale "in progress".
+- **Monitor:** `online` = in progress with a heartbeat in the last 45 s. `endsAt` includes approved compensation. `answeredCount` counts questions with a selected option or non-blank text. `notStarted` = enrolled minus started.
+- **Announcements:** `GET` = exam owner/admin, or a candidate enrolled in a non-draft exam (otherwise 403). `POST` = owner only; 409 while the exam is still a draft. Candidates receive them through `AttemptView.announcements` and every heartbeat.
+- **Incident review:** `reviewerNote` omitted = keep the old note; `""` = clear it. It never changes scores.
+- **Compensation decision:** `rejected` is allowed any time while pending. `approved` adds the measured gap to the attempt's extra time (total capped at 600 s) and is only possible while the attempt is in progress; otherwise 409 and the request stays pending. A request that was already decided gives 409, so two clicks never add the time twice.
+- **Grading queue:** written answers of finished attempts (submitted, auto-submitted or graded). `pending` = not graded yet, `all` = everything. 409 for an attempt still in progress, a non-written question, or after results are published. `marksAwarded` above the question's marks gives 400 with `fields.marksAwarded`. `feedback` omitted = keep the old feedback; `""` = clear it. After every grade the attempt's score is recomputed and it becomes `graded` when no written answer is left ungraded. Grades can be changed until results are published.
+- **Results:** `rows` has one row per real attempt (candidates who never started are not listed here; see the enrollments list, `attemptStatus: "not_started"`). `score`, `percentage` and `passed` are `null` until the attempt is graded. `stats` and the distribution only use attempts that have a score. `percentage` = score / that candidate's paper marks.
+- **Publish results:** 409 unless the exam has ended (so nobody can still start), and 409 while any real attempt is in progress or has ungraded written answers (the message says how many). It stores each paper's difficulty, locks grading, and a second publish gives 409.
+- **Analytics:** finished real attempts only. `observedDifficulty` and fairness need at least 3 scored answers per question; with fewer, the question's own label is used (easy 25, medium 50, hard 75).
+- **`GET /api/me/results/[examId]`:** 403 until the examiner publishes (also for candidates not enrolled), 404 if the exam is unknown or the enrolled candidate never took it. `yourAnswer` is `""` when the question was left blank. Correct answers appear only here, after publishing.
 
 ## 10. Reports & verification
 
@@ -193,6 +205,8 @@ PDF links are plain `<a href="/api/reports/..." target="_blank">` (not `apiGet`)
 | marksAwarded | 0 ≤ x ≤ question marks, max 2 decimals |
 | CSV | max 500 data rows, max 1 MB |
 | scratchpad | text max 20000 chars, drawing PNG data URL max 500 KB |
+| reviewerNote | max 500 chars |
+| feedback (grading) | max 1000 chars |
 
 ## Publish-check problems (backend returns these exact situations)
 
