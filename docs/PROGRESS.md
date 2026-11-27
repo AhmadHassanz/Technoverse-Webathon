@@ -4,7 +4,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 
 ## Current status
 - Next.js 16 + TypeScript + Tailwind app created in `D:\TECHNOVERSE_WEBATHON\webathon` (= git repo root). Starter page only; `npm run build` passes.
-- Git: NOT a git repo right now (history deleted on purpose). `git init` on 27 Nov after 10:00 AM.
+- Git: repo initialized 27 Nov 10:25 AM, pushed to https://github.com/AhmadHassanz/Technoverse-Webathon (branch `main`).
 - Problem statement: **not decided yet**.
 
 ## Done
@@ -16,7 +16,7 @@ Claude updates this file at the end of every task, so a new session can pick up 
 
 ## Next steps
 1. ✅ Git name/email set, GitHub CLI logged in as AhmadHassanz (26 Nov).
-2. On 27 Nov after 10:00 AM: `git init`, first commit, create GitHub repo, push, add friend as collaborator.
+2. ✅ 27 Nov: `git init`, first commit, pushed to GitHub. TODO: add friend as collaborator.
 3. Get the problem statement, write it into CLAUDE.md, then add the real endpoints to CONTRACT.md + shared/types.ts.
 4. First deploy to Vercel and put the live link in the README.
 
