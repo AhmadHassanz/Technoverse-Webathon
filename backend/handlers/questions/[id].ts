@@ -1,19 +1,27 @@
-// STUB (mock data). Real version arrives in its stage; see docs/CONTRACT.md.
+// GET, PATCH, DELETE /api/questions/[id]: see docs/CONTRACT.md
 import { connection } from "next/server";
 import { ok } from "@/backend/lib/api-response";
+import { requireRole } from "@/backend/lib/auth";
 import { withErrors } from "@/backend/lib/errors";
-import { mockQuestions } from "@/backend/lib/mock";
-import type { OkResult, Question } from "@/shared/types";
+import { parseBody, parseId } from "@/backend/lib/http";
+import { getQuestion, removeQuestion, updateQuestion } from "@/backend/services/questions.service";
+import { questionSchema } from "@/shared/validation";
 
-export const GET = withErrors(async () => {
-  await connection(); // run on every request, never cached
-  return ok<Question>(mockQuestions[0]);
+type Ctx = { params: Promise<{ id: string }> };
+
+export const GET = withErrors(async (_req: Request, { params }: Ctx) => {
+  await connection();
+  const user = await requireRole("examiner", "admin");
+  return ok(await getQuestion(user, parseId((await params).id, "Question")));
 });
 
-export const PATCH = withErrors(async () => {
-  return ok<Question>(mockQuestions[0]);
+export const PATCH = withErrors(async (req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  const id = parseId((await params).id, "Question");
+  return ok(await updateQuestion(user, id, await parseBody(req, questionSchema)));
 });
 
-export const DELETE = withErrors(async () => {
-  return ok<OkResult>({ ok: true });
+export const DELETE = withErrors(async (_req: Request, { params }: Ctx) => {
+  const user = await requireRole("examiner", "admin");
+  return ok(await removeQuestion(user, parseId((await params).id, "Question")));
 });

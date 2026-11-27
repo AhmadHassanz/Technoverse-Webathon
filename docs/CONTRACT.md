@@ -48,13 +48,13 @@ The agreement between frontend (`frontend/`) and backend (`backend/`). Every req
 
 | Method | URL | Who | Body → data | Errors | Status |
 |---|---|---|---|---|---|
-| GET | `/api/topics` | examiner | – → `Topic[]` (own) | – | ⏳ |
-| POST | `/api/topics` | examiner | `TopicInput` → `Topic` (201) | 400, 409 name exists | ⏳ |
-| GET | `/api/questions?topicId=&difficulty=&type=&q=` | examiner | – → `Question[]` (own, newest first) | – | ⏳ |
-| POST | `/api/questions` | examiner | `QuestionInput` → `Question` (201) | 400 | ⏳ |
-| GET | `/api/questions/[id]` | owner | – → `Question` | 403, 404 | ⏳ |
-| PATCH | `/api/questions/[id]` | owner | `QuestionInput` → `Question` (does NOT change existing attempts) | 400, 403, 404 | ⏳ |
-| DELETE | `/api/questions/[id]` | owner | – → `OkResult` | 409 if used in any exam | ⏳ |
+| GET | `/api/topics` | examiner | – → `Topic[]` (own) | – | ✅ |
+| POST | `/api/topics` | examiner | `TopicInput` → `Topic` (201) | 400, 409 name exists | ✅ |
+| GET | `/api/questions?topicId=&difficulty=&type=&q=` | examiner | – → `Question[]` (own, newest first) | – | ✅ |
+| POST | `/api/questions` | examiner | `QuestionInput` → `Question` (201) | 400 | ✅ |
+| GET | `/api/questions/[id]` | owner | – → `Question` | 403, 404 | ✅ |
+| PATCH | `/api/questions/[id]` | owner | `QuestionInput` → `Question` (does NOT change existing attempts) | 400, 403, 404 | ✅ |
+| DELETE | `/api/questions/[id]` | owner | – → `OkResult` | 409 if used in any exam | ✅ |
 
 ## 4. Exams
 
